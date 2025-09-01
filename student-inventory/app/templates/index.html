@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Inventory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1>Student Inventory</h1>
+    <form id="studentForm">
+        Name: <input type="text" name="name" required>
+        Roll: <input type="text" name="roll" required>
+        Class: <input type="text" name="class" required>
+        <button type="submit">Add Student</button>
+    </form>
+    <h2>Students</h2>
+    <ul>
+        {% for student in students %}
+        <li>{{ student['name'] }} (Roll: {{ student['roll'] }}, Class: {{ student['class'] }})</li>
+        {% endfor %}
+    </ul>
+    <script>
+        document.getElementById('studentForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                roll: form.roll.value,
+                class: form.class.value
+            };
+            await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            window.location.reload();
+        };
+    </script>
+</body>
+
+</html>

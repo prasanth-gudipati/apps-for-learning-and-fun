@@ -327,3 +327,95 @@ eaa0860a8a82   bridge                      bridge    local
 --------------------------------------------------
 --------------------------------------------------
 
+**************************************************
+[2025-09-01 23:27:13] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Docker images:
+docker images
+-------------
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 23:33:50] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE                   COMMAND                  CREATED              STATUS              PORTS                                         NAMES
+9cb0c584c722   student-inventory_web   "python app.py"          About a minute ago   Up About a minute   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   student-inventory_web_1
+0daf3c63462f   redis:alpine            "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp   student-inventory_redis_1
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE                   COMMAND                  CREATED              STATUS              PORTS                                         NAMES
+9cb0c584c722   student-inventory_web   "python app.py"          About a minute ago   Up About a minute   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   student-inventory_web_1
+0daf3c63462f   redis:alpine            "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp   student-inventory_redis_1
+Docker images:
+docker images
+-------------
+REPOSITORY              TAG       IMAGE ID       CREATED              SIZE
+student-inventory_web   latest    1d02f94ef1ee   About a minute ago   133MB
+redis                   alpine    6f5542508b8b   2 weeks ago          70.5MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     4505e9eeca9204f0279eb36ed642ee8bcae032e2a27cab3dbf4bf1c0ebf55942
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+52baa1a6ccd9   student-inventory_default   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+
