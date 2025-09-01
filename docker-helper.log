@@ -1,0 +1,329 @@
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose version 1.29.2, build unknown
+Running containers:
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+All containers:
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+Docker images:
+REPOSITORY              TAG       IMAGE ID       CREATED       SIZE
+app3-student-mgmt_web   latest    aa8742118733   6 hours ago   128MB
+Docker volumes:
+DRIVER    VOLUME NAME
+local     app1-student-cgpt_mongo-data
+local     app1-student_mongo-data
+local     app2-task-manager_postgres_data
+local     app3-student-mgmt_student_db_data
+Docker networks:
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+[2025-09-01 21:02:23] Select an option:
+[2025-09-01 21:02:23] 1: Show Docker info
+[2025-09-01 21:02:23] 2: Stop all Docker processes and force delete all Docker objects
+[2025-09-01 21:02:23] 3: Stop all active Docker processes
+[2025-09-01 21:02:24] Docker version:
+[2025-09-01 21:02:24] Docker version 28.3.3, build 980b856
+[2025-09-01 21:02:24] Docker Compose version:
+[2025-09-01 21:02:24] docker-compose version 1.29.2, build unknown
+[2025-09-01 21:02:24] Running containers:
+[2025-09-01 21:02:24] CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+[2025-09-01 21:02:24] 6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+[2025-09-01 21:02:24] All containers:
+[2025-09-01 21:02:24] CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+[2025-09-01 21:02:24] 6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+[2025-09-01 21:02:24] Docker images:
+[2025-09-01 21:02:24] REPOSITORY              TAG       IMAGE ID       CREATED       SIZE
+[2025-09-01 21:02:24] app3-student-mgmt_web   latest    aa8742118733   6 hours ago   128MB
+[2025-09-01 21:02:24] Docker volumes:
+[2025-09-01 21:02:24] DRIVER    VOLUME NAME
+[2025-09-01 21:02:24] local     app1-student-cgpt_mongo-data
+[2025-09-01 21:02:24] local     app1-student_mongo-data
+[2025-09-01 21:02:24] local     app2-task-manager_postgres_data
+[2025-09-01 21:02:24] local     app3-student-mgmt_student_db_data
+[2025-09-01 21:02:25] Docker networks:
+[2025-09-01 21:02:25] NETWORK ID     NAME                        DRIVER    SCOPE
+[2025-09-01 21:02:25] c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+[2025-09-01 21:02:25] eaa0860a8a82   bridge                      bridge    local
+[2025-09-01 21:02:25] 301338774b60   host                        host      local
+[2025-09-01 21:02:25] 631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:04:05] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose version 1.29.2, build unknown
+Running containers:
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+All containers:
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+Docker images:
+REPOSITORY              TAG       IMAGE ID       CREATED       SIZE
+app3-student-mgmt_web   latest    aa8742118733   6 hours ago   128MB
+Docker volumes:
+DRIVER    VOLUME NAME
+local     app1-student-cgpt_mongo-data
+local     app1-student_mongo-data
+local     app2-task-manager_postgres_data
+local     app3-student-mgmt_student_db_data
+Docker networks:
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:05:18] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                   PORTS                                         NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Up 6 hours (unhealthy)   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   student_management_app
+Docker images:
+docker images
+-------------
+REPOSITORY              TAG       IMAGE ID       CREATED       SIZE
+app3-student-mgmt_web   latest    aa8742118733   6 hours ago   128MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     app1-student-cgpt_mongo-data
+local     app1-student_mongo-data
+local     app2-task-manager_postgres_data
+local     app3-student-mgmt_student_db_data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:05:32] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Stopping all running containers...
+docker stop $(docker ps -q)
+---------------------------
+6862e3f9578c
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:05:40] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                     PORTS     NAMES
+6862e3f9578c   app3-student-mgmt_web   "gunicorn --bind 0.0…"   6 hours ago   Exited (0) 6 seconds ago             student_management_app
+Docker images:
+docker images
+-------------
+REPOSITORY              TAG       IMAGE ID       CREATED       SIZE
+app3-student-mgmt_web   latest    aa8742118733   6 hours ago   128MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     app1-student-cgpt_mongo-data
+local     app1-student_mongo-data
+local     app2-task-manager_postgres_data
+local     app3-student-mgmt_student_db_data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:06:29] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Stopping all containers...
+docker stop $(docker ps -aq)
+----------------------------
+6862e3f9578c
+Removing all containers...
+docker rm -f $(docker ps -aq)
+-----------------------------
+6862e3f9578c
+Removing all images...
+docker rmi -f $(docker images -q)
+---------------------------------
+Untagged: app3-student-mgmt_web:latest
+Deleted: sha256:aa8742118733fd63d8ad8665adce0768770756c077a8f86cc43d83bf0df575ae
+Removing all volumes...
+docker volume rm -f $(docker volume ls -q)
+------------------------------------------
+app1-student-cgpt_mongo-data
+app1-student_mongo-data
+app2-task-manager_postgres_data
+app3-student-mgmt_student_db_data
+Removing all networks (except default ones)...
+docker network rm $(docker network ls | grep -v 'bridge\|host\|none' | awk '{if(NR>1) print $1}')
+-------------------------------------------------------------------------------------------------
+docker: 'docker network rm' requires at least 1 argument
+
+Usage:  docker network rm NETWORK [NETWORK...]
+
+See 'docker network rm --help' for more information
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:06:41] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Docker images:
+docker images
+-------------
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-01 21:07:19] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Docker images:
+docker images
+-------------
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+--------------------------------------------------
+--------------------------------------------------
+
