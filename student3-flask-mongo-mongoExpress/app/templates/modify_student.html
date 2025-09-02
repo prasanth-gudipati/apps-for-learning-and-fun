@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Modify Student</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Modify Student</h2>
+        <form id="searchForm">
+            <label>Student ID: <input type="number" name="student_id" min="10001" max="99999"></label>
+            <button type="submit">Search</button>
+        </form>
+        <form id="modifyForm" style="display:none">
+            <label>First Name*: <input type="text" name="first_name" required minlength="2"
+                    pattern="[A-Za-z0-9]+" /></label><br>
+            <label>Middle Name: <input type="text" name="middle_name" pattern="[A-Za-z0-9]*" /></label><br>
+            <label>Last Name*: <input type="text" name="last_name" required minlength="2"
+                    pattern="[A-Za-z0-9]+" /></label><br>
+            <label>Date of Birth*: <input type="text" name="dob" required /></label><br>
+            <label>Address: <input type="text" name="address" pattern="[A-Za-z0-9 ._\-\" ]*" /></label><br>
+            <label>Sex*: <select name="sex">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select></label><br>
+            <button type="submit">Modify</button>
+        </form>
+        <div id="error"></div>
+        <button onclick="location.href='/'">Back</button>
+    </div>
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const modifyForm = document.getElementById('modifyForm');
+        let currentId = null;
+        searchForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const id = searchForm.student_id.value;
+            if (!id) {
+                document.getElementById('error').innerText = 'Student ID required.';
+                return;
+            }
+            const res = await fetch('/api/students/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: id })
+            });
+            const result = await res.json();
+            if (!result.success) {
+                document.getElementById('error').innerText = result.errors.join('\n');
+                modifyForm.style.display = 'none';
+            } else {
+                document.getElementById('error').innerText = '';
+                modifyForm.style.display = '';
+                currentId = id;
+                for (const key in result.student) {
+                    if (modifyForm[key]) modifyForm[key].value = result.student[key];
+                }
+            }
+        };
+        modifyForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(modifyForm));
+            const res = await fetch('/api/students/' + currentId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (!result.success) {
+                document.getElementById('error').innerText = result.errors.join('\n');
+            } else {
+                alert('Student modified!');
+                location.href = '/';
+            }
+        };
+    </script>
+</body>
+
+</html>

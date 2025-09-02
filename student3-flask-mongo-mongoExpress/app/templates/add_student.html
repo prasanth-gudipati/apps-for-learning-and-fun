@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Add New Student</h2>
+        <form id="addForm">
+            <label>First Name*: <input type="text" name="first_name" required minlength="2"
+                    pattern="[A-Za-z0-9]+"></label><br>
+            <label>Middle Name: <input type="text" name="middle_name" pattern="[A-Za-z0-9]*"></label><br>
+            <label>Last Name*: <input type="text" name="last_name" required minlength="2"
+                    pattern="[A-Za-z0-9]+"></label><br>
+            <label>Date of Birth*: <input type="text" name="dob" value="01/01/2001" required></label><br>
+            <label>Address: <input type="text" name="address" pattern="[A-Za-z0-9 ._\-\" ]*"></label><br>
+            <label>Sex*: <select name="sex">
+                    <option value="Male" selected>Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select></label><br>
+            <button type="submit">Add Student</button>
+        </form>
+        <div id="error"></div>
+        <button onclick="location.href='/'">Back</button>
+    </div>
+    <script>
+        document.getElementById('addForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = Object.fromEntries(new FormData(form));
+            const res = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (!result.success) {
+                document.getElementById('error').innerText = result.errors.join('\n');
+            } else {
+                alert('Student added! ID: ' + result.student_id);
+                location.href = '/';
+            }
+        };
+    </script>
+</body>
+
+</html>
