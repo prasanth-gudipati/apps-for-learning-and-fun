@@ -13,10 +13,18 @@ mongo = PyMongo(app)
 # Helper to generate unique student ID
 
 def generate_student_id():
-    while True:
-        student_id = random.randint(10001, 99999)
-        if not mongo.db.students.find_one({"student_id": student_id}):
-            return student_id
+    last_student = mongo.db.students.find_one(
+        sort=[("student_id", -1)],
+        projection={"student_id": 1}
+    )
+    if last_student and "student_id" in last_student:
+        next_id = last_student["student_id"] + 1
+    else:
+        next_id = 10001
+    # Ensure we do not exceed 99999
+    if next_id > 99999:
+        raise Exception("Maximum student ID reached.")
+    return next_id
 
 def valid_name(name):
     return bool(re.match(r"^[A-Za-z]{2,}$", name))
