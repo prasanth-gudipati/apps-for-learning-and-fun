@@ -509,3 +509,218 @@ eaa0860a8a82   bridge                      bridge    local
 --------------------------------------------------
 --------------------------------------------------
 
+**************************************************
+[2025-09-01 23:56:12] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                                             NAMES
+8589b31423db   student2-app_web   "python app.py"          46 seconds ago   Up 43 seconds   0.0.0.0:5002->5000/tcp, [::]:5002->5000/tcp       student2-app_web_1
+8528a498ce06   mongo:6.0          "docker-entrypoint.s…"   48 seconds ago   Up 45 seconds   0.0.0.0:27018->27017/tcp, [::]:27018->27017/tcp   student2-app_mongo_1
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                                             NAMES
+8589b31423db   student2-app_web   "python app.py"          46 seconds ago   Up 43 seconds   0.0.0.0:5002->5000/tcp, [::]:5002->5000/tcp       student2-app_web_1
+8528a498ce06   mongo:6.0          "docker-entrypoint.s…"   48 seconds ago   Up 45 seconds   0.0.0.0:27018->27017/tcp, [::]:27018->27017/tcp   student2-app_mongo_1
+Docker images:
+docker images
+-------------
+REPOSITORY         TAG       IMAGE ID       CREATED          SIZE
+student2-app_web   latest    f1b48aeebb19   51 seconds ago   141MB
+mongo              6.0       93600587b81b   7 days ago       765MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     cbb3495132a34c957e09bb6ef32badbbee2dbfa66c9e0fd73607e4a20c999845
+local     student2-app_mongo-data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+8498361178d3   student2-app_default        bridge    local
+52baa1a6ccd9   student-inventory_default   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 00:02:49] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Stopping all running containers...
+docker stop $(docker ps -q)
+---------------------------
+8589b31423db
+8528a498ce06
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 00:03:47] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Stopping all containers...
+docker stop $(docker ps -aq)
+----------------------------
+8589b31423db
+8528a498ce06
+Removing all containers...
+docker rm -f $(docker ps -aq)
+-----------------------------
+8589b31423db
+8528a498ce06
+Removing all images...
+docker rmi -f $(docker images -q)
+---------------------------------
+Untagged: student2-app_web:latest
+Deleted: sha256:fb165e55aa8acb1e3f0c11d58bdace9ff599c67176bac02100fc84080839d564
+Deleted: sha256:f1b48aeebb1911a6e95c22394108a952ac6fdff7e697d9872266e6fb0f58a49e
+Untagged: mongo:6.0
+Untagged: mongo@sha256:2d9f391b85847a9057602fe622c4b1e55781b29ba69034ce6f14ebd5695ec608
+Deleted: sha256:93600587b81b51470ee6525eb6471cb7af43c7d5381dc428744906ccf24e5deb
+Deleted: sha256:fc11dc7882a722c34d586f6ebad50622e15df29ef818cab1f283e0a51c967f50
+Deleted: sha256:68f7db06f417787aaed0badb403219265d3a751a5ac8535b524653a8dc475940
+Deleted: sha256:f5d1dba6c343352a13f00967babef2ff475d602eb9d06e5cd607fd896d1641e0
+Deleted: sha256:2bf1a3b7e77172548699ecb4a012594a4f2983201136e637cca53127e9c07232
+Deleted: sha256:87a34c9a42cebc15d80585c4c1fc7e8e956f64949a22c318eb79c74b2d0000a9
+Deleted: sha256:eca7b322cadbee782f9e06fbc277ab3ddc674734d8f431d8b43b9593bcc16f5c
+Deleted: sha256:2c9e962574c8b83a7a8e538f8e96f9b998f09add435456f72c1bad3d2a26846b
+Deleted: sha256:90a2bf02e851326fc70d05470553ed33e578342d6e06bfa0cfaf331c4079b7e4
+Removing all volumes...
+docker volume rm -f $(docker volume ls -q)
+------------------------------------------
+cbb3495132a34c957e09bb6ef32badbbee2dbfa66c9e0fd73607e4a20c999845
+student2-app_mongo-data
+Removing all networks (except default ones)...
+docker network rm $(docker network ls | grep -v 'bridge\|host\|none' | awk '{if(NR>1) print $1}')
+-------------------------------------------------------------------------------------------------
+docker: 'docker network rm' requires at least 1 argument
+
+Usage:  docker network rm NETWORK [NETWORK...]
+
+See 'docker network rm --help' for more information
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 00:03:57] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Docker images:
+docker images
+-------------
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+8498361178d3   student2-app_default        bridge    local
+52baa1a6ccd9   student-inventory_default   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 00:23:41] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE              COMMAND                  CREATED         STATUS         PORTS                                             NAMES
+79f52d327a38   student2-app_web   "python app.py"          3 minutes ago   Up 3 minutes   0.0.0.0:5002->5000/tcp, [::]:5002->5000/tcp       student2-app_web_1
+35094e2d5e76   mongo:6.0          "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes   0.0.0.0:27018->27017/tcp, [::]:27018->27017/tcp   student2-app_mongo_1
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE              COMMAND                  CREATED         STATUS         PORTS                                             NAMES
+79f52d327a38   student2-app_web   "python app.py"          3 minutes ago   Up 3 minutes   0.0.0.0:5002->5000/tcp, [::]:5002->5000/tcp       student2-app_web_1
+35094e2d5e76   mongo:6.0          "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes   0.0.0.0:27018->27017/tcp, [::]:27018->27017/tcp   student2-app_mongo_1
+Docker images:
+docker images
+-------------
+REPOSITORY         TAG       IMAGE ID       CREATED          SIZE
+student2-app_web   latest    3a422f6643c5   3 minutes ago    141MB
+<none>             <none>    fb165e55aa8a   20 minutes ago   141MB
+mongo              6.0       93600587b81b   7 days ago       765MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     8ee752d0afe407d437442760c640665da138e4a8b9234dec1262b587563c6bb6
+local     210ac42cb29dd07dca90a678535ce20925949d659e9ed97e7eabf8b9f4a1cd09
+local     student2-app_mongo-data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+16a1fe771e6d   student2-app_default        bridge    local
+52baa1a6ccd9   student-inventory_default   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+
