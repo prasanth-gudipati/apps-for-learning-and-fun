@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1>Add New Student</h1>
+    <form method="post">
+        <label>First Name*: <input type="text" name="first_name" value="{{ form.first_name or '' }}" required
+                minlength="2"></label><br>
+        <label>Middle Name: <input type="text" name="middle_name" value="{{ form.middle_name or '' }}"></label><br>
+        <label>Last Name*: <input type="text" name="last_name" value="{{ form.last_name or '' }}" required
+                minlength="2"></label><br>
+        <label>Date of Birth*: <input type="date" name="dob" value="{{ form.dob or '' }}" required></label><br>
+        <label>Address: <input type="text" name="address" value="{{ form.address or '' }}"></label><br>
+        <label>Sex*:
+            <select name="sex">
+                <option value="Male" {% if form.sex=='Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if form.sex=='Female' %}selected{% endif %}>Female</option>
+                <option value="Other" {% if form.sex=='Other' %}selected{% endif %}>Other</option>
+            </select>
+        </label><br>
+        <button type="submit">Add Student</button>
+        <a href="{{ url_for('index') }}">Cancel</a>
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+</body>
+
+</html>
