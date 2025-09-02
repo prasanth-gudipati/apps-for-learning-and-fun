@@ -1,0 +1,114 @@
+**************************************************
+[2025-09-02 02:56:26] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Stopping all containers...
+docker stop $(docker ps -aq)
+----------------------------
+6bb1966725b2
+aecab13e5ba1
+ccce3fd2484d
+Removing all containers...
+docker rm -f $(docker ps -aq)
+-----------------------------
+6bb1966725b2
+aecab13e5ba1
+ccce3fd2484d
+Removing all images...
+docker rmi -f $(docker images -q)
+---------------------------------
+Untagged: student3-flask-mongo-mongoexpress_flask-app:latest
+Deleted: sha256:75c19348bc3ef543f07076a88c922abe05a1d0fa6a84987635beb3e6fdd9f51a
+Deleted: sha256:31e6f263e438e5f746ab89093d0d1bfe6af79f1cf2316c09c120bb515144d976
+Deleted: sha256:9724c11cb3da25881bd0b0a0bdc7ae029d7247c6a41bf28f40a26d41aba61757
+Untagged: student2-app_web:latest
+Deleted: sha256:3a422f6643c562022da34ad363f6aa4af97628b89e56ad5dd704ff6dc5f6640d
+Deleted: sha256:fb165e55aa8acb1e3f0c11d58bdace9ff599c67176bac02100fc84080839d564
+Untagged: mongo:6.0
+Untagged: mongo@sha256:2d9f391b85847a9057602fe622c4b1e55781b29ba69034ce6f14ebd5695ec608
+Deleted: sha256:93600587b81b51470ee6525eb6471cb7af43c7d5381dc428744906ccf24e5deb
+Deleted: sha256:fc11dc7882a722c34d586f6ebad50622e15df29ef818cab1f283e0a51c967f50
+Deleted: sha256:68f7db06f417787aaed0badb403219265d3a751a5ac8535b524653a8dc475940
+Deleted: sha256:f5d1dba6c343352a13f00967babef2ff475d602eb9d06e5cd607fd896d1641e0
+Deleted: sha256:2bf1a3b7e77172548699ecb4a012594a4f2983201136e637cca53127e9c07232
+Deleted: sha256:87a34c9a42cebc15d80585c4c1fc7e8e956f64949a22c318eb79c74b2d0000a9
+Deleted: sha256:eca7b322cadbee782f9e06fbc277ab3ddc674734d8f431d8b43b9593bcc16f5c
+Deleted: sha256:2c9e962574c8b83a7a8e538f8e96f9b998f09add435456f72c1bad3d2a26846b
+Deleted: sha256:90a2bf02e851326fc70d05470553ed33e578342d6e06bfa0cfaf331c4079b7e4
+Untagged: mongo-express:1.0.2-20
+Untagged: mongo-express@sha256:30fc6333779340217c6a2bc0bc3cd53aa46028ab8fc6caef41bd00bf0faacf53
+Deleted: sha256:c6389604d11ffa3b080a5dc390ee48f080dc3d6ba840f4ee700d55db6026460d
+Deleted: sha256:85e25e81722a2945fdd474ea554c01adb3830433e9222c3a2d659b9b51c40e0e
+Deleted: sha256:104c9750c70b50086e8a0f6acdfeb497cae74f511d8afaf915d7258664089e9a
+Deleted: sha256:da6eaf11a5fef0ba573b0b913dc13a307837bea3116570c3d4b2a44053201ec0
+Deleted: sha256:06b127c3cd783815292890bdf836217236339b88a375d70ff8fce3894ef8c775
+Deleted: sha256:1049bc8b59ea3feed9b9775767399a62b458494e04012f9ba3072f93bc4b7a0d
+Deleted: sha256:76e0224219828cab117b220b76786358c0c38ff19c7fc956c36531a4ff541499
+Deleted: sha256:e19aef7a7129d6a5bd579e9d8711896d6b376804933cc028fc10dd6bba5102bb
+Deleted: sha256:aedc3bda2944bb9bcb6c3d475bee8b460db9a9b0f3e0b33a6ed2fd1ae0f1d445
+Removing all volumes...
+docker volume rm -f $(docker volume ls -q)
+------------------------------------------
+0a3c2209260546c672e3e582bf46a721816847d047ed71a19e9656434aba73ce
+8ee752d0afe407d437442760c640665da138e4a8b9234dec1262b587563c6bb6
+210ac42cb29dd07dca90a678535ce20925949d659e9ed97e7eabf8b9f4a1cd09
+student2-app_mongo-data
+student3-flask-mongo-mongoexpress_mongo-data
+Removing all networks (except default ones)...
+docker network rm $(docker network ls | grep -v 'bridge\|host\|none' | awk '{if(NR>1) print $1}')
+-------------------------------------------------------------------------------------------------
+docker: 'docker network rm' requires at least 1 argument
+
+Usage:  docker network rm NETWORK [NETWORK...]
+
+See 'docker network rm --help' for more information
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 02:56:36] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Docker images:
+docker images
+-------------
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default                   bridge    local
+eaa0860a8a82   bridge                                      bridge    local
+301338774b60   host                                        host      local
+631c396e44cd   none                                        null      local
+d07fc7829470   student3-flask-mongo-mongoexpress_default   bridge    local
+52baa1a6ccd9   student-inventory_default                   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+

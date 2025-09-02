@@ -45,7 +45,7 @@ def validate_student(data, is_new=True):
     except Exception:
         errors.append('Date of Birth must be in DD/MM/YYYY format.')
     # Address (optional)
-    if data.get('address') and not re.match(r'^[A-Za-z0-9 ._\-"']*$', data['address']):
+    if data.get('address') and not re.match(r"^[A-Za-z0-9\.\_\-\s']*$", data['address']):
         errors.append('Address contains invalid characters.')
     # Sex
     if data.get('sex') not in ['Male', 'Female', 'Other']:

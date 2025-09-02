@@ -724,3 +724,111 @@ eaa0860a8a82   bridge                      bridge    local
 --------------------------------------------------
 --------------------------------------------------
 
+**************************************************
+[2025-09-02 02:16:14] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Docker images:
+docker images
+-------------
+REPOSITORY         TAG       IMAGE ID       CREATED       SIZE
+student2-app_web   latest    3a422f6643c5   2 hours ago   141MB
+<none>             <none>    fb165e55aa8a   2 hours ago   141MB
+mongo              6.0       93600587b81b   7 days ago    765MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     8ee752d0afe407d437442760c640665da138e4a8b9234dec1262b587563c6bb6
+local     210ac42cb29dd07dca90a678535ce20925949d659e9ed97e7eabf8b9f4a1cd09
+local     student2-app_mongo-data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default   bridge    local
+eaa0860a8a82   bridge                      bridge    local
+301338774b60   host                        host      local
+631c396e44cd   none                        null      local
+52baa1a6ccd9   student-inventory_default   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 02:41:08] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                                             NAMES
+aecab13e5ba1   mongo-express:1.0.2-20   "/sbin/tini -- /dock…"   3 minutes ago   Up 2 minutes   0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp       student3-flask-mongo-mongoexpress_mongo-express_1
+ccce3fd2484d   mongo:6.0                "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp   student3-flask-mongo-mongoexpress_mongo_1
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE                                         COMMAND                  CREATED         STATUS                     PORTS                                             NAMES
+6bb1966725b2   student3-flask-mongo-mongoexpress_flask-app   "python app.py"          3 minutes ago   Exited (1) 2 minutes ago                                                     student3-flask-mongo-mongoexpress_flask-app_1
+aecab13e5ba1   mongo-express:1.0.2-20                        "/sbin/tini -- /dock…"   3 minutes ago   Up 2 minutes               0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp       student3-flask-mongo-mongoexpress_mongo-express_1
+ccce3fd2484d   mongo:6.0                                     "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes               0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp   student3-flask-mongo-mongoexpress_mongo_1
+Docker images:
+docker images
+-------------
+REPOSITORY                                    TAG        IMAGE ID       CREATED         SIZE
+student3-flask-mongo-mongoexpress_flask-app   latest     9724c11cb3da   3 minutes ago   141MB
+student2-app_web                              latest     3a422f6643c5   2 hours ago     141MB
+<none>                                        <none>     fb165e55aa8a   3 hours ago     141MB
+mongo                                         6.0        93600587b81b   7 days ago      765MB
+mongo-express                                 1.0.2-20   c6389604d11f   18 months ago   188MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     0a3c2209260546c672e3e582bf46a721816847d047ed71a19e9656434aba73ce
+local     8ee752d0afe407d437442760c640665da138e4a8b9234dec1262b587563c6bb6
+local     210ac42cb29dd07dca90a678535ce20925949d659e9ed97e7eabf8b9f4a1cd09
+local     student2-app_mongo-data
+local     student3-flask-mongo-mongoexpress_mongo-data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default                   bridge    local
+eaa0860a8a82   bridge                                      bridge    local
+301338774b60   host                                        host      local
+631c396e44cd   none                                        null      local
+d07fc7829470   student3-flask-mongo-mongoexpress_default   bridge    local
+52baa1a6ccd9   student-inventory_default                   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+

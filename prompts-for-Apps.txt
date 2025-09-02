@@ -1,3 +1,4 @@
+##App1
 Create a new App and related file in Dir: /home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/student2-app, with following requirements:
 
 a) host: ubuntu Ubuntu 22.04.5 LTS
@@ -36,3 +37,45 @@ h) Student DB:
    - Allow already entered values to modify when there is an error.
    
 i) the app should support all the CRUD operations using REST API Calls. 
+
+##App :student3-flask-mongo-mongoExpress
+
+Create a new App and related file in Dir: /home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/student3-flask-mongo-mongoExpress, with following requirements:
+
+a) host: ubuntu Ubuntu 22.04.5 LTS
+b) Docker Installed versions:
+Docker version 28.3.3, build 980b856
+docker-compose version 1.29.2
+
+c) Use docker based micro services
+d) python flask framework
+e) mongo DB and mongo express.
+f) Appropriate html and css
+g) Main Screen should show ONLY options:
+   - 1. Add new student
+   - 2. Delete a student by name or ID.
+   - 3. Modify a student by first and last names OR user id.
+   
+   - Based on selected option appropraite screen should be showed for Modify and Delete options.
+   - Also Main Screen should show a button to generate report...When it is clicked it has to show report of all students.
+   - The Navigation across multiple screens should work seamlessly.
+h) Student DB:
+   - First Name mandatory: Must be 2 chars. minimum length, Alphanumeric is allowed.
+   - Middle Name Optional, Alphanumeric is allowed.
+   - Last name Mandatory:  Must be 2 chars. minimum length; Alphanumeric is allowed.
+   - Date of birth - Mandatory - Check for valid date values - Default Value 01/01/2001 and shold be editabled.
+   - Address - Optional, valid values Alphanumeric, ., _, -, " "
+   - Sex - Mandatory - Default Male - Allow to edit.
+   - program has to generate uniquie student ID in the range of 10001 to 99999 and in sequence number.
+   - show appropriate error message if the user input values are incorrect.
+   - show appropriate error when the student record already exists.
+   - Allow already entered values to modify when there is an error.
+   
+i) the app should support all the CRUD operations using REST API Calls. 
+
+j)Create README file, with following sections:
+      a) Description of the App.
+      b) Main Components. how to access Mongo Express
+      c) How to start, stop and restart the App.
+      d) All supported REST API with sample commands
+      e) Debugging steps.
