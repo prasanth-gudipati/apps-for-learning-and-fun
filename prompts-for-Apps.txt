@@ -1,44 +1,17 @@
-##App1
-Create a new App and related file in Dir: /home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/student2-app, with following requirements:
+## Client Python program for CRUD of student records using API.
+write a standalone python program in apps-for-learning-and-fun/student3-flask-mongo-mongoExpress APP, With below requirements:
 
-a) host: ubuntu Ubuntu 22.04.5 LTS
-b) Docker Installed versions:
-Docker version:
-docker --version
-----------------
-Docker version 28.3.3, build 980b856
-Docker Compose version:
-docker-compose --version
-------------------------
-docker-compose version 1.29.2, build unknown
-Running containers:
+a) program has to support these options:
 
-c) Use docker based micro services
-d) python flask framework
-e) mongo DB
-f) Appropriate html and css
-g) Main Screen should show options:
-   - Add new student
-   - Delete a student by name or ID.
-   - Modify the student record by first name or user id.
-   - Also Main Screen should show a button to generate report...When it is clicked it has to show report of all students.
-   - The Navigation across multiple screens should work seamlessly.
-h) Student DB:
-   - First Name mandatory: Must be 2 chars. minimum length
-   - Middle Name Optional
-   - Last name Mandatory:  Must be 2 chars. minimum length
-   - Names shoud allow characters as per standards.
-   - Date of birth - Mandatory - Check for valid date values
-   - Address - Optional
-   - Sex - Mandatory - Default Male - Allow to edit.
-   - program has to generate uniquie student ID in the range of 10001 to 99999
-   - show appropriate error message if the user input values are incorrect.
-   - show appropriate error when the student record already exists.
-   - Allow already entered values to modify when there is an error.
-   
-i) the app should support all the CRUD operations using REST API Calls. 
+create 1 new student with auto generated values.
+create 1 new studen with user given values.
+create N new students with auto generated values.
+Show the details of an existing student by taking first name or student ID as an argument
+Modify the student by taking 2 arguments, one student id or first name then new set of values.
+Delete a student ID based on student ID or first and last names.
+All above should be based on REST APIs.
 
-##App :student3-flask-mongo-mongoExpress
+##App3 :student3-flask-mongo-mongoExpress
 
 Create a new App and related file in Dir: /home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/student3-flask-mongo-mongoExpress, with following requirements:
 
@@ -79,3 +52,40 @@ j)Create README file, with following sections:
       c) How to start, stop and restart the App.
       d) All supported REST API with sample commands
       e) Debugging steps.
+
+
+##App1
+Create a new App and related file in Dir: /home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/student2-app, with following requirements:
+
+a) host: ubuntu Ubuntu 22.04.5 LTS
+b) Docker Installed versions:
+Docker version 28.3.3, build 980b856
+docker-compose version 1.29.2, build unknown
+
+Running containers:
+
+c) Use docker based micro services
+d) python flask framework
+e) mongo DB
+f) Appropriate html and css
+g) Main Screen should show options:
+   - Add new student
+   - Delete a student by name or ID.
+   - Modify the student record by first name or user id.
+   - Also Main Screen should show a button to generate report...When it is clicked it has to show report of all students.
+   - The Navigation across multiple screens should work seamlessly.
+h) Student DB:
+   - First Name mandatory: Must be 2 chars. minimum length
+   - Middle Name Optional
+   - Last name Mandatory:  Must be 2 chars. minimum length
+   - Names shoud allow characters as per standards.
+   - Date of birth - Mandatory - Check for valid date values
+   - Address - Optional
+   - Sex - Mandatory - Default Male - Allow to edit.
+   - program has to generate uniquie student ID in the range of 10001 to 99999
+   - show appropriate error message if the user input values are incorrect.
+   - show appropriate error when the student record already exists.
+   - Allow already entered values to modify when there is an error.
+   
+i) the app should support all the CRUD operations using REST API Calls. 
+

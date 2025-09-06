@@ -926,3 +926,97 @@ f847011273fb   student3-flask-mongo-mongoexpress_default   bridge    local
 --------------------------------------------------
 --------------------------------------------------
 
+**************************************************
+[2025-09-02 17:54:17] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.51/containers/json": dial unix /var/run/docker.sock: connect: permission denied
+All containers:
+docker ps -a
+------------
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.51/containers/json?all=1": dial unix /var/run/docker.sock: connect: permission denied
+Docker images:
+docker images
+-------------
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
+Docker volumes:
+docker volume ls
+----------------
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.51/volumes": dial unix /var/run/docker.sock: connect: permission denied
+Docker networks:
+docker network ls
+-----------------
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.51/networks": dial unix /var/run/docker.sock: connect: permission denied
+--------------------------------------------------
+--------------------------------------------------
+
+**************************************************
+[2025-09-02 17:55:28] Script execution started
+**************************************************
+Select an option:
+1: Show Docker info
+2: Stop all Docker processes and force delete all Docker objects
+3: Stop all active Docker processes
+Docker version:
+docker --version
+----------------
+Docker version 28.3.3, build 980b856
+Docker Compose version:
+docker-compose --version
+------------------------
+docker-compose version 1.29.2, build unknown
+Running containers:
+docker ps
+---------
+CONTAINER ID   IMAGE                                         COMMAND                  CREATED        STATUS        PORTS                                             NAMES
+5db5d516b3b7   mongo-express:1.0.2-20                        "/sbin/tini -- /dock…"   15 hours ago   Up 15 hours   0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp       student3-flask-mongo-mongoexpress_mongo-express_1
+237e6660dd71   student3-flask-mongo-mongoexpress_flask-app   "python app.py"          15 hours ago   Up 15 hours   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp       student3-flask-mongo-mongoexpress_flask-app_1
+194daf7cefdc   mongo:6.0                                     "docker-entrypoint.s…"   15 hours ago   Up 15 hours   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp   student3-flask-mongo-mongoexpress_mongo_1
+All containers:
+docker ps -a
+------------
+CONTAINER ID   IMAGE                                         COMMAND                  CREATED        STATUS        PORTS                                             NAMES
+5db5d516b3b7   mongo-express:1.0.2-20                        "/sbin/tini -- /dock…"   15 hours ago   Up 15 hours   0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp       student3-flask-mongo-mongoexpress_mongo-express_1
+237e6660dd71   student3-flask-mongo-mongoexpress_flask-app   "python app.py"          15 hours ago   Up 15 hours   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp       student3-flask-mongo-mongoexpress_flask-app_1
+194daf7cefdc   mongo:6.0                                     "docker-entrypoint.s…"   15 hours ago   Up 15 hours   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp   student3-flask-mongo-mongoexpress_mongo_1
+Docker images:
+docker images
+-------------
+REPOSITORY                                    TAG        IMAGE ID       CREATED         SIZE
+student3-flask-mongo-mongoexpress_flask-app   latest     75c19348bc3e   15 hours ago    141MB
+mongo                                         6.0        e3d31d91da21   7 days ago      765MB
+mongo-express                                 1.0.2-20   c6389604d11f   18 months ago   188MB
+Docker volumes:
+docker volume ls
+----------------
+DRIVER    VOLUME NAME
+local     6ef0018d361f211fa03634a25c0531e527499e2ed8f2864c28f09ea91ebe126b
+local     ed85e55198feee4d0f2b0d137e8546e793ecb27f283b5403a5845a0d411dae0b
+local     student3-flask-mongo-mongoexpress_mongo-data
+Docker networks:
+docker network ls
+-----------------
+NETWORK ID     NAME                                        DRIVER    SCOPE
+c66e7c1d7f77   app3-student-mgmt_default                   bridge    local
+eaa0860a8a82   bridge                                      bridge    local
+301338774b60   host                                        host      local
+631c396e44cd   none                                        null      local
+f847011273fb   student3-flask-mongo-mongoexpress_default   bridge    local
+52baa1a6ccd9   student-inventory_default                   bridge    local
+--------------------------------------------------
+--------------------------------------------------
+
