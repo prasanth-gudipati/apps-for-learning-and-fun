@@ -1,0 +1,3 @@
+devicename,director,site_name,street,city,state,country,zipcode,serialnum,bandwidth,vpn_profile,stagingController,ztpemail,ztptype,masterprofilename,masterprofileversion,masterprofiletype,parameter_IP_WAN1,parameter_LAN1_IP,parameter_WAN1_Next_Hop
+testsite2app4,Director1,test_site2,6001 Great America Parkway,san jose,CA,USA,95002,testsite2app4,100,WAN1-SDWAN-Controller1-StagingIpsec,SDWAN-Controller1,vinit@test.com,SERIAL_NO,Master_Profile1,2,STANDARD,1.1.1.1/24,2.2.2.2/24,1.1.1.2
+testsite3app2,Director1,test_site3,6002 Great America Parkway,san jose,CA,USA,95002,testsite3app2,100,WAN1-SDWAN-Controller1-StagingIpsec,SDWAN-Controller1,vinit@test.com,SERIAL_NO,Master_Profile1,2,STANDARD,1.1.1.1/24,2.2.2.2/24,1.1.1.2

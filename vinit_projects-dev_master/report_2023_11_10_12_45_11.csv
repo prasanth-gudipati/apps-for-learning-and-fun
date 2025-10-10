@@ -1,0 +1,3 @@
+Device Name,Task UUID,Status,Summary,startTime,endTime,Duration-in-SEC
+wbasp2-11339s-32093441e015,3e8d19b0-ff51-492e-a7ff-7661ae066132,SUCCESS,Publishing to Appliance for tenant [wbacntrl],2023-11-10 12:45:13,2023-11-10 12:45:37,24.32
+wbasp2-01013s-32093171e016,afafc145-e2e6-4dc2-9c88-029f351d5d2a,SUCCESS,Publishing to Appliance for tenant [wbacntrl],2023-11-10 12:45:13,2023-11-10 12:45:39,26.19

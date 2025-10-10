@@ -68,6 +68,11 @@ def main():
     output = shell.recv(10000).decode()
     print(output)
 
+    # Set alias for kubectl
+    shell.send("alias k=kubectl\n")
+    time.sleep(0.5)
+    shell.recv(10000).decode()  # Clear the response
+
     # Step 2: run kubectl get svc -A
     shell.send("kubectl get svc -A\n")
     time.sleep(2)

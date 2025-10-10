@@ -1,0 +1,30 @@
+Device Name,Task UUID,Status,Summary
+wbasp2-02513s-32093065e011,2d9e380a-f6e9-4520-9312-ce50b22faa23,FAILED,Failed at DeviceWorkflowStage : Serial number of device cannot be changed once ZTP is completed
+wbasp2-02700s-32092847e011,2c23f28e-6498-48f6-a60c-031ec7445518,FAILED,Failed at DeviceWorkflowStage : Serial number of device cannot be changed once ZTP is completed
+wbasp2-02482s-32114627e018,6be6f0f3-9aa3-4987-9f8f-79951ec3bed3,FAILED,Failed at DeviceWorkflowStage : Serial number of device cannot be changed once ZTP is completed
+wbasp2-02524s-32113471e020,6469807b-20e9-40c9-9c4a-b9bb6305e906,FAILED,Failed at DeviceWorkflowStage : Serial number of device cannot be changed once ZTP is completed
+wbasp2-02468s-32093131e011,2020af64-5d69-49b1-94df-4763a3f271ae,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01013s-32093171e016,664ebe28-1be1-4a3a-ae5b-82b784167b67,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-04848s-32161785e018,e2eb3dc5-acde-440f-82e4-6a19f36cccc0,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-02540s-32093003e011,54eb0c5f-df1b-4867-b45a-bb7054db3f70,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01536s-32112925e012,0aceb689-8aca-4e29-a3b3-16e608d5e033,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-07860s-32017491e024,176da9b1-66b5-4981-809d-0da0f5e71008,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01504s-32093045e020,c728cf0f-d458-4915-aaa3-2379e17c3593,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01864s-32113595e010,a5c5f670-4774-434b-ae86-4c331f53e184,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-06194s-32110191e042,edf9ef09-3243-4ed5-9e4e-7059078b4b0c,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-05713s-32092857e013,db1e06d4-773d-4abf-99c4-4bc043327b58,FAILED,Failed to commit template to appliance due to DirectorRestAPIException{errorCode=500 INTERNAL_SERVER_ERROR, errorDetails=ErrorDetails{timestamp=1699577559669, status=500, error='"Internal Server Error"', exception='com.versa.vnms.cdbadaptor.common.exception.ProcessingFailureException', message='Following device are not found in Database: [wbasp2-05713s-32092857e013]', path='/vnms/template/applyTemplate/wbacntrl_wbasp2-05713s-32092857e013/devices'}, errorResponse='null'}
+wbasp2-02012s-32093005e024,d3585d80-30a1-4664-bcec-229a572a90c0,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-09461s-32046237e022,a8e40968-dc34-4b94-b853-50c4e59fd87e,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-11056s-32113563e013,805c30bf-9355-4a74-9bf7-61138ce543bd,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-03024s-32113363e016,6b9813e0-bbb0-48df-b82d-36dd3b4b7588,FAILED,Failed to commit template to appliance
+wbasp2-03813s-32162047e017,80df6a02-4412-460b-86ee-fc0642042dd4,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01532s-32065023e012,ebe5dfab-a026-4331-91f9-884b7c030fef,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-07120s-32112389e022,58fb4383-0ea0-476c-b9e6-6660c3d0815a,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-04202s-32161947e018,657944e4-5690-4e07-9d4e-77c6a5f098a2,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-09154s-32046163e014,b651dd23-649c-47f2-80b8-dec4afab1b6a,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01685s-32095003e025,4728a891-b1f2-4d8f-963e-350435dc1776,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-03209s-32095051e025,84520625-541e-415c-bab5-0e1199aa0906,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-09635s-32159397e021,6d24ce60-e2aa-4c34-b2f3-6319bdd1e92a,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-02225s-32113543e009,d43d1fb4-bcdf-4e63-bc33-8259ac0b7157,SUCCESS,Publishing configuration to appliance is complete
+wbasp3-06470s-32036329e011,4d01c5b7-7c19-4480-875d-d5b649d693b7,SUCCESS,Publishing configuration to appliance is complete
+wbasp2-01056s-32160675e010,6f093859-07f9-4b65-92ff-e11be038d47f,SUCCESS,Publishing configuration to appliance is complete

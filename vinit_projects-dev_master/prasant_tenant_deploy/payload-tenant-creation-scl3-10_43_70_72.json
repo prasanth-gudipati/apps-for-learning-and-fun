@@ -1,0 +1,171 @@
+{
+    "name": "{{tenant_name}",
+    "description": "Fabric-Elite",
+    "parentTenantUUID": "02cb0fba-671c-4c23-b404-9c50602312f3",
+    "directors": [
+        "b7557f62-5c88-4a9c-9c9b-756e703fc29a"
+    ],
+    "defaultDirector": "b7557f62-5c88-4a9c-9c9b-756e703fc29a",
+    "status": true,
+    "solutionTiers": [
+        "Work-From-Home",
+        "Premier-Secure-SDWAN",
+        "Prime-Secure-SDWAN",
+        "Prime-SDWAN",
+        "Premier-Elite-SDWAN"
+    ],
+    "ztpType": "SERIAL_NO",
+    "uuid": "8ebb39fe-6242-4893-afed-67650cb2f708",
+    "roles": [
+        "9a17f649-cdf3-454a-93c7-e9f252a0172a",
+        "7e58b20d-121c-4425-91ea-f19a947473d2",
+        "2dcccff1-cd67-4e85-b576-2e060947f373",
+        "bb04f4b2-cae4-4734-8931-379fbbc2e583"
+    ],
+    "controllers": [
+        "e0a15376-eca0-4021-96f1-fa2f4491548c",
+        "4157112c-f3a7-4c50-8866-b8f013c008d3"
+    ],
+    "authenticationType": "PSK",
+    "caInDataCenter": false,
+    "saseProductInfo": {
+        "usageType": "BANDWIDTH",
+        "usageTypeValue": null,
+        "bandwidthValue": 1,
+        "swgValue": null,
+        "vsaValue": null,
+        "swgVsaValue": null,
+        "disableDAI": false,
+        "swgStartDate": null,
+        "swgEndDate": null,
+        "vsaStartDate": null,
+        "vsaEndDate": null,
+        "swgVsaStartDate": null,
+        "swgVsaEndDate": null,
+        "saseProductTypeMode": "BUNDLE",
+        "bundleType": "VERSA_SASE_ELITE_BUNDLE",
+        "bandwidthAddons": null,
+        "addonsAdditionalInfo": {
+            "type": "SASE_PRODUCT_ADDONS_ADDITIONAL_INFO",
+            "value": {
+                "featureInfos": [
+                    {
+                        "regionInfo": {
+                            "uuid": "eeda0882-7d6e-4793-9791-996b9b97fa64",
+                            "name": "APAC-BGL"
+                        },
+                        "numberOfGateways": 1,
+                        "atpAuthTokenExpiryTimeInDays": 0,
+                        "rbiAuthTokenExpiryTimeInDays": 0
+                    },
+                    {
+                        "regionInfo": {
+                            "uuid": "52b1db9f-2135-4888-8cb9-aba18619931a",
+                            "name": "Default"
+                        },
+                        "numberOfGateways": 1,
+                        "atpAuthTokenExpiryTimeInDays": 0,
+                        "rbiAuthTokenExpiryTimeInDays": 0
+                    }
+                ]
+            }
+        },
+        "preLogonEnabled": null,
+        "alacarteList": null,
+        "webLogs": "ANALYTICS",
+        "dnsLogs": "ANALYTICS",
+        "cgnatLogs": "ANALYTICS",
+        "fwLogs": "ANALYTICS",
+        "saseProductAdditionalInfo": null
+    },
+    "regionInfos": [
+        {
+            "regionUUID": "eeda0882-7d6e-4793-9791-996b9b97fa64",
+            "regionName": "APAC-BGL",
+            "bandwidth": 0,
+            "saseProductInfo": null,
+            "selectedGateways": [
+                {
+                    "tenantSaseGatewayVPNInfos": [
+                        {
+                            "vpnName": "{{tenant_name}-Enterprise",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.12.1.0/24"
+                                }
+                            ]
+                        }
+                    ],
+                    "saseGatewayUUID": "33dc329d-d2a2-44bc-85c3-62ed27c45d30",
+                    "gatewayName": "SASE-GW-B2",
+                    "tenantCount": 5,
+                    "clientAddressPool": null,
+                    "gatewayLabels": [
+                        "APAC-BGL",
+                        "GLOBAL",
+                        "BEST"
+                    ],
+                    "portalEnabled": true,
+                    "directorClusterUUID": null,
+                    "directorApplianceUUID": null,
+                    "fqdn": null,
+                    "allocatedBandwidth": null
+                }
+            ]
+        },
+        {
+            "regionUUID": "52b1db9f-2135-4888-8cb9-aba18619931a",
+            "regionName": "Default",
+            "bandwidth": 0,
+            "saseProductInfo": null,
+            "selectedGateways": [
+                {
+                    "tenantSaseGatewayVPNInfos": [
+                        {
+                            "vpnName": "{{tenant_name}-Enterprise",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.11.1.0/24"
+                                }
+                            ]
+                        }
+                    ],
+                    "saseGatewayUUID": "a5438cc6-5c25-4e50-b262-606e594aeedd",
+                    "gatewayName": "SASE-GW-Br1",
+                    "tenantCount": 9,
+                    "clientAddressPool": null,
+                    "gatewayLabels": [
+                        "Default",
+                        "GLOBAL",
+                        "BEST"
+                    ],
+                    "portalEnabled": true,
+                    "directorClusterUUID": null,
+                    "directorApplianceUUID": null,
+                    "fqdn": null,
+                    "allocatedBandwidth": null
+                }
+            ]
+        }
+    ],
+    "saseEnabled": true,
+    "sdwanEnabled": false,
+    "mSPEnabled": false,
+    "mobilityEnabled": false,
+    "gatewayType": "SHARED",
+    "internetProtectionRulesMaximum": 500,
+    "maxTunnels": 100,
+    "privateAppProtectionRulesMaximum": 50,
+    "saseEnterpriseNames": [
+        "{{tenant_name}",
+        "fabric-elite"
+    ],
+    "globalId": 19,
+    "appliancePreferredVersion": null,
+    "certificateAuthorityVO": null,
+    "formMode": "EDIT",
+    "deploy": true,
+    "tenantUuid": "8ebb39fe-6242-4893-afed-67650cb2f708"
+}
