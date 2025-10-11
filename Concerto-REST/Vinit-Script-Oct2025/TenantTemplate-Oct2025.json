@@ -1,0 +1,255 @@
+{
+    "name": "{{TENANT_NAME}}",
+    "version": "1",
+    "sdwanEnabled": true,
+    "saseProductInfo": {
+        "usageType": "BANDWIDTH",
+        "bandwidthValue": "{{BANDWIDTH_VALUE}}",
+        "saseProductTypeMode": "BUNDLE",
+        "bundleType": "VERSA_SASE_ELITE_BUNDLE",
+        "disableDAI": false,
+        "bandwidthAddons": [
+            "API_DATA_PROTECTION",
+            "USER_AND_ENTITY_BEHAVIOR_ANALYTICS",
+            "ADVANCE_THREAT_PROTECTION"
+        ],
+        "fwLogs": "ANALYTICS",
+        "webLogs": "ANALYTICS",
+        "dnsLogs": "ANALYTICS",
+        "cgnatLogs": "ANALYTICS"
+    },
+    "originalStatus": {
+        "status": true,
+        "roles": [
+            "3c18b9ad-49b7-4e43-9851-7abac83e44ce",
+            "9f7e9603-4985-4818-80d9-f420ef1e8c52",
+            "3fdce7a8-084e-45f9-b888-7e5d552c3c30",
+            "209c357a-f156-49cb-a78b-e84b92f204f1"
+        ]
+    },
+    "description": "{{DESCRIPTION}}",
+    "parentTenantUUID": "e58ff324-bce3-4079-9af0-6a8668b01d70",
+    "directors": [
+        "2f745b97-7204-42fe-9e61-821ac614b469",
+        "000114a0-8d3a-46eb-a245-0514c236a132",
+        "e5e000d1-8407-49a1-a071-a3578fd42794"
+    ],
+    "status": true,
+    "resources": [
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//Copy_of_hcn1-bmp-pro-lan0-Redis_Policies-security-1",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//debug_hub1-bmp-VD2Concerto-1",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hcn1-bmp-pro-lan0-Redis_Policies-security-4",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hcn1-bmp-pro-lan0-Redis_Policies-19",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hcn1-bmp-pro-lan0-Security-17",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hcn1-bmp-pro-lan0-6",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hcn1-bmp-pro-lan0-vlan-5",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hcn2-bmp-pro-lan0-vlan-AA-5",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hub_or_hcn1-AA-bmp-pro-lan0-2",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hub_or_hcn1-bmp-pro-lan0-2",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hub_or_hcn2-bmp-pro-lan0-debug-1",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hub_or_hcn2-bmp-pro-lan0-1",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//hub1-bmp-VD2Concerto-2",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//spk1-bmp-pro-lan0-130",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//spk2-bmp-pro-lan0-dhcp-4",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Basic//spk2-bmp-pro-lan0-staticWAN-4",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Standard//hcn2-SMP-4",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Standard//hcn3-SMP-3WANs-4",
+        "ConfigurationLifecycleGraph/PROFILES/Master Profiles/Standard//spk2-SMP-118"
+    ],
+    "controllers": [
+        "deda250f-f483-4fad-82fa-f1de0f9eac1d",
+        "cb76bc95-f8fa-4ec3-ba82-f6a87d8d469f",
+        "250447f0-a0d9-49fc-bfc5-670e258eb424",
+        "8efdd7be-3fa2-4cb9-a1cc-152cd79ff18b",
+        "3861037d-fbdb-4127-93df-9582aa2a8bcf",
+        "26fc6004-23ac-4135-8548-443cf0457b15"
+    ],
+    "roles": [
+        "3c18b9ad-49b7-4e43-9851-7abac83e44ce",
+        "9f7e9603-4985-4818-80d9-f420ef1e8c52",
+        "3fdce7a8-084e-45f9-b888-7e5d552c3c30",
+        "209c357a-f156-49cb-a78b-e84b92f204f1"
+    ],
+    "defaultDirector": "2f745b97-7204-42fe-9e61-821ac614b469",
+    "authenticationType": "PSK",
+    "ztpType": "SERIAL_NO",
+    "saseEnabled": true,
+    "mSPEnabled": false,
+    "gatewayType": "SHARED",
+    "regionInfos": [
+        {
+            "regionName": "Reg10-West",
+            "regionUUID": "3ed4a9c9-87fe-4e35-b118-fc66a1a6dc1b",
+            "selectedGateways": [
+                {
+                    "saseGatewayUUID": "0d1a0201-7f32-4e6b-81b5-331a394e6323",
+                    "gatewayName": "SASE-GW13-br3",
+                    "tenantCount": 1,
+                    "gatewayLabels": [
+                        "Reg10-West",
+                        "Global"
+                    ],
+                    "portalEnabled": true,
+                    "tenantSaseGatewayVPNInfos": [
+                        {
+                            "vpnName": "{{TENANT_NAME}}-Enterprise",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.3.1.0/24"
+                                }
+                            ]
+                        },
+                        {
+                            "vpnName": "{{TENANT_NAME}}-LAN1",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.3.11.0/24"
+                                },
+                                {
+                                    "poolName": "Pool-2",
+                                    "poolPrefix": "10.3.12.0/24"
+                                }
+                            ]
+                        }
+                    ],
+                    "expanded": true,
+                    "allocatedBandwidth": "999",
+                    "committedBandwidth": "777"
+                },
+                {
+                    "saseGatewayUUID": "77dddec8-33f9-4c1d-8eab-09139353e254",
+                    "gatewayName": "SASE-GW-Br3-TB230",
+                    "tenantCount": 1,
+                    "gatewayLabels": [
+                        "Reg10-West",
+                        "Global"
+                    ],
+                    "portalEnabled": true,
+                    "tenantSaseGatewayVPNInfos": [
+                        {
+                            "vpnName": "{{TENANT_NAME}}-Enterprise",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.13.1.0/24"
+                                }
+                            ]
+                        },
+                        {
+                            "vpnName": "{{TENANT_NAME}}-LAN1",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.13.11.0/24"
+                                },
+                                {
+                                    "poolName": "Pool-2",
+                                    "poolPrefix": "10.13.12.0/24"
+                                }
+                            ]
+                        }
+                    ],
+                    "expanded": true,
+                    "allocatedBandwidth": "999",
+                    "committedBandwidth": "777"
+                }
+            ],
+            "selected": true
+        },
+        {
+            "regionName": "Reg20-East",
+            "regionUUID": "f88551e6-e25f-4ba2-98ec-c1f7a8c42f71",
+            "selected": true,
+            "selectedGateways": [
+                {
+                    "saseGatewayUUID": "10b9ae02-4757-498a-80d3-5819e72d9332",
+                    "gatewayName": "SASE-GW-Br4-TB230",
+                    "tenantCount": 1,
+                    "gatewayLabels": [
+                        "Reg20-East",
+                        "Global"
+                    ],
+                    "portalEnabled": true,
+                    "tenantSaseGatewayVPNInfos": [
+                        {
+                            "vpnName": "{{TENANT_NAME}}-Enterprise",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.14.1.0/24"
+                                }
+                            ]
+                        },
+                        {
+                            "vpnName": "{{TENANT_NAME}}-LAN1",
+                            "tenantSaseGatewayVPNClientPoolInfos": [
+                                {
+                                    "poolName": "Pool-1",
+                                    "poolPrefix": "10.14.11.0/24"
+                                },
+                                {
+                                    "poolName": "Pool-2",
+                                    "poolPrefix": "10.14.12.0/24"
+                                }
+                            ]
+                        }
+                    ],
+                    "expanded": true,
+                    "allocatedBandwidth": "888",
+                    "committedBandwidth": "400"
+                }
+            ]
+        }
+    ],
+    "internetProtectionRulesMaximum": 500,
+    "privateAppProtectionRulesMaximum": 50,
+    "licenseYear": "{{LICENSE_YEAR}}",
+    "saseResourceOverwrite": false,
+    "globalId": "{{GLOBAL_ID}}",
+    "solutionTiers": [
+        "Prime-SDWAN",
+        "Prime-Secure-SDWAN",
+        "Premier-Secure-SDWAN",
+        "Premier-Elite-SDWAN"
+    ],
+    "saseEnterpriseNames": [
+        "{{TENANT_NAME}}"
+    ],
+    "nameMappings": [
+        {
+            "parentMapping": "LAN3",
+            "childMapping": "{{TENANT_NAME}}-LAN3",
+            "resourceKey": "VPN_NAME",
+            "isGuestVpn": false
+        },
+        {
+            "parentMapping": "LAN2",
+            "childMapping": "{{TENANT_NAME}}-LAN2",
+            "resourceKey": "VPN_NAME",
+            "isGuestVpn": false
+        },
+        {
+            "parentMapping": "LAN1",
+            "childMapping": "{{TENANT_NAME}}-LAN1",
+            "resourceKey": "VPN_NAME",
+            "isGuestVpn": false
+        },
+        {
+            "parentMapping": "provider-org-Enterprise",
+            "childMapping": "{{TENANT_NAME}}-Enterprise",
+            "resourceKey": "VPN_NAME",
+            "isGuestVpn": false
+        },
+        {
+            "parentMapping": "provider-org-vr",
+            "childMapping": "{{TENANT_NAME}}-vr",
+            "resourceKey": "VPN_NAME",
+            "isGuestVpn": false
+        }
+    ],
+    "maxTunnels": "{{MAX_TUNNELS}}",
+    "formMode": "CREATE",
+    "deploy": true
+}

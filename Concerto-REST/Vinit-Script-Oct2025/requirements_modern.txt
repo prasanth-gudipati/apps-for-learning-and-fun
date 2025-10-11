@@ -1,0 +1,38 @@
+# Modern REST API Client Requirements
+# Updated for Python 3.9+ with latest package versions (October 2025)
+
+# Core HTTP and Async
+aiohttp>=3.9.0           # Modern async HTTP client/server framework
+asyncio-throttle>=1.0.0  # Rate limiting for async operations
+
+# Data Processing and Validation  
+pandas>=2.1.0           # Powerful data analysis and manipulation
+pydantic>=2.4.0         # Data validation using Python type hints
+jsonpath-ng>=1.6.0      # JSONPath implementation (replaces old jsonpath)
+
+# Template Engine
+jinja2>=3.1.0          # Modern template engine
+
+# Logging and CLI
+loguru>=0.7.0          # Modern logging library (replaces standard logging)
+rich>=13.6.0           # Rich text and beautiful formatting for terminal
+click>=8.1.0           # Command line interface creation kit
+
+# Security and Authentication
+cryptography>=41.0.0    # Cryptographic recipes and primitives
+paramiko>=3.3.0        # SSH2 protocol library
+
+# Configuration and Environment
+python-dotenv>=1.0.0   # Load environment variables from .env file
+pyyaml>=6.0.0          # YAML parser and emitter
+
+# Development and Testing (optional)
+pytest>=7.4.0          # Testing framework
+pytest-asyncio>=0.21.0 # Async testing support
+black>=23.9.0          # Code formatter
+mypy>=1.5.0            # Static type checker
+ruff>=0.0.290          # Fast Python linter
+
+# Optional: Enhanced features
+httpx>=0.25.0          # Alternative modern HTTP client (if preferred over aiohttp)
+tenacity>=8.2.0        # Retry library for robust API calls
