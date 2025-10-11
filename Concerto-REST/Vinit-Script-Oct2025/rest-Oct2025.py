@@ -70,10 +70,11 @@ class RestApi(object):
                 cookies=response.cookies)
 
         if int(int(session.status_code)/100) != 2:
+            self.logger.console_log(f'Login Failed: {session.status_code} - {session.reason}', "ERROR")
             self.logger.error_log('Api Failed')
             self.logger.error_log('Api Response Status code: %s' % session.status_code)
             self.logger.error_log('Api Response Reason: %s' % session.reason)
-            self.logger.error_log('Api Response Text: %s' % json.dumps(json.loads(session.text),indent=4))
+            self.logger.payload_log('LOGIN ERROR RESPONSE', json.dumps(json.loads(session.text), indent=4), "ERROR")
             return sys.exit(1)
 
         self.SESSION_COOKIE = session.cookies
@@ -86,27 +87,39 @@ class RestApi(object):
         '''
         Helper to execute api's
         '''
+        # Console logs (short info only)
+        self.logger.console_log(f'Executing API: {method} {url}')
+        
+        # File logs (detailed info)
         self.logger.info_log('Executing Api : %s' % url)
         self.logger.info_log('Api Method : %s' % method)
-        self.logger.info_log('Api Header : %s' % json.dumps(self.headers,indent=4))
-        try:
-            data_dict = json.loads(data)
-            self.logger.info_log('Api data : %s' % json.dumps(data_dict,indent=4))
-        except Exception:
-            self.logger.info_log('Api data : %s' % json.dumps(data,indent=4))
+        
+        # Log headers and data to payload log file (not console)
+        self.logger.payload_log('API REQUEST HEADERS', json.dumps(self.headers, indent=4))
+        
+        if data:
+            try:
+                data_dict = json.loads(data)
+                self.logger.payload_log('API REQUEST PAYLOAD', json.dumps(data_dict, indent=4))
+            except Exception:
+                self.logger.payload_log('API REQUEST PAYLOAD (RAW)', str(data))
 
         resp = requests.request(method, url, headers=self.headers, data=data,verify=False,cookies=self.SESSION_COOKIE)
         if int(int(resp.status_code)/100) != 2:
+            self.logger.console_log(f'API Failed: {resp.status_code} - {resp.reason}', "ERROR")
             self.logger.error_log('Api Failed')
             self.logger.error_log('Api Response Status code: %s' % resp.status_code)
             self.logger.error_log('Api Response Reason: %s' % resp.reason)
-            self.logger.error_log('Api Response Text: %s' % json.dumps(json.loads(resp.text),indent=4))
+            if resp.text:
+                self.logger.payload_log('API ERROR RESPONSE', json.dumps(json.loads(resp.text), indent=4), "ERROR")
             return False
         else:
+            self.logger.console_log(f'API Succeeded: {resp.status_code}')
             self.logger.info_log('Api Succeeded')
             self.logger.info_log('Api Response Status code: %s' % resp.status_code)
             self.logger.info_log('Api Response Reason: %s' % resp.reason)
-            self.logger.info_log('Api Response Text: %s' % json.dumps(json.loads(resp.text),indent=4))
+            if resp.text:
+                self.logger.payload_log('API SUCCESS RESPONSE', json.dumps(json.loads(resp.text), indent=4))
             return resp
 
     def generate_url(self,api):
@@ -551,6 +564,10 @@ class RestApi(object):
             sys.exit(1)
         task_id = [ *json.loads(resp.text).values() ][0]
         
+        self.logger.console_log('Waiting 1 minute before checking tenant publish status...')
+        self.logger.info_log('Adding 1 minute delay before checking publish status')
+        time.sleep(60)  # Wait 1 minute (60 seconds)
+        
         self.logger.info_log('Check publish for tenant')
         if not self.check_task_status(task_id):
             sys.exit(1)
@@ -577,15 +594,15 @@ if __name__ == '__main__':
     parser.add_argument('--global-id',
                         help='Global ID for tenant creation (overrides JSON file value)',
                         type=int,
-                        default=45)
+                        default=47)
     parser.add_argument('--tenant-name',
                         help='Tenant name (overrides JSON file value)',
                         type=str,
-                        default="Script-Tenant-45")
+                        default=None)
     parser.add_argument('--description',
                         help='Tenant description (overrides JSON file value)',
                         type=str,
-                        default="Script-Tenant-45 description")
+                        default=None)
     parser.add_argument('--bandwidth',
                         help='SASE bandwidth value (overrides JSON file value)',
                         type=int,
@@ -598,10 +615,38 @@ if __name__ == '__main__':
                         help='License year (overrides JSON file value)',
                         type=str,
                         default="2019")
+    parser.add_argument('--sdwan-enabled',
+                        help='Enable SDWAN functionality (default: True)',
+                        action='store_true',
+                        default=True)
+    parser.add_argument('--no-sdwan-enabled',
+                        help='Disable SDWAN functionality',
+                        action='store_true',
+                        default=False)
+    parser.add_argument('--sase-enabled',
+                        help='Enable SASE functionality (default: True)',
+                        action='store_true', 
+                        default=True)
+    parser.add_argument('--no-sase-enabled',
+                        help='Disable SASE functionality',
+                        action='store_true',
+                        default=False)
     parser.add_argument('--use-static-json',
                         help='Use static JSON file instead of template processing',
                         action='store_true')
     args = parser.parse_args()
+    
+    # Set default tenant name dynamically based on global-id if not provided
+    if args.tenant_name is None:
+        args.tenant_name = f"Script-Tenant-{args.global_id}"
+    
+    # Set default description dynamically based on tenant name if not provided
+    if args.description is None:
+        args.description = f"{args.tenant_name} description"
+    
+    # Handle boolean logic for enable/disable flags
+    sdwan_enabled = args.sdwan_enabled and not args.no_sdwan_enabled
+    sase_enabled = args.sase_enabled and not args.no_sase_enabled
     
     ip = args.ip
     user = args.user
@@ -614,7 +659,7 @@ if __name__ == '__main__':
     if action == 'fetch_uuid':
         # Existing functionality - fetch tenant UUID
         tenant_uuid = restHdl.fetch_tenant_uuid('CNN1001')
-        print(f"Tenant UUID: {tenant_uuid}")
+        restHdl.logger.console_log(f"Tenant UUID: {tenant_uuid}")
     
     elif action == 'create_tenant':
         # New functionality - create tenant from JSON payload
@@ -623,7 +668,9 @@ if __name__ == '__main__':
                 # Read static JSON payload file directly (legacy mode)
                 with open(payload_file, 'r') as f:
                     tenant_payload = json.load(f)
+                restHdl.logger.console_log(f'Using static JSON file: {payload_file}')
                 restHdl.logger.info_log(f'Using static JSON file: {payload_file}')
+                restHdl.logger.payload_log('STATIC JSON PAYLOAD', json.dumps(tenant_payload, indent=4))
             else:
                 # Default: Process template file with variable substitution
                 with open(payload_file, 'r') as f:
@@ -636,7 +683,9 @@ if __name__ == '__main__':
                     'BANDWIDTH_VALUE': args.bandwidth,
                     'GLOBAL_ID': args.global_id,
                     'LICENSE_YEAR': args.license_year,
-                    'MAX_TUNNELS': args.max_tunnels
+                    'MAX_TUNNELS': args.max_tunnels,
+                    'SDWAN_ENABLED': str(sdwan_enabled).lower(),
+                    'SASE_ENABLED': str(sase_enabled).lower()
                 }
                 
                 # Replace template variables
@@ -644,14 +693,22 @@ if __name__ == '__main__':
                     placeholder = f'{{{{{var_name}}}}}'
                     template_content = template_content.replace(placeholder, str(var_value))
                 
+                # Console log (short info)
+                restHdl.logger.console_log(f'Template processing - Variables: {list(template_vars.keys())}')
+                
+                # File log (detailed info)
                 restHdl.logger.info_log(f'Template processing mode - Variables applied: {template_vars}')
                 
                 # Parse the processed template as JSON
                 tenant_payload = json.loads(template_content)
+                
+                # Log the final payload to file only (not console)
+                restHdl.logger.payload_log('FINAL TENANT PAYLOAD', json.dumps(tenant_payload, indent=4))
             
             # Template mode handles all parameters via variable substitution
             # No additional overrides needed since template variables are already applied
             
+            restHdl.logger.console_log(f'Creating tenant: {tenant_payload.get("name", "Unknown")} (Global ID: {tenant_payload.get("globalId", "Not set")})')
             restHdl.logger.info_log(f'Creating tenant from template: {payload_file}')
             restHdl.logger.info_log(f'Tenant name: {tenant_payload.get("name", "Unknown")}')
             restHdl.logger.info_log(f'Global ID: {tenant_payload.get("globalId", "Not set")}')
@@ -663,16 +720,16 @@ if __name__ == '__main__':
             result = restHdl.create_tenant(payload_json)
             
             if result:
-                print(f"Successfully created tenant: {tenant_payload.get('name', 'Unknown')}")
+                restHdl.logger.console_log(f"✓ Successfully created tenant: {tenant_payload.get('name', 'Unknown')}")
             else:
-                print("Failed to create tenant")
+                restHdl.logger.console_log("✗ Failed to create tenant", "ERROR")
                 
         except FileNotFoundError:
-            print(f"Error: Payload file '{payload_file}' not found")
+            restHdl.logger.console_log(f"Error: Payload file '{payload_file}' not found", "ERROR")
             sys.exit(1)
         except json.JSONDecodeError as e:
-            print(f"Error: Invalid JSON in payload file '{payload_file}': {e}")
+            restHdl.logger.console_log(f"Error: Invalid JSON in payload file '{payload_file}': {e}", "ERROR")
             sys.exit(1)
         except Exception as e:
-            print(f"Error creating tenant: {e}")
+            restHdl.logger.console_log(f"Error creating tenant: {e}", "ERROR")
             sys.exit(1)
