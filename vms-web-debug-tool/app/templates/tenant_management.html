@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMS Debug Tool - Tenant Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-tools"></i> VMS Debug Tool
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('tenant_management') }}">
+                            <i class="fas fa-users"></i> Tenants
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('redis_explorer') }}">
+                            <i class="fas fa-database"></i> Redis Explorer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('system_logs') }}">
+                            <i class="fas fa-file-alt"></i> System Logs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-users"></i> Tenant Management</h2>
+                        <p class="text-muted">Manage and monitor tenant configurations and Redis data</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="refreshTenantData()">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                        <button class="btn btn-success" onclick="exportTenantData()">
+                            <i class="fas fa-download"></i> Export All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="tenant-search" placeholder="Search tenants by name..."
+                        onkeyup="filterTenants()">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select" id="service-filter" onchange="filterTenants()">
+                    <option value="">All Services</option>
+                    <option value="redis">Has Redis</option>
+                    <option value="no-redis">No Redis</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select" id="sort-by" onchange="sortTenants()">
+                    <option value="name">Sort by Name</option>
+                    <option value="services">Sort by Service Count</option>
+                    <option value="keys">Sort by Redis Keys</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tenant Statistics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="total-tenants">0</h4>
+                                <small>Total Tenants</small>
+                            </div>
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="redis-tenants">0</h4>
+                                <small>With Redis</small>
+                            </div>
+                            <i class="fas fa-database fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="total-services">0</h4>
+                                <small>Total Services</small>
+                            </div>
+                            <i class="fas fa-network-wired fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="total-keys">0</h4>
+                                <small>Redis Keys</small>
+                            </div>
+                            <i class="fas fa-key fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tenant List -->
+        <div class="row">
+            <div class="col-12">
+                <div id="tenant-container">
+                    <!-- Tenants will be loaded here -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Loading tenant data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenant Detail Modal -->
+    <div class="modal fade" id="tenantDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user"></i>
+                        <span id="modal-tenant-name">Tenant Details</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Services Column -->
+                        <div class="col-lg-4">
+                            <h6><i class="fas fa-network-wired"></i> Services</h6>
+                            <div id="modal-services" class="mb-3">
+                                <!-- Services will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Redis Info Column -->
+                        <div class="col-lg-4">
+                            <h6><i class="fas fa-database"></i> Redis Information</h6>
+                            <div id="modal-redis-info" class="mb-3">
+                                <!-- Redis info will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Redis Keys Column -->
+                        <div class="col-lg-4">
+                            <h6><i class="fas fa-key"></i> Redis Keys</h6>
+                            <div id="modal-redis-keys" class="mb-3">
+                                <!-- Redis keys will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="exportTenantDetails()">
+                        <i class="fas fa-download"></i> Export Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/tenant-management.js') }}"></script>
+</body>
+
+</html>

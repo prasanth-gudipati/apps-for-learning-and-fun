@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMS Debug Tool - Redis Explorer</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-tools"></i> VMS Debug Tool
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('tenant_management') }}">
+                            <i class="fas fa-users"></i> Tenants
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('redis_explorer') }}">
+                            <i class="fas fa-database"></i> Redis Explorer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('system_logs') }}">
+                            <i class="fas fa-file-alt"></i> System Logs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-database"></i> Redis Explorer</h2>
+                        <p class="text-muted">Browse and analyze Redis keys across all tenants</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="refreshRedisData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-success" onclick="exportRedisData()">
+                            <i class="fas fa-download"></i> Export All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4">
+            <div class="col-lg-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="key-search" placeholder="Search Redis keys..."
+                        onkeyup="filterKeys()">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select" id="tenant-filter" onchange="filterKeys()">
+                    <option value="">All Tenants</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select" id="type-filter" onchange="filterKeys()">
+                    <option value="">All Types</option>
+                    <option value="string">String</option>
+                    <option value="hash">Hash</option>
+                    <option value="list">List</option>
+                    <option value="set">Set</option>
+                    <option value="zset">Sorted Set</option>
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <select class="form-select" id="sort-keys" onchange="sortKeys()">
+                    <option value="name">Sort by Name</option>
+                    <option value="tenant">Sort by Tenant</option>
+                    <option value="type">Sort by Type</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Redis Statistics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="total-keys">0</h4>
+                                <small>Total Keys</small>
+                            </div>
+                            <i class="fas fa-key fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="unique-tenants">0</h4>
+                                <small>Tenants with Redis</small>
+                            </div>
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="filtered-keys">0</h4>
+                                <small>Filtered Keys</small>
+                            </div>
+                            <i class="fas fa-filter fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="key-types">0</h4>
+                                <small>Unique Types</small>
+                            </div>
+                            <i class="fas fa-tags fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redis Keys Grid -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list"></i> Redis Keys
+                            <span class="badge bg-primary ms-2" id="keys-count">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="redis-keys-container">
+                            <!-- Keys will be loaded here -->
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Loading Redis keys...</p>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Redis keys pagination" id="pagination-nav" style="display: none;">
+                            <ul class="pagination justify-content-center" id="pagination-list">
+                                <!-- Pagination will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Detail Modal -->
+    <div class="modal fade" id="keyDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-key"></i>
+                        <span id="modal-key-name">Redis Key Details</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <h6><i class="fas fa-info-circle"></i> Key Information</h6>
+                            <div id="modal-key-info">
+                                <!-- Key info will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <h6><i class="fas fa-code"></i> Key Value</h6>
+                            <div id="modal-key-value">
+                                <!-- Key value will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="copyKeyValue()">
+                        <i class="fas fa-copy"></i> Copy Value
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="exportKeyData()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Analysis Modal -->
+    <div class="modal fade" id="keyAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-chart-bar"></i> Redis Key Analysis
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="key-analysis-content">
+                        <!-- Analysis content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js for analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/redis-explorer.js') }}"></script>
+</body>
+
+</html>

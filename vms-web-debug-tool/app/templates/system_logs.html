@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMS Debug Tool - System Logs</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-tools"></i> VMS Debug Tool
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('tenant_management') }}">
+                            <i class="fas fa-users"></i> Tenants
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('redis_explorer') }}">
+                            <i class="fas fa-database"></i> Redis Explorer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('system_logs') }}">
+                            <i class="fas fa-file-alt"></i> System Logs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-file-alt"></i> System Logs</h2>
+                        <p class="text-muted">View and analyze VMS system status logs and command outputs</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="refreshLogs()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-success" onclick="exportLogs()">
+                            <i class="fas fa-download"></i> Export All
+                        </button>
+                        <button class="btn btn-danger" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4">
+            <div class="col-lg-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="log-search" placeholder="Search logs..."
+                        onkeyup="filterLogs()">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select" id="command-filter" onchange="filterLogs()">
+                    <option value="">All Commands</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <input type="date" class="form-control" id="date-filter" onchange="filterLogs()">
+            </div>
+            <div class="col-lg-2">
+                <select class="form-select" id="sort-logs" onchange="sortLogs()">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="command">By Command</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Log Statistics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="total-logs">0</h4>
+                                <small>Total Log Entries</small>
+                            </div>
+                            <i class="fas fa-list fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="unique-commands">0</h4>
+                                <small>Unique Commands</small>
+                            </div>
+                            <i class="fas fa-terminal fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="filtered-logs">0</h4>
+                                <small>Filtered Logs</small>
+                            </div>
+                            <i class="fas fa-filter fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 id="latest-run">Never</h4>
+                                <small>Latest Run</small>
+                            </div>
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Entries -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list"></i> Log Entries
+                                <span class="badge bg-primary ms-2" id="logs-count">0</span>
+                            </h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="toggleAutoRefresh()">
+                                    <i class="fas fa-play" id="auto-refresh-icon"></i>
+                                    <span id="auto-refresh-text">Auto Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="logs-container">
+                            <!-- Logs will be loaded here -->
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Loading system logs...</p>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Log entries pagination" id="pagination-nav" style="display: none;">
+                            <ul class="pagination justify-content-center" id="pagination-list">
+                                <!-- Pagination will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Detail Modal -->
+    <div class="modal fade" id="logDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt"></i>
+                        <span id="modal-log-title">Log Entry Details</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <h6><i class="fas fa-info-circle"></i> Log Information</h6>
+                            <div id="modal-log-info">
+                                <!-- Log info will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <h6><i class="fas fa-terminal"></i> Command Output</h6>
+                            <div id="modal-log-output">
+                                <!-- Log output will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="copyLogOutput()">
+                        <i class="fas fa-copy"></i> Copy Output
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="exportLogEntry()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/system-logs.js') }}"></script>
+</body>
+
+</html>
