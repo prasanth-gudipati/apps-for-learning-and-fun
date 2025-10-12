@@ -1,0 +1,648 @@
+#------
+Run time: 2025-10-11 17:40:41.421047
+
+#------
+
+kubectl get ns
+
+NAME               STATUS   AGE
+default            Active   192d
+ingress-nginx      Active   192d
+kube-flannel       Active   192d
+kube-node-lease    Active   192d
+kube-public        Active   192d
+kube-system        Active   192d
+message-server     Active   192d
+meta163            Active   15d
+metallb-system     Active   192d
+provider-org       Active   181d
+v-kafka-consumer   Active   182d
+v-kafka-producer   Active   186d
+van-connector      Active   191d
+
+#------
+
+kubectl get pods -A
+
+NAMESPACE          NAME                                          READY   STATUS             RESTARTS          AGE
+ingress-nginx      ingress-nginx-admission-create-zt5s7          0/1     Completed          0                 192d
+ingress-nginx      ingress-nginx-admission-patch-d6cp8           0/1     Completed          1                 192d
+ingress-nginx      ingress-nginx-controller-5c44d75cb-vbzld      1/1     Running            0                 15d
+kube-flannel       kube-flannel-ds-cbvgq                         1/1     Running            8 (15d ago)       192d
+kube-system        coredns-59fcccdf76-6skjg                      1/1     Running            0                 15d
+kube-system        coredns-59fcccdf76-bm225                      1/1     Running            0                 15d
+kube-system        etcd-vms1-tb163                               1/1     Running            12 (15d ago)      192d
+kube-system        kube-apiserver-vms1-tb163                     1/1     Running            12 (15d ago)      192d
+kube-system        kube-controller-manager-vms1-tb163            1/1     Running            28 (15d ago)      192d
+kube-system        kube-proxy-xxx6v                              1/1     Running            10                192d
+kube-system        kube-scheduler-vms1-tb163                     1/1     Running            28 (15d ago)      192d
+message-server     message-server-548d45d57f-d62nd               1/1     Running            0                 15d
+meta163            redis-5666f759dc-bfs2r                        1/1     Running            0                 15d
+meta163            third-party-authentication-688cbcd588-cj4zq   1/1     Running            0                 3d6h
+meta163            ueba-786959fcf8-sxzwj                         1/1     Running            0                 15d
+metallb-system     controller-7b9fdc46f4-4l5pv                   1/1     Running            0                 15d
+metallb-system     speaker-pgdz4                                 1/1     Running            24 (15d ago)      192d
+provider-org       asc-services-785ffb79bb-crjj8                 1/1     Running            0                 3d6h
+provider-org       redis-8bc8dd9f8-kbfsf                         1/1     Running            0                 15d
+provider-org       scim-connector-7f59dc9bdf-k8rvh               1/1     Running            1 (15d ago)       15d
+provider-org       ueba-75957b65f7-gk79l                         1/1     Running            0                 15d
+v-kafka-consumer   v-kafka-consumer-766b79cf8-2f59k              0/1     CrashLoopBackOff   922 (3m51s ago)   12d
+v-kafka-producer   v-kafka-producer-7b847c6785-tpgkc             1/1     Running            0                 15d
+van-connector      van-connector-7bf6786f4b-r8cjr                1/1     Running            0                 15d
+
+#------
+
+kubectl get pv
+
+NAME                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                        STORAGECLASS   REASON   AGE
+app-logs-volume-message-server-pvc          10Gi       RWO            Retain           Bound    message-server/app-logs-volume-message-server-pvc            manual                  192d
+app-logs-volume-meta163-pvc                 10Gi       RWO            Retain           Bound    meta163/app-logs-volume-meta163-pvc                          manual                  15d
+app-logs-volume-provider-org-pvc            10Gi       RWO            Retain           Bound    provider-org/app-logs-volume-provider-org-pvc                manual                  181d
+app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            Retain           Bound    v-kafka-consumer/app-logs-volume-v-kafka-consumer-pvc        manual                  182d
+app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            Retain           Bound    v-kafka-producer/app-logs-volume-v-kafka-producer-pvc        manual                  186d
+app-logs-volume-van-connector-pvc           10Gi       RWO            Retain           Bound    van-connector/app-logs-volume-van-connector-pvc              manual                  191d
+apps-volume-message-server-pvc              10Gi       RWO            Retain           Bound    message-server/apps-volume-message-server-pvc                manual                  192d
+apps-volume-meta163-pvc                     10Gi       RWO            Retain           Bound    meta163/apps-volume-meta163-pvc                              manual                  15d
+apps-volume-provider-org-pvc                10Gi       RWO            Retain           Bound    provider-org/apps-volume-provider-org-pvc                    manual                  181d
+apps-volume-v-kafka-consumer-pvc            10Gi       RWO            Retain           Bound    v-kafka-consumer/apps-volume-v-kafka-consumer-pvc            manual                  182d
+apps-volume-v-kafka-producer-pvc            10Gi       RWO            Retain           Bound    v-kafka-producer/apps-volume-v-kafka-producer-pvc            manual                  186d
+apps-volume-van-connector-pvc               10Gi       RWO            Retain           Bound    van-connector/apps-volume-van-connector-pvc                  manual                  191d
+public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            Retain           Bound    v-kafka-consumer/public-ca-ssl-volume-v-kafka-consumer-pvc   manual                  182d
+public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            Retain           Bound    v-kafka-producer/public-ca-ssl-volume-v-kafka-producer-pvc   manual                  186d
+redis-meta163-pvc                           10Gi       RWO            Retain           Bound    meta163/redis-meta163-pvc                                    manual                  15d
+redis-provider-org-pvc                      10Gi       RWO            Retain           Bound    provider-org/redis-provider-org-pvc                          manual                  181d
+redis-v-kafka-consumer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-consumer/redis-v-kafka-consumer-pvc                  manual                  182d
+redis-v-kafka-producer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-producer/redis-v-kafka-producer-pvc                  manual                  186d
+
+#------
+
+kubectl get pvc -A
+
+NAMESPACE          NAME                                        STATUS   VOLUME                                      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+message-server     app-logs-volume-message-server-pvc          Bound    app-logs-volume-message-server-pvc          10Gi       RWO            manual         192d
+message-server     apps-volume-message-server-pvc              Bound    apps-volume-message-server-pvc              10Gi       RWO            manual         192d
+meta163            app-logs-volume-meta163-pvc                 Bound    app-logs-volume-meta163-pvc                 10Gi       RWO            manual         15d
+meta163            apps-volume-meta163-pvc                     Bound    apps-volume-meta163-pvc                     10Gi       RWO            manual         15d
+meta163            redis-meta163-pvc                           Bound    redis-meta163-pvc                           10Gi       RWO            manual         15d
+provider-org       app-logs-volume-provider-org-pvc            Bound    app-logs-volume-provider-org-pvc            10Gi       RWO            manual         181d
+provider-org       apps-volume-provider-org-pvc                Bound    apps-volume-provider-org-pvc                10Gi       RWO            manual         181d
+provider-org       redis-provider-org-pvc                      Bound    redis-provider-org-pvc                      10Gi       RWO            manual         181d
+v-kafka-consumer   app-logs-volume-v-kafka-consumer-pvc        Bound    app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            manual         182d
+v-kafka-consumer   apps-volume-v-kafka-consumer-pvc            Bound    apps-volume-v-kafka-consumer-pvc            10Gi       RWO            manual         182d
+v-kafka-consumer   public-ca-ssl-volume-v-kafka-consumer-pvc   Bound    public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            manual         182d
+v-kafka-consumer   redis-v-kafka-consumer-pvc                  Bound    redis-v-kafka-consumer-pvc                  10Gi       RWO            manual         182d
+v-kafka-producer   app-logs-volume-v-kafka-producer-pvc        Bound    app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            manual         186d
+v-kafka-producer   apps-volume-v-kafka-producer-pvc            Bound    apps-volume-v-kafka-producer-pvc            10Gi       RWO            manual         186d
+v-kafka-producer   public-ca-ssl-volume-v-kafka-producer-pvc   Bound    public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            manual         186d
+v-kafka-producer   redis-v-kafka-producer-pvc                  Bound    redis-v-kafka-producer-pvc                  10Gi       RWO            manual         186d
+van-connector      app-logs-volume-van-connector-pvc           Bound    app-logs-volume-van-connector-pvc           10Gi       RWO            manual         191d
+van-connector      apps-volume-van-connector-pvc               Bound    apps-volume-van-connector-pvc               10Gi       RWO            manual         191d
+
+#------
+
+kubectl get cm -A
+
+NAMESPACE          NAME                                                    DATA   AGE
+default            kube-root-ca.crt                                        1      192d
+ingress-nginx      ingress-nginx-controller                                1      192d
+ingress-nginx      kube-root-ca.crt                                        1      192d
+kube-flannel       kube-flannel-cfg                                        2      192d
+kube-flannel       kube-root-ca.crt                                        1      192d
+kube-node-lease    kube-root-ca.crt                                        1      192d
+kube-public        cluster-info                                            1      192d
+kube-public        kube-root-ca.crt                                        1      192d
+kube-system        coredns                                                 1      192d
+kube-system        extension-apiserver-authentication                      6      192d
+kube-system        kube-apiserver-legacy-service-account-token-tracking    1      192d
+kube-system        kube-proxy                                              2      192d
+kube-system        kube-root-ca.crt                                        1      192d
+kube-system        kubeadm-config                                          1      192d
+kube-system        kubelet-config                                          1      192d
+message-server     kube-root-ca.crt                                        1      192d
+message-server     message-server-configmap                                1      192d
+meta163            kube-root-ca.crt                                        1      15d
+meta163            meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37            1      15d
+meta163            redis-configmap-meta163                                 1      15d
+meta163            third-party-auth-configmap-meta163                      1      3d6h
+meta163            ueba-configmap-meta163                                  1      15d
+metallb-system     kube-root-ca.crt                                        1      192d
+metallb-system     metallb-excludel2                                       1      192d
+provider-org       asc-services-configmap-provider-org                     1      122d
+provider-org       kube-root-ca.crt                                        1      181d
+provider-org       provider-org-0d75790c-7017-40b2-a029-955afa7cc071       1      179d
+provider-org       provider-org-16bb1e4d-5a8c-43b8-8431-d78a62431e80       1      180d
+provider-org       provider-org-37d6a346-e0ff-4dad-8cbe-c179ab307e14       1      181d
+provider-org       redis-configmap-provider-org                            1      181d
+provider-org       scim-connector-configmap-provider-org                   1      181d
+provider-org       ueba-configmap-provider-org                             1      179d
+v-kafka-consumer   kube-root-ca.crt                                        1      182d
+v-kafka-consumer   v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071   1      179d
+v-kafka-consumer   v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80   1      180d
+v-kafka-consumer   v-kafka-consumer-527c0808-e039-4ee4-9cbe-fc46efe6a325   1      181d
+v-kafka-consumer   v-kafka-consumer-90dfe393-5b7c-4f19-8913-24c3cd2420cd   1      182d
+v-kafka-consumer   v-kafka-consumer-configmap-v-kafka-consumer             1      182d
+v-kafka-consumer   v-kafka-consumer-d47e854b-c5d5-47f1-8b9b-8bda8307da37   1      15d
+v-kafka-producer   kube-root-ca.crt                                        1      186d
+v-kafka-producer   v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14   1      181d
+v-kafka-producer   v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761   1      182d
+v-kafka-producer   v-kafka-producer-configmap-v-kafka-producer             1      186d
+v-kafka-producer   v-kafka-producer-dd0a7dc8-8ded-4096-9982-eb343f969e3a   1      186d
+van-connector      kube-root-ca.crt                                        1      191d
+van-connector      van-connector-configmap                                 1      191d
+
+#------
+
+kubectl get svc -A |grep redis 
+
+meta163            redis                                ClusterIP      10.105.223.166   <none>          6379/TCP                       15d
+provider-org       redis                                ClusterIP      10.110.7.130     <none>          6379/TCP                       181d
+
+
+#------ End of run ------
+
+
+#------
+Run time: 2025-10-11 17:35:36.352158
+
+#------
+
+kubectl get ns
+
+NAME               STATUS   AGE
+default            Active   192d
+ingress-nginx      Active   192d
+kube-flannel       Active   192d
+kube-node-lease    Active   192d
+kube-public        Active   192d
+kube-system        Active   192d
+message-server     Active   192d
+meta163            Active   15d
+metallb-system     Active   192d
+provider-org       Active   181d
+v-kafka-consumer   Active   182d
+v-kafka-producer   Active   186d
+van-connector      Active   191d
+
+#------
+
+kubectl get pods -A
+
+NAMESPACE          NAME                                          READY   STATUS             RESTARTS          AGE
+ingress-nginx      ingress-nginx-admission-create-zt5s7          0/1     Completed          0                 192d
+ingress-nginx      ingress-nginx-admission-patch-d6cp8           0/1     Completed          1                 192d
+ingress-nginx      ingress-nginx-controller-5c44d75cb-vbzld      1/1     Running            0                 15d
+kube-flannel       kube-flannel-ds-cbvgq                         1/1     Running            8 (15d ago)       192d
+kube-system        coredns-59fcccdf76-6skjg                      1/1     Running            0                 15d
+kube-system        coredns-59fcccdf76-bm225                      1/1     Running            0                 15d
+kube-system        etcd-vms1-tb163                               1/1     Running            12 (15d ago)      192d
+kube-system        kube-apiserver-vms1-tb163                     1/1     Running            12 (15d ago)      192d
+kube-system        kube-controller-manager-vms1-tb163            1/1     Running            28 (15d ago)      192d
+kube-system        kube-proxy-xxx6v                              1/1     Running            10                192d
+kube-system        kube-scheduler-vms1-tb163                     1/1     Running            28 (15d ago)      192d
+message-server     message-server-548d45d57f-d62nd               1/1     Running            0                 15d
+meta163            redis-5666f759dc-bfs2r                        1/1     Running            0                 15d
+meta163            third-party-authentication-688cbcd588-cj4zq   1/1     Running            0                 3d6h
+meta163            ueba-786959fcf8-sxzwj                         1/1     Running            0                 15d
+metallb-system     controller-7b9fdc46f4-4l5pv                   1/1     Running            0                 15d
+metallb-system     speaker-pgdz4                                 1/1     Running            24 (15d ago)      192d
+provider-org       asc-services-785ffb79bb-crjj8                 1/1     Running            0                 3d6h
+provider-org       redis-8bc8dd9f8-kbfsf                         1/1     Running            0                 15d
+provider-org       scim-connector-7f59dc9bdf-k8rvh               1/1     Running            1 (15d ago)       15d
+provider-org       ueba-75957b65f7-gk79l                         1/1     Running            0                 15d
+v-kafka-consumer   v-kafka-consumer-766b79cf8-2f59k              0/1     CrashLoopBackOff   921 (3m55s ago)   12d
+v-kafka-producer   v-kafka-producer-7b847c6785-tpgkc             1/1     Running            0                 15d
+van-connector      van-connector-7bf6786f4b-r8cjr                1/1     Running            0                 15d
+
+#------
+
+kubectl get pv
+
+NAME                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                        STORAGECLASS   REASON   AGE
+app-logs-volume-message-server-pvc          10Gi       RWO            Retain           Bound    message-server/app-logs-volume-message-server-pvc            manual                  192d
+app-logs-volume-meta163-pvc                 10Gi       RWO            Retain           Bound    meta163/app-logs-volume-meta163-pvc                          manual                  15d
+app-logs-volume-provider-org-pvc            10Gi       RWO            Retain           Bound    provider-org/app-logs-volume-provider-org-pvc                manual                  181d
+app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            Retain           Bound    v-kafka-consumer/app-logs-volume-v-kafka-consumer-pvc        manual                  182d
+app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            Retain           Bound    v-kafka-producer/app-logs-volume-v-kafka-producer-pvc        manual                  186d
+app-logs-volume-van-connector-pvc           10Gi       RWO            Retain           Bound    van-connector/app-logs-volume-van-connector-pvc              manual                  191d
+apps-volume-message-server-pvc              10Gi       RWO            Retain           Bound    message-server/apps-volume-message-server-pvc                manual                  192d
+apps-volume-meta163-pvc                     10Gi       RWO            Retain           Bound    meta163/apps-volume-meta163-pvc                              manual                  15d
+apps-volume-provider-org-pvc                10Gi       RWO            Retain           Bound    provider-org/apps-volume-provider-org-pvc                    manual                  181d
+apps-volume-v-kafka-consumer-pvc            10Gi       RWO            Retain           Bound    v-kafka-consumer/apps-volume-v-kafka-consumer-pvc            manual                  182d
+apps-volume-v-kafka-producer-pvc            10Gi       RWO            Retain           Bound    v-kafka-producer/apps-volume-v-kafka-producer-pvc            manual                  186d
+apps-volume-van-connector-pvc               10Gi       RWO            Retain           Bound    van-connector/apps-volume-van-connector-pvc                  manual                  191d
+public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            Retain           Bound    v-kafka-consumer/public-ca-ssl-volume-v-kafka-consumer-pvc   manual                  182d
+public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            Retain           Bound    v-kafka-producer/public-ca-ssl-volume-v-kafka-producer-pvc   manual                  186d
+redis-meta163-pvc                           10Gi       RWO            Retain           Bound    meta163/redis-meta163-pvc                                    manual                  15d
+redis-provider-org-pvc                      10Gi       RWO            Retain           Bound    provider-org/redis-provider-org-pvc                          manual                  181d
+redis-v-kafka-consumer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-consumer/redis-v-kafka-consumer-pvc                  manual                  182d
+redis-v-kafka-producer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-producer/redis-v-kafka-producer-pvc                  manual                  186d
+
+#------
+
+kubectl get pvc -A
+
+NAMESPACE          NAME                                        STATUS   VOLUME                                      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+message-server     app-logs-volume-message-server-pvc          Bound    app-logs-volume-message-server-pvc          10Gi       RWO            manual         192d
+message-server     apps-volume-message-server-pvc              Bound    apps-volume-message-server-pvc              10Gi       RWO            manual         192d
+meta163            app-logs-volume-meta163-pvc                 Bound    app-logs-volume-meta163-pvc                 10Gi       RWO            manual         15d
+meta163            apps-volume-meta163-pvc                     Bound    apps-volume-meta163-pvc                     10Gi       RWO            manual         15d
+meta163            redis-meta163-pvc                           Bound    redis-meta163-pvc                           10Gi       RWO            manual         15d
+provider-org       app-logs-volume-provider-org-pvc            Bound    app-logs-volume-provider-org-pvc            10Gi       RWO            manual         181d
+provider-org       apps-volume-provider-org-pvc                Bound    apps-volume-provider-org-pvc                10Gi       RWO            manual         181d
+provider-org       redis-provider-org-pvc                      Bound    redis-provider-org-pvc                      10Gi       RWO            manual         181d
+v-kafka-consumer   app-logs-volume-v-kafka-consumer-pvc        Bound    app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            manual         182d
+v-kafka-consumer   apps-volume-v-kafka-consumer-pvc            Bound    apps-volume-v-kafka-consumer-pvc            10Gi       RWO            manual         182d
+v-kafka-consumer   public-ca-ssl-volume-v-kafka-consumer-pvc   Bound    public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            manual         182d
+v-kafka-consumer   redis-v-kafka-consumer-pvc                  Bound    redis-v-kafka-consumer-pvc                  10Gi       RWO            manual         182d
+v-kafka-producer   app-logs-volume-v-kafka-producer-pvc        Bound    app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            manual         186d
+v-kafka-producer   apps-volume-v-kafka-producer-pvc            Bound    apps-volume-v-kafka-producer-pvc            10Gi       RWO            manual         186d
+v-kafka-producer   public-ca-ssl-volume-v-kafka-producer-pvc   Bound    public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            manual         186d
+v-kafka-producer   redis-v-kafka-producer-pvc                  Bound    redis-v-kafka-producer-pvc                  10Gi       RWO            manual         186d
+van-connector      app-logs-volume-van-connector-pvc           Bound    app-logs-volume-van-connector-pvc           10Gi       RWO            manual         191d
+van-connector      apps-volume-van-connector-pvc               Bound    apps-volume-van-connector-pvc               10Gi       RWO            manual         191d
+
+#------
+
+kubectl get cm -A
+
+NAMESPACE          NAME                                                    DATA   AGE
+default            kube-root-ca.crt                                        1      192d
+ingress-nginx      ingress-nginx-controller                                1      192d
+ingress-nginx      kube-root-ca.crt                                        1      192d
+kube-flannel       kube-flannel-cfg                                        2      192d
+kube-flannel       kube-root-ca.crt                                        1      192d
+kube-node-lease    kube-root-ca.crt                                        1      192d
+kube-public        cluster-info                                            1      192d
+kube-public        kube-root-ca.crt                                        1      192d
+kube-system        coredns                                                 1      192d
+kube-system        extension-apiserver-authentication                      6      192d
+kube-system        kube-apiserver-legacy-service-account-token-tracking    1      192d
+kube-system        kube-proxy                                              2      192d
+kube-system        kube-root-ca.crt                                        1      192d
+kube-system        kubeadm-config                                          1      192d
+kube-system        kubelet-config                                          1      192d
+message-server     kube-root-ca.crt                                        1      192d
+message-server     message-server-configmap                                1      192d
+meta163            kube-root-ca.crt                                        1      15d
+meta163            meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37            1      15d
+meta163            redis-configmap-meta163                                 1      15d
+meta163            third-party-auth-configmap-meta163                      1      3d6h
+meta163            ueba-configmap-meta163                                  1      15d
+metallb-system     kube-root-ca.crt                                        1      192d
+metallb-system     metallb-excludel2                                       1      192d
+provider-org       asc-services-configmap-provider-org                     1      122d
+provider-org       kube-root-ca.crt                                        1      181d
+provider-org       provider-org-0d75790c-7017-40b2-a029-955afa7cc071       1      179d
+provider-org       provider-org-16bb1e4d-5a8c-43b8-8431-d78a62431e80       1      180d
+provider-org       provider-org-37d6a346-e0ff-4dad-8cbe-c179ab307e14       1      181d
+provider-org       redis-configmap-provider-org                            1      181d
+provider-org       scim-connector-configmap-provider-org                   1      181d
+provider-org       ueba-configmap-provider-org                             1      179d
+v-kafka-consumer   kube-root-ca.crt                                        1      182d
+v-kafka-consumer   v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071   1      179d
+v-kafka-consumer   v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80   1      180d
+v-kafka-consumer   v-kafka-consumer-527c0808-e039-4ee4-9cbe-fc46efe6a325   1      181d
+v-kafka-consumer   v-kafka-consumer-90dfe393-5b7c-4f19-8913-24c3cd2420cd   1      182d
+v-kafka-consumer   v-kafka-consumer-configmap-v-kafka-consumer             1      182d
+v-kafka-consumer   v-kafka-consumer-d47e854b-c5d5-47f1-8b9b-8bda8307da37   1      15d
+v-kafka-producer   kube-root-ca.crt                                        1      186d
+v-kafka-producer   v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14   1      181d
+v-kafka-producer   v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761   1      182d
+v-kafka-producer   v-kafka-producer-configmap-v-kafka-producer             1      186d
+v-kafka-producer   v-kafka-producer-dd0a7dc8-8ded-4096-9982-eb343f969e3a   1      186d
+van-connector      kube-root-ca.crt                                        1      191d
+van-connector      van-connector-configmap                                 1      191d
+
+#------
+
+kubectl get svc -A |grep redis 
+
+meta163            redis                                ClusterIP      10.105.223.166   <none>          6379/TCP                       15d
+provider-org       redis                                ClusterIP      10.110.7.130     <none>          6379/TCP                       181d
+
+
+#------ End of run ------
+
+
+#------
+Run time: 2025-10-11 17:21:25.638719
+
+#------
+
+kubectl get ns
+
+NAME               STATUS   AGE
+default            Active   192d
+ingress-nginx      Active   192d
+kube-flannel       Active   192d
+kube-node-lease    Active   192d
+kube-public        Active   192d
+kube-system        Active   192d
+message-server     Active   192d
+meta163            Active   15d
+metallb-system     Active   192d
+provider-org       Active   181d
+v-kafka-consumer   Active   182d
+v-kafka-producer   Active   186d
+van-connector      Active   191d
+
+#------
+
+kubectl get pods -A
+
+NAMESPACE          NAME                                          READY   STATUS             RESTARTS         AGE
+ingress-nginx      ingress-nginx-admission-create-zt5s7          0/1     Completed          0                192d
+ingress-nginx      ingress-nginx-admission-patch-d6cp8           0/1     Completed          1                192d
+ingress-nginx      ingress-nginx-controller-5c44d75cb-vbzld      1/1     Running            0                15d
+kube-flannel       kube-flannel-ds-cbvgq                         1/1     Running            8 (15d ago)      192d
+kube-system        coredns-59fcccdf76-6skjg                      1/1     Running            0                15d
+kube-system        coredns-59fcccdf76-bm225                      1/1     Running            0                15d
+kube-system        etcd-vms1-tb163                               1/1     Running            12 (15d ago)     192d
+kube-system        kube-apiserver-vms1-tb163                     1/1     Running            12 (15d ago)     192d
+kube-system        kube-controller-manager-vms1-tb163            1/1     Running            28 (15d ago)     192d
+kube-system        kube-proxy-xxx6v                              1/1     Running            10               192d
+kube-system        kube-scheduler-vms1-tb163                     1/1     Running            28 (15d ago)     192d
+message-server     message-server-548d45d57f-d62nd               1/1     Running            0                15d
+meta163            redis-5666f759dc-bfs2r                        1/1     Running            0                15d
+meta163            third-party-authentication-688cbcd588-cj4zq   1/1     Running            0                3d6h
+meta163            ueba-786959fcf8-sxzwj                         1/1     Running            0                15d
+metallb-system     controller-7b9fdc46f4-4l5pv                   1/1     Running            0                15d
+metallb-system     speaker-pgdz4                                 1/1     Running            24 (15d ago)     192d
+provider-org       asc-services-785ffb79bb-crjj8                 1/1     Running            0                3d6h
+provider-org       redis-8bc8dd9f8-kbfsf                         1/1     Running            0                15d
+provider-org       scim-connector-7f59dc9bdf-k8rvh               1/1     Running            1 (15d ago)      15d
+provider-org       ueba-75957b65f7-gk79l                         1/1     Running            0                15d
+v-kafka-consumer   v-kafka-consumer-766b79cf8-2f59k              0/1     CrashLoopBackOff   918 (5m7s ago)   12d
+v-kafka-producer   v-kafka-producer-7b847c6785-tpgkc             1/1     Running            0                15d
+van-connector      van-connector-7bf6786f4b-r8cjr                1/1     Running            0                15d
+
+#------
+
+kubectl get pv
+
+NAME                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                        STORAGECLASS   REASON   AGE
+app-logs-volume-message-server-pvc          10Gi       RWO            Retain           Bound    message-server/app-logs-volume-message-server-pvc            manual                  192d
+app-logs-volume-meta163-pvc                 10Gi       RWO            Retain           Bound    meta163/app-logs-volume-meta163-pvc                          manual                  15d
+app-logs-volume-provider-org-pvc            10Gi       RWO            Retain           Bound    provider-org/app-logs-volume-provider-org-pvc                manual                  181d
+app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            Retain           Bound    v-kafka-consumer/app-logs-volume-v-kafka-consumer-pvc        manual                  182d
+app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            Retain           Bound    v-kafka-producer/app-logs-volume-v-kafka-producer-pvc        manual                  186d
+app-logs-volume-van-connector-pvc           10Gi       RWO            Retain           Bound    van-connector/app-logs-volume-van-connector-pvc              manual                  191d
+apps-volume-message-server-pvc              10Gi       RWO            Retain           Bound    message-server/apps-volume-message-server-pvc                manual                  192d
+apps-volume-meta163-pvc                     10Gi       RWO            Retain           Bound    meta163/apps-volume-meta163-pvc                              manual                  15d
+apps-volume-provider-org-pvc                10Gi       RWO            Retain           Bound    provider-org/apps-volume-provider-org-pvc                    manual                  181d
+apps-volume-v-kafka-consumer-pvc            10Gi       RWO            Retain           Bound    v-kafka-consumer/apps-volume-v-kafka-consumer-pvc            manual                  182d
+apps-volume-v-kafka-producer-pvc            10Gi       RWO            Retain           Bound    v-kafka-producer/apps-volume-v-kafka-producer-pvc            manual                  186d
+apps-volume-van-connector-pvc               10Gi       RWO            Retain           Bound    van-connector/apps-volume-van-connector-pvc                  manual                  191d
+public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            Retain           Bound    v-kafka-consumer/public-ca-ssl-volume-v-kafka-consumer-pvc   manual                  182d
+public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            Retain           Bound    v-kafka-producer/public-ca-ssl-volume-v-kafka-producer-pvc   manual                  186d
+redis-meta163-pvc                           10Gi       RWO            Retain           Bound    meta163/redis-meta163-pvc                                    manual                  15d
+redis-provider-org-pvc                      10Gi       RWO            Retain           Bound    provider-org/redis-provider-org-pvc                          manual                  181d
+redis-v-kafka-consumer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-consumer/redis-v-kafka-consumer-pvc                  manual                  182d
+redis-v-kafka-producer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-producer/redis-v-kafka-producer-pvc                  manual                  186d
+
+#------
+
+kubectl get pvc -A
+
+NAMESPACE          NAME                                        STATUS   VOLUME                                      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+message-server     app-logs-volume-message-server-pvc          Bound    app-logs-volume-message-server-pvc          10Gi       RWO            manual         192d
+message-server     apps-volume-message-server-pvc              Bound    apps-volume-message-server-pvc              10Gi       RWO            manual         192d
+meta163            app-logs-volume-meta163-pvc                 Bound    app-logs-volume-meta163-pvc                 10Gi       RWO            manual         15d
+meta163            apps-volume-meta163-pvc                     Bound    apps-volume-meta163-pvc                     10Gi       RWO            manual         15d
+meta163            redis-meta163-pvc                           Bound    redis-meta163-pvc                           10Gi       RWO            manual         15d
+provider-org       app-logs-volume-provider-org-pvc            Bound    app-logs-volume-provider-org-pvc            10Gi       RWO            manual         181d
+provider-org       apps-volume-provider-org-pvc                Bound    apps-volume-provider-org-pvc                10Gi       RWO            manual         181d
+provider-org       redis-provider-org-pvc                      Bound    redis-provider-org-pvc                      10Gi       RWO            manual         181d
+v-kafka-consumer   app-logs-volume-v-kafka-consumer-pvc        Bound    app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            manual         182d
+v-kafka-consumer   apps-volume-v-kafka-consumer-pvc            Bound    apps-volume-v-kafka-consumer-pvc            10Gi       RWO            manual         182d
+v-kafka-consumer   public-ca-ssl-volume-v-kafka-consumer-pvc   Bound    public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            manual         182d
+v-kafka-consumer   redis-v-kafka-consumer-pvc                  Bound    redis-v-kafka-consumer-pvc                  10Gi       RWO            manual         182d
+v-kafka-producer   app-logs-volume-v-kafka-producer-pvc        Bound    app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            manual         186d
+v-kafka-producer   apps-volume-v-kafka-producer-pvc            Bound    apps-volume-v-kafka-producer-pvc            10Gi       RWO            manual         186d
+v-kafka-producer   public-ca-ssl-volume-v-kafka-producer-pvc   Bound    public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            manual         186d
+v-kafka-producer   redis-v-kafka-producer-pvc                  Bound    redis-v-kafka-producer-pvc                  10Gi       RWO            manual         186d
+van-connector      app-logs-volume-van-connector-pvc           Bound    app-logs-volume-van-connector-pvc           10Gi       RWO            manual         191d
+van-connector      apps-volume-van-connector-pvc               Bound    apps-volume-van-connector-pvc               10Gi       RWO            manual         191d
+
+#------
+
+kubectl get cm -A
+
+NAMESPACE          NAME                                                    DATA   AGE
+default            kube-root-ca.crt                                        1      192d
+ingress-nginx      ingress-nginx-controller                                1      192d
+ingress-nginx      kube-root-ca.crt                                        1      192d
+kube-flannel       kube-flannel-cfg                                        2      192d
+kube-flannel       kube-root-ca.crt                                        1      192d
+kube-node-lease    kube-root-ca.crt                                        1      192d
+kube-public        cluster-info                                            1      192d
+kube-public        kube-root-ca.crt                                        1      192d
+kube-system        coredns                                                 1      192d
+kube-system        extension-apiserver-authentication                      6      192d
+kube-system        kube-apiserver-legacy-service-account-token-tracking    1      192d
+kube-system        kube-proxy                                              2      192d
+kube-system        kube-root-ca.crt                                        1      192d
+kube-system        kubeadm-config                                          1      192d
+kube-system        kubelet-config                                          1      192d
+message-server     kube-root-ca.crt                                        1      192d
+message-server     message-server-configmap                                1      192d
+meta163            kube-root-ca.crt                                        1      15d
+meta163            meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37            1      15d
+meta163            redis-configmap-meta163                                 1      15d
+meta163            third-party-auth-configmap-meta163                      1      3d6h
+meta163            ueba-configmap-meta163                                  1      15d
+metallb-system     kube-root-ca.crt                                        1      192d
+metallb-system     metallb-excludel2                                       1      192d
+provider-org       asc-services-configmap-provider-org                     1      122d
+provider-org       kube-root-ca.crt                                        1      181d
+provider-org       provider-org-0d75790c-7017-40b2-a029-955afa7cc071       1      179d
+provider-org       provider-org-16bb1e4d-5a8c-43b8-8431-d78a62431e80       1      180d
+provider-org       provider-org-37d6a346-e0ff-4dad-8cbe-c179ab307e14       1      181d
+provider-org       redis-configmap-provider-org                            1      181d
+provider-org       scim-connector-configmap-provider-org                   1      181d
+provider-org       ueba-configmap-provider-org                             1      179d
+v-kafka-consumer   kube-root-ca.crt                                        1      182d
+v-kafka-consumer   v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071   1      179d
+v-kafka-consumer   v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80   1      180d
+v-kafka-consumer   v-kafka-consumer-527c0808-e039-4ee4-9cbe-fc46efe6a325   1      180d
+v-kafka-consumer   v-kafka-consumer-90dfe393-5b7c-4f19-8913-24c3cd2420cd   1      182d
+v-kafka-consumer   v-kafka-consumer-configmap-v-kafka-consumer             1      182d
+v-kafka-consumer   v-kafka-consumer-d47e854b-c5d5-47f1-8b9b-8bda8307da37   1      15d
+v-kafka-producer   kube-root-ca.crt                                        1      186d
+v-kafka-producer   v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14   1      181d
+v-kafka-producer   v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761   1      182d
+v-kafka-producer   v-kafka-producer-configmap-v-kafka-producer             1      186d
+v-kafka-producer   v-kafka-producer-dd0a7dc8-8ded-4096-9982-eb343f969e3a   1      186d
+van-connector      kube-root-ca.crt                                        1      191d
+van-connector      van-connector-configmap                                 1      191d
+
+#------
+
+kubectl get svc -A |grep redis 
+
+meta163            redis                                ClusterIP      10.105.223.166   <none>          6379/TCP                       15d
+provider-org       redis                                ClusterIP      10.110.7.130     <none>          6379/TCP                       181d
+
+
+#------ End of run ------
+
+
+#------
+Run time: 2025-10-11 16:55:13.963424
+
+#------
+
+kubectl get ns
+
+NAME               STATUS   AGE
+default            Active   192d
+ingress-nginx      Active   192d
+kube-flannel       Active   192d
+kube-node-lease    Active   192d
+kube-public        Active   192d
+kube-system        Active   192d
+message-server     Active   192d
+meta163            Active   15d
+metallb-system     Active   192d
+provider-org       Active   181d
+v-kafka-consumer   Active   182d
+v-kafka-producer   Active   186d
+van-connector      Active   191d
+[root@vms1-tb163: admin] $
+
+#------
+
+kubectl get pods -A
+
+NAMESPACE          NAME                                          READY   STATUS             RESTARTS          AGE
+ingress-nginx      ingress-nginx-admission-create-zt5s7          0/1     Completed          0                 192d
+ingress-nginx      ingress-nginx-admission-patch-d6cp8           0/1     Completed          1                 192d
+ingress-nginx      ingress-nginx-controller-5c44d75cb-vbzld      1/1     Running            0                 15d
+kube-flannel       kube-flannel-ds-cbvgq                         1/1     Running            8 (15d ago)       192d
+kube-system        coredns-59fcccdf76-6skjg                      1/1     Running            0                 15d
+kube-system        coredns-59fcccdf76-bm225                      1/1     Running            0                 15d
+kube-system        etcd-vms1-tb163                               1/1     Running            12 (15d ago)      192d
+kube-system        kube-apiserver-vms1-tb163                     1/1     Running            12 (15d ago)      192d
+kube-system        kube-controller-manager-vms1-tb163            1/1     Running            28 (15d ago)      192d
+kube-system        kube-proxy-xxx6v                              1/1     Running            10                192d
+kube-system        kube-scheduler-vms1-tb163                     1/1     Running            28 (15d ago)      192d
+message-server     message-server-548d45d57f-d62nd               1/1     Running            0                 15d
+meta163            redis-5666f759dc-bfs2r                        1/1     Running            0                 15d
+meta163            third-party-authentication-688cbcd588-cj4zq   1/1     Running            0                 3d5h
+meta163            ueba-786959fcf8-sxzwj                         1/1     Running            0                 15d
+metallb-system     controller-7b9fdc46f4-4l5pv                   1/1     Running            0                 15d
+metallb-system     speaker-pgdz4                                 1/1     Running            24 (15d ago)      192d
+provider-org       asc-services-785ffb79bb-crjj8                 1/1     Running            0                 3d5h
+provider-org       redis-8bc8dd9f8-kbfsf                         1/1     Running            0                 15d
+provider-org       scim-connector-7f59dc9bdf-k8rvh               1/1     Running            1 (15d ago)       15d
+provider-org       ueba-75957b65f7-gk79l                         1/1     Running            0                 15d
+v-kafka-consumer   v-kafka-consumer-766b79cf8-2f59k              0/1     CrashLoopBackOff   913 (4m21s ago)   12d
+v-kafka-producer   v-kafka-producer-7b847c6785-tpgkc             1/1     Running            0                 15d
+van-connector      van-connector-7bf6786f4b-r8cjr                1/1     Running            0                 15d
+[root@vms1-tb163: admin] $
+
+#------
+
+kubectl get pv
+
+NAME                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                        STORAGECLASS   REASON   AGE
+app-logs-volume-message-server-pvc          10Gi       RWO            Retain           Bound    message-server/app-logs-volume-message-server-pvc            manual                  192d
+app-logs-volume-meta163-pvc                 10Gi       RWO            Retain           Bound    meta163/app-logs-volume-meta163-pvc                          manual                  15d
+app-logs-volume-provider-org-pvc            10Gi       RWO            Retain           Bound    provider-org/app-logs-volume-provider-org-pvc                manual                  181d
+app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            Retain           Bound    v-kafka-consumer/app-logs-volume-v-kafka-consumer-pvc        manual                  182d
+app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            Retain           Bound    v-kafka-producer/app-logs-volume-v-kafka-producer-pvc        manual                  186d
+app-logs-volume-van-connector-pvc           10Gi       RWO            Retain           Bound    van-connector/app-logs-volume-van-connector-pvc              manual                  191d
+apps-volume-message-server-pvc              10Gi       RWO            Retain           Bound    message-server/apps-volume-message-server-pvc                manual                  192d
+apps-volume-meta163-pvc                     10Gi       RWO            Retain           Bound    meta163/apps-volume-meta163-pvc                              manual                  15d
+apps-volume-provider-org-pvc                10Gi       RWO            Retain           Bound    provider-org/apps-volume-provider-org-pvc                    manual                  181d
+apps-volume-v-kafka-consumer-pvc            10Gi       RWO            Retain           Bound    v-kafka-consumer/apps-volume-v-kafka-consumer-pvc            manual                  182d
+apps-volume-v-kafka-producer-pvc            10Gi       RWO            Retain           Bound    v-kafka-producer/apps-volume-v-kafka-producer-pvc            manual                  186d
+apps-volume-van-connector-pvc               10Gi       RWO            Retain           Bound    van-connector/apps-volume-van-connector-pvc                  manual                  191d
+public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            Retain           Bound    v-kafka-consumer/public-ca-ssl-volume-v-kafka-consumer-pvc   manual                  182d
+public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            Retain           Bound    v-kafka-producer/public-ca-ssl-volume-v-kafka-producer-pvc   manual                  186d
+redis-meta163-pvc                           10Gi       RWO            Retain           Bound    meta163/redis-meta163-pvc                                    manual                  15d
+redis-provider-org-pvc                      10Gi       RWO            Retain           Bound    provider-org/redis-provider-org-pvc                          manual                  181d
+redis-v-kafka-consumer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-consumer/redis-v-kafka-consumer-pvc                  manual                  182d
+redis-v-kafka-producer-pvc                  10Gi       RWO            Retain           Bound    v-kafka-producer/redis-v-kafka-producer-pvc                  manual                  186d
+[root@vms1-tb163: admin] $
+
+#------
+
+kubectl get pvc -A
+
+NAMESPACE          NAME                                        STATUS   VOLUME                                      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+message-server     app-logs-volume-message-server-pvc          Bound    app-logs-volume-message-server-pvc          10Gi       RWO            manual         192d
+message-server     apps-volume-message-server-pvc              Bound    apps-volume-message-server-pvc              10Gi       RWO            manual         192d
+meta163            app-logs-volume-meta163-pvc                 Bound    app-logs-volume-meta163-pvc                 10Gi       RWO            manual         15d
+meta163            apps-volume-meta163-pvc                     Bound    apps-volume-meta163-pvc                     10Gi       RWO            manual         15d
+meta163            redis-meta163-pvc                           Bound    redis-meta163-pvc                           10Gi       RWO            manual         15d
+provider-org       app-logs-volume-provider-org-pvc            Bound    app-logs-volume-provider-org-pvc            10Gi       RWO            manual         181d
+provider-org       apps-volume-provider-org-pvc                Bound    apps-volume-provider-org-pvc                10Gi       RWO            manual         181d
+provider-org       redis-provider-org-pvc                      Bound    redis-provider-org-pvc                      10Gi       RWO            manual         181d
+v-kafka-consumer   app-logs-volume-v-kafka-consumer-pvc        Bound    app-logs-volume-v-kafka-consumer-pvc        10Gi       RWO            manual         182d
+v-kafka-consumer   apps-volume-v-kafka-consumer-pvc            Bound    apps-volume-v-kafka-consumer-pvc            10Gi       RWO            manual         182d
+v-kafka-consumer   public-ca-ssl-volume-v-kafka-consumer-pvc   Bound    public-ca-ssl-volume-v-kafka-consumer-pvc   10Gi       RWO            manual         182d
+v-kafka-consumer   redis-v-kafka-consumer-pvc                  Bound    redis-v-kafka-consumer-pvc                  10Gi       RWO            manual         182d
+v-kafka-producer   app-logs-volume-v-kafka-producer-pvc        Bound    app-logs-volume-v-kafka-producer-pvc        10Gi       RWO            manual         186d
+v-kafka-producer   apps-volume-v-kafka-producer-pvc            Bound    apps-volume-v-kafka-producer-pvc            10Gi       RWO            manual         186d
+v-kafka-producer   public-ca-ssl-volume-v-kafka-producer-pvc   Bound    public-ca-ssl-volume-v-kafka-producer-pvc   10Gi       RWO            manual         186d
+v-kafka-producer   redis-v-kafka-producer-pvc                  Bound    redis-v-kafka-producer-pvc                  10Gi       RWO            manual         186d
+van-connector      app-logs-volume-van-connector-pvc           Bound    app-logs-volume-van-connector-pvc           10Gi       RWO            manual         191d
+van-connector      apps-volume-van-connector-pvc               Bound    apps-volume-van-connector-pvc               10Gi       RWO            manual         191d
+[root@vms1-tb163: admin] $
+
+#------
+
+kubectl get cm -A
+
+NAMESPACE          NAME                                                    DATA   AGE
+default            kube-root-ca.crt                                        1      192d
+ingress-nginx      ingress-nginx-controller                                1      192d
+ingress-nginx      kube-root-ca.crt                                        1      192d
+kube-flannel       kube-flannel-cfg                                        2      192d
+kube-flannel       kube-root-ca.crt                                        1      192d
+kube-node-lease    kube-root-ca.crt                                        1      192d
+kube-public        cluster-info                                            1      192d
+kube-public        kube-root-ca.crt                                        1      192d
+kube-system        coredns                                                 1      192d
+kube-system        extension-apiserver-authentication                      6      192d
+kube-system        kube-apiserver-legacy-service-account-token-tracking    1      192d
+kube-system        kube-proxy                                              2      192d
+kube-system        kube-root-ca.crt                                        1      192d
+kube-system        kubeadm-config                                          1      192d
+kube-system        kubelet-config                                          1      192d
+message-server     kube-root-ca.crt                                        1      192d
+message-server     message-server-configmap                                1      192d
+meta163            kube-root-ca.crt                                        1      15d
+meta163            meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37            1      15d
+meta163            redis-configmap-meta163                                 1      15d
+meta163            third-party-auth-configmap-meta163                      1      3d5h
+meta163            ueba-configmap-meta163                                  1      15d
+metallb-system     kube-root-ca.crt                                        1      192d
+metallb-system     metallb-excludel2                                       1      192d
+provider-org       asc-services-configmap-provider-org                     1      122d
+provider-org       kube-root-ca.crt                                        1      181d
+provider-org       provider-org-0d75790c-7017-40b2-a029-955afa7cc071       1      179d
+provider-org       provider-org-16bb1e4d-5a8c-43b8-8431-d78a62431e80       1      180d
+provider-org       provider-org-37d6a346-e0ff-4dad-8cbe-c179ab307e14       1      181d
+provider-org       redis-configmap-provider-org                            1      181d
+provider-org       scim-connector-configmap-provider-org                   1      181d
+provider-org       ueba-configmap-provider-org                             1      179d
+v-kafka-consumer   kube-root-ca.crt                                        1      182d
+v-kafka-consumer   v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071   1      179d
+v-kafka-consumer   v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80   1      180d
+v-kafka-consumer   v-kafka-consumer-527c0808-e039-4ee4-9cbe-fc46efe6a325   1      180d
+v-kafka-consumer   v-kafka-consumer-90dfe393-5b7c-4f19-8913-24c3cd2420cd   1      182d
+v-kafka-consumer   v-kafka-consumer-configmap-v-kafka-consumer             1      182d
+v-kafka-consumer   v-kafka-consumer-d47e854b-c5d5-47f1-8b9b-8bda8307da37   1      15d
+v-kafka-producer   kube-root-ca.crt                                        1      186d
+v-kafka-producer   v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14   1      181d
+v-kafka-producer   v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761   1      182d
+v-kafka-producer   v-kafka-producer-configmap-v-kafka-producer             1      186d
+v-kafka-producer   v-kafka-producer-dd0a7dc8-8ded-4096-9982-eb343f969e3a   1      186d
+van-connector      kube-root-ca.crt                                        1      191d
+van-connector      van-connector-configmap                                 1      191d
+[root@vms1-tb163: admin] $
+
+
+#------ End of run ------
