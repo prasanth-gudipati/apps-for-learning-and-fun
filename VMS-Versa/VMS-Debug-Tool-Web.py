@@ -1,0 +1,2305 @@
+#!/usr/bin/env python3
+"""
+VMS Debug Tool - Web Version
+A web-based application for connecting to VMS servers and executing kubectl commands
+with real-time command execution display.
+
+Features:
+- Web interface for server connection with default values
+- SSH connection management
+- Real-time command execution display via WebSocket
+- Tenant data collection and visualization
+"""
+
+from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO, emit
+import threading
+import queue
+import time
+import paramiko
+import json
+import re
+from datetime import datetime
+import os
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'vms-debug-tool-secret-key'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+class VMSDebugWeb:
+    def __init__(self):
+        # SSH connection variables
+        self.ssh_client = None
+        self.shell = None
+        self.connected = False
+        
+        # Connection details
+        self.host = ""
+        self.username = ""
+        self.ssh_password = ""
+        self.admin_password = ""
+        
+        # Tenant database
+        self.tenant_database = {}
+        
+        # Queue for thread communication
+        self.output_queue = queue.Queue()
+    
+    def log_output(self, message, tag="normal"):
+        """Add message to output display with timestamp"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        
+        # Emit to web interface
+        socketio.emit('log_output', {
+            'message': message,
+            'tag': tag,
+            'timestamp': timestamp
+        })
+    
+    def connect_to_server(self, host, username, ssh_password, admin_password):
+        """Connect to the SSH server in a separate thread"""
+        self.host = host
+        self.username = username
+        self.ssh_password = ssh_password
+        self.admin_password = admin_password
+        
+        try:
+            self.log_output("Attempting SSH connection...", "info")
+            
+            # Create SSH client
+            self.ssh_client = paramiko.SSHClient()
+            self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            # Connect
+            self.ssh_client.connect(
+                hostname=host,
+                username=username,
+                password=ssh_password,
+                look_for_keys=False,
+                timeout=10
+            )
+            
+            self.log_output(f"SSH connection successful to {host}", "success")
+            
+            # Create shell
+            self.shell = self.ssh_client.invoke_shell()
+            time.sleep(1)
+            self.shell.recv(10000)  # Clear banner
+            
+            self.log_output("Shell session established", "success")
+            
+            # Execute sudo su
+            self.log_output("Executing 'sudo su' command...", "command")
+            self.shell.send("sudo su\n")
+            
+            # Wait for password prompt
+            buff = ""
+            start_time = time.time()
+            while time.time() - start_time < 10:  # 10 second timeout
+                if self.shell.recv_ready():
+                    resp = self.shell.recv(1000).decode('utf-8', errors='ignore')
+                    buff += resp
+                    if "password for" in buff.lower():
+                        break
+                time.sleep(0.2)
+            
+            if "password for" not in buff.lower():
+                raise Exception("Sudo password prompt not found")
+            
+            # Send admin password
+            self.shell.send(admin_password + "\n")
+            time.sleep(1.5)
+            
+            # Check if sudo was successful
+            output = self.shell.recv(10000).decode('utf-8', errors='ignore')
+            self.log_output("Sudo elevation successful", "success")
+            
+            # Set kubectl alias
+            self.log_output("Setting kubectl alias...", "info")
+            self.shell.send("alias k=kubectl\n")
+            time.sleep(0.5)
+            self.shell.recv(10000).decode('utf-8', errors='ignore')  # Clear response
+            
+            # Update connection state
+            self.connected = True
+            socketio.emit('connection_status', {'connected': True, 'message': 'Connected successfully'})
+            
+        except Exception as e:
+            error_msg = f"Connection failed: {str(e)}"
+            self.log_output(error_msg, "error")
+            self.connected = False
+            socketio.emit('connection_status', {'connected': False, 'message': error_msg})
+    
+    def disconnect_from_server(self):
+        """Disconnect from SSH server"""
+        if not self.connected:
+            return
+        
+        try:
+            self.log_output("Disconnecting from server...", "info")
+            if self.shell:
+                self.shell.send("exit\n")
+                time.sleep(0.5)
+            if self.ssh_client:
+                self.ssh_client.close()
+        except Exception as e:
+            self.log_output(f"Error during disconnect: {str(e)}", "error")
+        
+        # Reset connection state
+        self.connected = False
+        self.ssh_client = None
+        self.shell = None
+        
+        self.log_output("Disconnected from server", "info")
+        socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected'})
+    
+    def run_kubectl_commands(self):
+        """Run basic kubectl commands"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return
+        
+        commands = [
+            ("kubectl get ns", "Get all namespaces"),
+            ("kubectl get pods -A", "Get all pods across all namespaces"),
+            ("kubectl get svc -A", "Get all services across all namespaces"),
+            ("kubectl get pv", "Get persistent volumes"),
+            ("kubectl get pvc -A", "Get persistent volume claims"),
+            ("kubectl get cm -A", "Get config maps"),
+            ("kubectl get svc -A | grep redis", "Get Redis services")
+        ]
+        
+        try:
+            self.log_output("Starting kubectl commands execution...", "info")
+            
+            for command, description in commands:
+                self.log_output(f"Running: {command}", "command")
+                self.log_output(f"Description: {description}", "info")
+                
+                # Execute command
+                self.shell.send(f"{command}\n")
+                time.sleep(3)
+                
+                # Collect output
+                output = self._collect_command_output()
+                
+                # Clean and display output
+                cleaned_output = self._clean_ansi_codes(output)
+                lines = cleaned_output.split('\n')
+                
+                line_count = 0
+                for line in lines:
+                    line = line.strip()
+                    if (line and not line.startswith('kubectl') and 
+                        not line.endswith('# ') and not line.endswith('$ ') and
+                        not line.startswith('[root@')):
+                        self.log_output(f"  {line}", "normal")
+                        line_count += 1
+                
+                self.log_output(f"-> Collected {line_count} lines of output", "success")
+                self.log_output("", "normal")  # Empty line for separation
+            
+            self.log_output("All kubectl commands completed successfully!", "success")
+            
+        except Exception as e:
+            self.log_output(f"Error running kubectl commands: {str(e)}", "error")
+    
+    def build_tenant_data(self):
+        """Build comprehensive tenant data"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return
+        
+        try:
+            self.log_output("Building comprehensive tenant data structure...", "info")
+            
+            # Step 1: Get all services
+            self.log_output("Step 1: Getting all services...", "command")
+            self.shell.send("kubectl get svc -A\n")
+            time.sleep(2)
+            kubectl_output = self._collect_command_output()
+            
+            # Parse tenant services
+            tenant_data = self._parse_kubectl_output(kubectl_output)
+            service_count = len(tenant_data)
+            self.log_output(f"-> Found {service_count} tenant namespaces", "success")
+            
+            # Step 2: Get Redis information
+            self.log_output("Step 2: Getting Redis information...", "command")
+            redis_info = self._extract_redis_ips()
+            redis_count = len(redis_info)
+            self.log_output(f"-> Found {redis_count} Redis services", "success")
+            
+            # Step 3: Integrate Redis information
+            self.log_output("Step 3: Integrating Redis information with tenant data...", "info")
+            for tenant, redis_details in redis_info.items():
+                if tenant in tenant_data:
+                    # Ensure tenant_data[tenant] is not None
+                    if tenant_data[tenant] is None:
+                        tenant_data[tenant] = {'services': [], 'redis_info': None}
+                    tenant_data[tenant]['redis_info'] = redis_details
+                    self.log_output(f"  Updated Redis info for existing tenant: {tenant}", "info")
+                else:
+                    tenant_data[tenant] = {
+                        'services': ['redis'],
+                        'redis_info': redis_details
+                    }
+                    self.log_output(f"  Added new tenant with Redis: {tenant}", "info")
+            
+            # Step 4: Get ConfigMaps information
+            self.log_output("Step 4: Getting ConfigMaps information...", "command")
+            configmaps_info = self._extract_configmaps_for_all_tenants()
+            
+            # Step 5: Integrate ConfigMaps information
+            self.log_output("Step 5: Integrating ConfigMaps information with tenant data...", "info")
+            for tenant, configmap_details in configmaps_info.items():
+                if tenant in tenant_data:
+                    # Ensure tenant_data[tenant] is not None
+                    if tenant_data[tenant] is None:
+                        tenant_data[tenant] = {'services': [], 'redis_info': None, 'configmaps_info': None}
+                    tenant_data[tenant]['configmaps_info'] = configmap_details
+                    self.log_output(f"  Updated ConfigMaps info for existing tenant: {tenant}", "info")
+                else:
+                    # Create new tenant entry if it doesn't exist
+                    tenant_data[tenant] = {
+                        'services': [],
+                        'redis_info': None,
+                        'configmaps_info': configmap_details
+                    }
+                    self.log_output(f"  Added new tenant with ConfigMaps: {tenant}", "info")
+            
+            # Display results
+            self.log_output("", "normal")
+            self.log_output("=== TENANT DATA SUMMARY ===", "success")
+            
+            for tenant, data in tenant_data.items():
+                # Ensure data is not None and has proper structure
+                if data is None:
+                    data = {'services': [], 'redis_info': None, 'configmaps_info': None}
+                
+                services = ', '.join(data.get('services', []))
+                redis_info = data.get('redis_info', {})
+                if redis_info is None:
+                    redis_info = {}
+                redis_ip = redis_info.get('cluster_ip', 'N/A')
+                
+                # ConfigMaps information
+                configmaps_info = data.get('configmaps_info', {})
+                if configmaps_info is None:
+                    configmaps_info = {}
+                configmaps_count = configmaps_info.get('total_configmaps', 0)
+                configmaps_names = []
+                if configmaps_info.get('configmaps'):
+                    configmaps_names = [cm['name'] for cm in configmaps_info['configmaps'][:3]]
+                configmaps_summary = ', '.join(configmaps_names) + ('...' if configmaps_count > 3 else '')
+                
+                self.log_output(f"Tenant: {tenant}", "info")
+                self.log_output(f"  Services: {services}", "normal")
+                self.log_output(f"  Redis IP: {redis_ip}", "normal")
+                self.log_output(f"  ConfigMaps: {configmaps_count} ({configmaps_summary})", "normal")
+                self.log_output("", "normal")
+            
+            # Save to file
+            filename = f"tenant_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            try:
+                with open(filename, 'w') as f:
+                    json.dump(tenant_data, f, indent=2)
+                self.log_output(f"Tenant data saved to: {filename}", "success")
+            except Exception as e:
+                self.log_output(f"Error saving tenant data: {str(e)}", "error")
+            
+            self.log_output("Tenant data building completed successfully!", "success")
+            
+            # Store tenant database
+            self.tenant_database = tenant_data
+            
+            # Send tenant data to web interface
+            socketio.emit('tenant_data', {'data': tenant_data, 'filename': filename})
+            socketio.emit('tenant_database_updated', {'tenants': list(tenant_data.keys())})
+            
+        except Exception as e:
+            self.log_output(f"Error building tenant data: {str(e)}", "error")
+    
+    def _collect_command_output(self, timeout=10):
+        """Collect output from shell command"""
+        output = ""
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            if self.shell.recv_ready():
+                chunk = self.shell.recv(4096).decode('utf-8', errors='ignore')
+                output += chunk
+                if chunk.endswith('# ') or chunk.endswith('$ '):
+                    break
+            time.sleep(0.1)
+        
+        return output
+    
+    def _clean_ansi_codes(self, text):
+        """Remove ANSI escape codes from text"""
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        return ansi_escape.sub('', text)
+    
+    def _parse_kubectl_output(self, output):
+        """Parse kubectl get svc -A output and extract tenant information"""
+        tenant_services = {}
+        cleaned_output = self._clean_ansi_codes(output)
+        lines = cleaned_output.strip().split('\n')
+        
+        self.log_output(f"Debug: Parsing {len(lines)} lines of kubectl output", "info")
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith('NAMESPACE') or line.startswith('kubectl'):
+                continue
+            
+            parts = line.split()
+            if len(parts) >= 2:
+                namespace = parts[0]
+                service = parts[1]
+                
+                # Skip system namespaces
+                if namespace in ['kube-system', 'kube-public', 'kube-node-lease', 'default']:
+                    continue
+                
+                # Ensure we create valid tenant entry
+                if namespace not in tenant_services:
+                    tenant_services[namespace] = {
+                        'services': [],
+                        'redis_info': None
+                    }
+                    self.log_output(f"  Found new tenant namespace: {namespace}", "info")
+                
+                # Ensure the tenant entry is valid before adding service
+                if tenant_services[namespace] is not None and isinstance(tenant_services[namespace], dict):
+                    if 'services' not in tenant_services[namespace]:
+                        tenant_services[namespace]['services'] = []
+                    
+                    if service not in tenant_services[namespace]['services']:
+                        tenant_services[namespace]['services'].append(service)
+        
+        # Validate all entries before returning
+        validated_services = {}
+        for tenant, data in tenant_services.items():
+            if data is not None and isinstance(data, dict):
+                validated_services[tenant] = {
+                    'services': data.get('services', []),
+                    'redis_info': data.get('redis_info', None)
+                }
+            else:
+                self.log_output(f"Warning: Invalid data for tenant {tenant}, creating default structure", "error")
+                validated_services[tenant] = {
+                    'services': [],
+                    'redis_info': None
+                }
+        
+        return validated_services
+    
+    def _extract_redis_ips(self):
+        """Extract Redis service IPs for each tenant/namespace"""
+        self.shell.send("kubectl get svc -A | grep redis\n")
+        time.sleep(2)
+        
+        output = self._collect_command_output()
+        cleaned_output = self._clean_ansi_codes(output)
+        
+        redis_info = {}
+        lines = cleaned_output.strip().split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith('kubectl') or line.endswith('# ') or line.endswith('$ '):
+                continue
+            
+            parts = line.split()
+            if len(parts) >= 4 and 'redis' in line.lower():
+                namespace = parts[0]
+                service_name = parts[1]
+                service_type = parts[2]
+                cluster_ip = parts[3]
+                external_ip = parts[4] if len(parts) > 4 else "N/A"
+                ports = parts[5] if len(parts) > 5 else "N/A"
+                age = parts[6] if len(parts) > 6 else "N/A"
+                
+                redis_info[namespace] = {
+                    'service_name': service_name,
+                    'service_type': service_type,
+                    'cluster_ip': cluster_ip,
+                    'external_ip': external_ip,
+                    'ports': ports,
+                    'age': age
+                }
+        
+        return redis_info
+    
+    def extract_redis_keys_for_tenant(self, tenant_name):
+        """Extract Redis keys for a specific tenant"""
+        if not self.connected:
+            return []
+        
+        if tenant_name not in self.tenant_database:
+            return []
+        
+        tenant_info = self.tenant_database[tenant_name]
+        redis_info = tenant_info.get('redis_info')
+        
+        if not redis_info or not redis_info.get('cluster_ip'):
+            return []
+        
+        redis_ip = redis_info['cluster_ip']
+        self.log_output(f"Extracting Redis keys from {tenant_name} (IP: {redis_ip})", "info")
+        
+        try:
+            # Execute redis-cli command to get all keys
+            command = f"redis-cli -h {redis_ip} -p 6379 keys \"*\""
+            self.shell.send(f"{command}\n")
+            time.sleep(3)  # Wait for Redis response
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines = cleaned_output.strip().split('\n')
+            
+            keys = []
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('redis-cli') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Redis keys are typically numbered like "1) keyname"
+                if line and not line.startswith('(error)'):
+                    # Remove numbering if present (e.g., "1) keyname" -> "keyname")
+                    if ')' in line and line.split(')')[0].strip().isdigit():
+                        key = ')'.join(line.split(')')[1:]).strip()
+                        # Remove quotes if present
+                        key = key.strip('"\'')
+                        if key:
+                            keys.append(key)
+                    else:
+                        # If no numbering, treat the whole line as a key
+                        key = line.strip('"\'')
+                        if key and not key.startswith('redis'):  # Avoid command echoes
+                            keys.append(key)
+            
+            self.log_output(f"Found {len(keys)} Redis keys for {tenant_name}", "success")
+            return keys
+            
+        except Exception as e:
+            self.log_output(f"Error extracting Redis keys for {tenant_name}: {str(e)}", "error")
+            return []
+    
+    def _extract_configmaps_for_all_tenants(self):
+        """Extract all configmaps for all tenants/namespaces"""
+        self.log_output("Extracting ConfigMaps for all tenants...", "info")
+        
+        try:
+            # Execute kubectl command to get all configmaps
+            self.shell.send("kubectl get configmaps -A\n")
+            time.sleep(3)  # Wait for command to complete
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            
+            # Parse configmaps data
+            configmaps_data = {}
+            lines = cleaned_output.strip().split('\n')
+            
+            for line in lines:
+                line = line.strip()
+                # Skip header line, empty lines, command echo, and prompts
+                if (not line or 
+                    line.startswith('NAMESPACE') or 
+                    line.startswith('kubectl') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Parse configmap lines
+                # Expected format: NAMESPACE  NAME  DATA  AGE
+                parts = line.split()
+                if len(parts) >= 3:
+                    namespace = parts[0]  # Namespace (same as tenant)
+                    configmap_name = parts[1]  # ConfigMap name
+                    data_count = parts[2]  # Number of data items
+                    age = parts[3] if len(parts) > 3 else "N/A"
+                    
+                    # Skip system namespaces (optional filtering)
+                    if namespace in ['kube-system', 'kube-public', 'kube-node-lease', 'default']:
+                        continue
+                    
+                    if namespace not in configmaps_data:
+                        configmaps_data[namespace] = {
+                            'configmaps': [],
+                            'total_configmaps': 0
+                        }
+                    
+                    configmap_info = {
+                        'name': configmap_name,
+                        'data_count': data_count,
+                        'age': age
+                    }
+                    
+                    configmaps_data[namespace]['configmaps'].append(configmap_info)
+                    configmaps_data[namespace]['total_configmaps'] = len(configmaps_data[namespace]['configmaps'])
+            
+            # Log summary
+            total_tenants_with_configmaps = len(configmaps_data)
+            total_configmaps = sum(data['total_configmaps'] for data in configmaps_data.values())
+            self.log_output(f"-> Found {total_configmaps} configmaps across {total_tenants_with_configmaps} tenants", "success")
+            
+            # Log details for each tenant
+            for tenant, data in configmaps_data.items():
+                configmap_names = [cm['name'] for cm in data['configmaps']]
+                self.log_output(f"  {tenant}: {data['total_configmaps']} configmaps -> {', '.join(configmap_names[:3])}{'...' if len(configmap_names) > 3 else ''}", "info")
+            
+            return configmaps_data
+            
+        except Exception as e:
+            self.log_output(f"Error extracting ConfigMaps: {str(e)}", "error")
+            return {}
+    
+    def get_configmap_details(self, tenant_name, configmap_name):
+        """Get detailed information about a specific configmap"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return {}
+        
+        try:
+            self.log_output(f"Getting ConfigMap details: {configmap_name} in tenant {tenant_name}", "info")
+            
+            # Execute kubectl command to describe the configmap
+            command = f"kubectl describe configmap {configmap_name} -n {tenant_name}"
+            self.shell.send(f"{command}\n")
+            time.sleep(2)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=10)
+            cleaned_output = self._clean_ansi_codes(output)
+            
+            # Also get the configmap in YAML format for structured data
+            yaml_command = f"kubectl get configmap {configmap_name} -n {tenant_name} -o yaml"
+            self.shell.send(f"{yaml_command}\n")
+            time.sleep(2)
+            
+            yaml_output = self._collect_command_output(timeout=10)
+            cleaned_yaml = self._clean_ansi_codes(yaml_output)
+            
+            configmap_details = {
+                'name': configmap_name,
+                'namespace': tenant_name,
+                'describe_output': cleaned_output,
+                'yaml_output': cleaned_yaml,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            self.log_output(f"Successfully retrieved ConfigMap details for {configmap_name}", "success")
+            return configmap_details
+            
+        except Exception as e:
+            self.log_output(f"Error getting ConfigMap details: {str(e)}", "error")
+            return {}
+    
+    def get_configmap_json_details(self, tenant_name, configmap_name):
+        """Get ConfigMap JSON details using the specified command format"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return {}
+        
+        try:
+            self.log_output(f"Getting ConfigMap JSON details: {configmap_name} in tenant {tenant_name}", "info")
+            
+            # Execute the specific command: kubectl get configmap <configmap-name> -n <tenant-name> -o json | jq ".data.config | fromjson"
+            command = f"kubectl get configmap {configmap_name} -n {tenant_name} -o json | jq \".data.config | fromjson\""
+            self.log_output(f"Executing command: {command}", "command")
+            self.shell.send(f"{command}\n")
+            time.sleep(3)  # Give more time for JSON processing
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            
+            # Parse the JSON output
+            lines = cleaned_output.strip().split('\n')
+            json_lines = []
+            
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('kubectl') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@') or
+                    'jq:' in line.lower()):
+                    continue
+                json_lines.append(line)
+            
+            # Join the JSON lines
+            json_output = '\n'.join(json_lines)
+            
+            # Try to parse as JSON to validate
+            parsed_json = None
+            try:
+                if json_output.strip():
+                    parsed_json = json.loads(json_output)
+            except json.JSONDecodeError as e:
+                self.log_output(f"Warning: Could not parse JSON output: {str(e)}", "error")
+                parsed_json = None
+            
+            configmap_json_details = {
+                'name': configmap_name,
+                'namespace': tenant_name,
+                'json_output': json_output,
+                'parsed_json': parsed_json,
+                'raw_output': cleaned_output,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            self.log_output(f"Successfully retrieved ConfigMap JSON details for {configmap_name}", "success")
+            return configmap_json_details
+            
+        except Exception as e:
+            self.log_output(f"Error getting ConfigMap JSON details: {str(e)}", "error")
+            return {}
+    
+    def get_all_configmaps_for_tenant(self, tenant_name):
+        """Get list of all configmaps for a specific tenant"""
+        if not self.connected:
+            return []
+        
+        if tenant_name not in self.tenant_database:
+            return []
+        
+        tenant_info = self.tenant_database[tenant_name]
+        configmaps_info = tenant_info.get('configmaps_info', {})
+        
+        if not configmaps_info or not configmaps_info.get('configmaps'):
+            return []
+        
+        return configmaps_info['configmaps']
+    
+    def get_redis_key_value(self, tenant_name, key_name):
+        """Get the value of a specific Redis key for a tenant"""
+        if not self.connected or tenant_name not in self.tenant_database:
+            return None
+        
+        tenant_info = self.tenant_database[tenant_name]
+        redis_info = tenant_info.get('redis_info')
+        
+        if not redis_info or not redis_info.get('cluster_ip'):
+            return None
+        
+        redis_ip = redis_info['cluster_ip']
+        self.log_output(f"Getting Redis key value: {key_name} from {tenant_name}", "info")
+        
+        try:
+            # Execute redis-cli hgetall command
+            command = f"redis-cli -h {redis_ip} -p 6379 hgetall \"{key_name}\""
+            self.shell.send(f"{command}\n")
+            time.sleep(2)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=10)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines = cleaned_output.strip().split('\n')
+            
+            # Clean lines and remove Redis CLI numbering
+            cleaned_lines = []
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('redis-cli') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Remove Redis CLI numbering format like "1) \"field\"" -> "field"
+                if ')' in line and line.split(')')[0].strip().isdigit():
+                    line = ')'.join(line.split(')')[1:]).strip()
+                
+                # Remove outer quotes
+                line = line.strip('"\'')
+                cleaned_lines.append(line)
+            
+            # Parse field-value pairs
+            key_value_pairs = {}
+            current_field = None
+            
+            for line in cleaned_lines:
+                if current_field is None:
+                    current_field = line
+                else:
+                    value = line
+                    # Handle escaped JSON strings
+                    if value.startswith('{') and '\\\"' in value:
+                        try:
+                            # Replace escaped quotes and parse as JSON
+                            unescaped_value = value.replace('\\"', '"').replace('\\\\', '\\')
+                            json_obj = json.loads(unescaped_value)
+                            value = json_obj
+                        except (json.JSONDecodeError, ValueError):
+                            value = value.replace('\\"', '"').replace('\\\\', '\\')
+                    
+                    key_value_pairs[current_field] = value
+                    current_field = None
+            
+            return key_value_pairs
+            
+        except Exception as e:
+            self.log_output(f"Error getting Redis key value: {str(e)}", "error")
+            return None
+
+# Global instance
+vms_debug = VMSDebugWeb()
+
+@app.route('/')
+def index():
+    """Main page"""
+    return render_template('index.html')
+
+@socketio.on('connect')
+def handle_connect():
+    """Handle client connection"""
+    # Send the actual SSH connection status, not WebSocket status
+    if vms_debug.connected:
+        emit('connection_status', {'connected': True, 'message': 'Connected to SSH server'})
+    else:
+        emit('connection_status', {'connected': False, 'message': 'Not Connected'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handle client disconnection"""
+    print('Client disconnected')
+
+@socketio.on('ssh_connect')
+def handle_ssh_connect(data):
+    """Handle SSH connection request"""
+    host = data.get('host', '')
+    username = data.get('username', '')
+    ssh_password = data.get('ssh_password', '')
+    admin_password = data.get('admin_password', '')
+    
+    if not all([host, username, ssh_password, admin_password]):
+        emit('connection_status', {'connected': False, 'message': 'Missing connection parameters'})
+        return
+    
+    # Run connection in separate thread
+    thread = threading.Thread(
+        target=vms_debug.connect_to_server,
+        args=(host, username, ssh_password, admin_password),
+        daemon=True
+    )
+    thread.start()
+
+@socketio.on('ssh_disconnect')
+def handle_ssh_disconnect():
+    """Handle SSH disconnection request"""
+    vms_debug.disconnect_from_server()
+
+@socketio.on('run_kubectl')
+def handle_run_kubectl():
+    """Handle kubectl commands execution"""
+    if not vms_debug.connected:
+        emit('log_output', {
+            'message': 'Error: Not connected to server',
+            'tag': 'error',
+            'timestamp': datetime.now().strftime("%H:%M:%S")
+        })
+        return
+    
+    # Run kubectl commands in separate thread
+    thread = threading.Thread(target=vms_debug.run_kubectl_commands, daemon=True)
+    thread.start()
+
+@socketio.on('build_tenant_data')
+def handle_build_tenant_data():
+    """Handle tenant data building"""
+    if not vms_debug.connected:
+        emit('log_output', {
+            'message': 'Error: Not connected to server',
+            'tag': 'error',
+            'timestamp': datetime.now().strftime("%H:%M:%S")
+        })
+        return
+    
+    # Run tenant data building in separate thread
+    thread = threading.Thread(target=vms_debug.build_tenant_data, daemon=True)
+    thread.start()
+
+@socketio.on('clear_output')
+def handle_clear_output():
+    """Handle clear output request"""
+    emit('clear_output_response', {})
+
+@socketio.on('get_tenant_list')
+def handle_get_tenant_list():
+    """Handle request for tenant list"""
+    tenants = list(vms_debug.tenant_database.keys()) if vms_debug.tenant_database else []
+    emit('tenant_list_response', {'tenants': tenants})
+
+@socketio.on('select_tenant')
+def handle_select_tenant(data):
+    """Handle tenant selection"""
+    tenant_name = data.get('tenant', '')
+    if tenant_name in vms_debug.tenant_database:
+        tenant_info = vms_debug.tenant_database[tenant_name]
+        emit('tenant_info_response', {'tenant': tenant_name, 'info': tenant_info})
+    else:
+        emit('tenant_info_response', {'tenant': tenant_name, 'info': None, 'error': 'Tenant not found'})
+
+@socketio.on('show_tenant_database')
+def handle_show_tenant_database():
+    """Handle request to show complete tenant database"""
+    emit('show_database_response', {'database': vms_debug.tenant_database})
+
+@socketio.on('get_redis_keys')
+def handle_get_redis_keys(data):
+    """Handle request to get Redis keys for a tenant"""
+    tenant_name = data.get('tenant', '')
+    if not tenant_name:
+        emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'No tenant specified'})
+        return
+    
+    if not vms_debug.connected:
+        emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'Not connected to server'})
+        return
+    
+    # Run Redis key extraction in separate thread
+    def extract_keys():
+        keys = vms_debug.extract_redis_keys_for_tenant(tenant_name)
+        socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys})
+    
+    thread = threading.Thread(target=extract_keys, daemon=True)
+    thread.start()
+
+@socketio.on('get_redis_key_value')
+def handle_get_redis_key_value(data):
+    """Handle request to get Redis key value"""
+    tenant_name = data.get('tenant', '')
+    key_name = data.get('key', '')
+    
+    # Add debug logging
+    print(f"DEBUG: Received get_redis_key_value request - tenant: '{tenant_name}', key: '{key_name}'")
+    
+    if not tenant_name or not key_name:
+        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', key: '{key_name}'")
+        emit('redis_key_value_response', {
+            'tenant': tenant_name, 
+            'key': key_name, 
+            'value': None, 
+            'error': 'Missing tenant or key name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('redis_key_value_response', {
+            'tenant': tenant_name, 
+            'key': key_name, 
+            'value': None, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get Redis key value")
+    
+    # Run Redis key value extraction in separate thread
+    def get_key_value():
+        print(f"DEBUG: In thread - calling get_redis_key_value for tenant '{tenant_name}', key '{key_name}'")
+        key_value = vms_debug.get_redis_key_value(tenant_name, key_name)
+        print(f"DEBUG: Got key value result: {type(key_value)} - {key_value}")
+        socketio.emit('redis_key_value_response', {
+            'tenant': tenant_name,
+            'key': key_name, 
+            'value': key_value
+        })
+        print(f"DEBUG: Emitted redis_key_value_response")
+    
+    thread = threading.Thread(target=get_key_value, daemon=True)
+    thread.start()
+
+@socketio.on('get_configmaps')
+def handle_get_configmaps(data):
+    """Handle request to get ConfigMaps for a tenant"""
+    tenant_name = data.get('tenant', '')
+    
+    print(f"DEBUG: Received get_configmaps request - tenant: '{tenant_name}'")
+    
+    if not tenant_name:
+        print(f"DEBUG: Missing tenant parameter")
+        emit('configmaps_response', {
+            'tenant': tenant_name, 
+            'configmaps': [], 
+            'error': 'Missing tenant name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('configmaps_response', {
+            'tenant': tenant_name, 
+            'configmaps': [], 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get ConfigMaps")
+    
+    # Run ConfigMaps extraction in separate thread
+    def get_configmaps():
+        print(f"DEBUG: In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
+        configmaps = vms_debug.get_all_configmaps_for_tenant(tenant_name)
+        print(f"DEBUG: Got ConfigMaps result: {len(configmaps)} configmaps")
+        socketio.emit('configmaps_response', {
+            'tenant': tenant_name,
+            'configmaps': configmaps
+        })
+        print(f"DEBUG: Emitted configmaps_response")
+    
+    thread = threading.Thread(target=get_configmaps, daemon=True)
+    thread.start()
+
+@socketio.on('get_configmap_details')
+def handle_get_configmap_details(data):
+    """Handle request to get ConfigMap details"""
+    tenant_name = data.get('tenant', '')
+    configmap_name = data.get('configmap', '')
+    
+    print(f"DEBUG: Received get_configmap_details request - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+    
+    if not tenant_name or not configmap_name:
+        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+        emit('configmap_details_response', {
+            'tenant': tenant_name, 
+            'configmap': configmap_name, 
+            'details': {}, 
+            'error': 'Missing tenant or configmap name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('configmap_details_response', {
+            'tenant': tenant_name, 
+            'configmap': configmap_name, 
+            'details': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get ConfigMap details")
+    
+    # Run ConfigMap details extraction in separate thread
+    def get_configmap_details():
+        print(f"DEBUG: In thread - calling get_configmap_details for tenant '{tenant_name}', configmap '{configmap_name}'")
+        details = vms_debug.get_configmap_details(tenant_name, configmap_name)
+        print(f"DEBUG: Got ConfigMap details result: {type(details)}")
+        socketio.emit('configmap_details_response', {
+            'tenant': tenant_name,
+            'configmap': configmap_name,
+            'details': details
+        })
+        print(f"DEBUG: Emitted configmap_details_response")
+    
+    thread = threading.Thread(target=get_configmap_details, daemon=True)
+    thread.start()
+
+@socketio.on('get_configmap_json_details')
+def handle_get_configmap_json_details(data):
+    """Handle request to get ConfigMap JSON details using the kubectl + jq command"""
+    tenant_name = data.get('tenant', '')
+    configmap_name = data.get('configmap', '')
+    
+    print(f"DEBUG: Received get_configmap_json_details request - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+    
+    if not tenant_name or not configmap_name:
+        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+        emit('configmap_json_details_response', {
+            'tenant': tenant_name, 
+            'configmap': configmap_name, 
+            'details': {}, 
+            'error': 'Missing tenant or configmap name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('configmap_json_details_response', {
+            'tenant': tenant_name, 
+            'configmap': configmap_name, 
+            'details': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get ConfigMap JSON details")
+    
+    # Run ConfigMap JSON details extraction in separate thread
+    def get_configmap_json_details():
+        print(f"DEBUG: In thread - calling get_configmap_json_details for tenant '{tenant_name}', configmap '{configmap_name}'")
+        details = vms_debug.get_configmap_json_details(tenant_name, configmap_name)
+        print(f"DEBUG: Got ConfigMap JSON details result: {type(details)}")
+        socketio.emit('configmap_json_details_response', {
+            'tenant': tenant_name,
+            'configmap': configmap_name,
+            'details': details
+        })
+        print(f"DEBUG: Emitted configmap_json_details_response")
+    
+    thread = threading.Thread(target=get_configmap_json_details, daemon=True)
+    thread.start()
+
+if __name__ == '__main__':
+    # Create templates directory and HTML file if they don't exist
+    if not os.path.exists('templates'):
+        os.makedirs('templates')
+    
+    # Create the HTML template
+    html_template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMS Debug Tool - Web Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: 90vh;
+        }
+        
+        .left-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(90vh - 40px);
+        }
+        
+        /* Left panel scrollbar styling */
+        .left-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .left-panel::-webkit-scrollbar-track {
+            background-color: #e8f5e8;
+            border-radius: 4px;
+        }
+        
+        .left-panel::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 4px;
+        }
+        
+        .left-panel::-webkit-scrollbar-thumb:hover {
+            background-color: #2e7d32;
+        }
+        
+        .right-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .form-group-inline label {
+            min-width: 120px;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        
+        .form-group-inline input {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007acc;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #005a9e;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        button:disabled {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #output {
+            flex: 1;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #333;
+            max-height: calc(90vh - 120px);
+            min-height: 400px;
+        }
+        
+        /* Enhanced scrollbar styling */
+        #output::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #output::-webkit-scrollbar-track {
+            background-color: #1b2e1b;
+            border-radius: 6px;
+        }
+        
+        #output::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+            border: 2px solid #1b2e1b;
+        }
+        
+        #output::-webkit-scrollbar-thumb:hover {
+            background-color: #66bb6a;
+        }
+        
+        #output::-webkit-scrollbar-corner {
+            background-color: #1b2e1b;
+        }
+        
+        /* Firefox scrollbar styling */
+        #output {
+            scrollbar-width: thin;
+            scrollbar-color: #4caf50 #1b2e1b;
+        }
+        
+        .output-line {
+            margin: 2px 0;
+        }
+        
+        .command {
+            color: #4fc1ff;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #4ec9b0;
+        }
+        
+        .error {
+            color: #f14c4c;
+        }
+        
+        .info {
+            color: #dcdcaa;
+        }
+        
+        .timestamp {
+            color: #808080;
+        }
+        
+        .normal {
+            color: #d4d4d4;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .output-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .clear-btn {
+            padding: 5px 15px;
+            font-size: 12px;
+            width: auto;
+            margin: 0 2px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        
+        #tenant-details {
+            flex: 1;
+            background-color: #f8f9fa;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            max-height: calc(90vh - 120px);
+            min-height: 400px;
+        }
+        
+        #tenant-details::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-track {
+            background-color: #e8f5e8;
+            border-radius: 6px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-thumb:hover {
+            background-color: #2e7d32;
+        }
+        
+        .tenant-info-header {
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            margin: -15px -15px 15px -15px;
+            border-radius: 4px 4px 0 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .tenant-section {
+            background-color: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .tenant-section h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        
+        .tenant-property {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .tenant-property-name {
+            font-weight: bold;
+            min-width: 120px;
+            color: #495057;
+        }
+        
+        .tenant-property-value {
+            color: #212529;
+            font-family: 'Consolas', monospace;
+        }
+        
+        .database-view {
+            font-family: 'Consolas', monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>VMS Debug Tool - Web Interface</h1>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="section">
+                <h3>Server Connection</h3>
+                <div class="form-group-inline">
+                    <label for="host">Server IP:</label>
+                    <input type="text" id="host" value="vms1-tb163.versa-test.net">
+                </div>
+                <div class="form-group-inline">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" value="admin">
+                </div>
+                <div class="form-group-inline">
+                    <label for="ssh_password">SSH Password:</label>
+                    <input type="password" id="ssh_password" value="THS!5V3r5@vmsP@55">
+                </div>
+                <div class="form-group-inline">
+                    <label for="admin_password">Admin Password:</label>
+                    <input type="password" id="admin_password" value="THS!5V3r5@vmsP@55">
+                </div>
+                <button id="connect-btn" class="btn-primary" onclick="connect()">Connect</button>
+                <button id="disconnect-btn" class="btn-danger" onclick="disconnect()" disabled>Disconnect</button>
+                <div id="status" class="status disconnected">Status: Not Connected</div>
+            </div>
+            
+            <div class="section">
+                <h3>Operations</h3>
+                <button id="kubectl-btn" class="btn-success" onclick="runKubectl()" disabled>Run Kubectl Commands</button>
+                <button id="tenant-btn" class="btn-success" onclick="buildTenantData()" disabled>Build Tenant Data</button>
+                <button id="show-db-btn" class="btn-warning" onclick="showTenantDatabase()" disabled>Show Tenant Database</button>
+            </div>
+            
+            <div class="section" id="tenant-section" style="display:none;">
+                <h3>Tenant Selection</h3>
+                <div class="form-group">
+                    <label for="tenant-select">Select Tenant:</label>
+                    <select id="tenant-select" onchange="selectTenant()">
+                        <option value="">-- Select a tenant --</option>
+                    </select>
+                </div>
+                <button id="refresh-tenants-btn" class="btn-secondary" onclick="refreshTenantList()">Refresh List</button>
+            </div>
+            
+            <div class="section" id="redis-keys-section" style="display:none;">
+                <h3>Redis Keys</h3>
+                <div class="form-group">
+                    <label for="redis-keys-select">Select Redis Key:</label>
+                    <select id="redis-keys-select" onchange="selectRedisKey()">
+                        <option value="">-- Select a Redis key --</option>
+                    </select>
+                </div>
+                <button id="refresh-keys-btn" class="btn-secondary" onclick="refreshRedisKeys()" disabled>Refresh Keys</button>
+                <button id="view-key-btn" class="btn-warning" onclick="viewRedisKeyValue()" disabled>View Key Value</button>
+            </div>
+            
+            <div class="section" id="configmaps-section" style="display:none;">
+                <h3>ConfigMaps</h3>
+                <div class="form-group">
+                    <label for="configmaps-select">Select ConfigMap:</label>
+                    <select id="configmaps-select" onchange="selectConfigMap()">
+                        <option value="">-- Select a ConfigMap --</option>
+                    </select>
+                </div>
+                <button id="refresh-configmaps-btn" class="btn-secondary" onclick="refreshConfigMaps()" disabled>Refresh ConfigMaps</button>
+                <button id="view-configmap-btn" class="btn-warning" onclick="viewConfigMapDetails()" disabled>View ConfigMap Details</button>
+                <button id="show-configmap-json-btn" class="btn-success" onclick="showConfigMapJSON()" disabled>Show Config-Map JSON</button>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="output-header">
+                <h3 id="panel-title">Command Execution Output</h3>
+                <div>
+                    <button class="btn-secondary clear-btn" onclick="switchToOutput()">Command Output</button>
+                    <button class="btn-secondary clear-btn" onclick="clearOutput()">Clear</button>
+                </div>
+            </div>
+            <div id="output"></div>
+            <div id="tenant-details" style="display:none;">
+                <div id="tenant-info-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let connected = false;
+
+        // Socket event handlers
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('log_output', function(data) {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = `output-line ${data.tag}`;
+            line.innerHTML = `<span class="timestamp">[${data.timestamp}]</span> ${escapeHtml(data.message)}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        });
+
+        socket.on('connection_status', function(data) {
+            connected = data.connected;
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const kubectlBtn = document.getElementById('kubectl-btn');
+            const tenantBtn = document.getElementById('tenant-btn');
+            const showDbBtn = document.getElementById('show-db-btn');
+            const inputs = document.querySelectorAll('input');
+
+            if (connected) {
+                status.textContent = 'Status: Connected';
+                status.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                kubectlBtn.disabled = false;
+                tenantBtn.disabled = false;
+                // Keep Show Database button disabled until tenant data is built
+                // showDbBtn.disabled = false; // This will be enabled in tenant_database_updated event
+                inputs.forEach(input => input.disabled = true);
+            } else {
+                status.textContent = `Status: ${data.message}`;
+                status.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                kubectlBtn.disabled = true;
+                tenantBtn.disabled = true;
+                showDbBtn.disabled = true;
+                inputs.forEach(input => input.disabled = false);
+                // Hide tenant section when disconnected
+                document.getElementById('tenant-section').style.display = 'none';
+            }
+        });
+
+        socket.on('clear_output_response', function(data) {
+            document.getElementById('output').innerHTML = '';
+        });
+
+        socket.on('tenant_data', function(data) {
+            console.log('Tenant data received:', data);
+        });
+
+        socket.on('tenant_database_updated', function(data) {
+            updateTenantDropdown(data.tenants);
+            document.getElementById('tenant-section').style.display = 'block';
+            // Enable the Show Database button only after tenant data is built
+            document.getElementById('show-db-btn').disabled = false;
+        });
+
+        socket.on('tenant_list_response', function(data) {
+            updateTenantDropdown(data.tenants);
+        });
+
+        socket.on('tenant_info_response', function(data) {
+            displayTenantInfo(data.tenant, data.info, data.error);
+        });
+
+        socket.on('show_database_response', function(data) {
+            displayTenantDatabase(data.database);
+        });
+
+        socket.on('redis_keys_response', function(data) {
+            updateRedisKeysDropdown(data.tenant, data.keys, data.error);
+        });
+
+        socket.on('redis_key_value_response', function(data) {
+            console.log('DEBUG: Received redis_key_value_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting Redis key value: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.value) {
+                console.log('DEBUG: Processing successful response with value:', data.value);
+                // Display Redis key value in tenant details panel
+                let html = `<div class="tenant-info-header">Redis Key Value</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Key Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Key:</div>
+                    <div class="tenant-property-value">${data.key}</div>
+                </div>`;
+                html += '</div>';
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Key Value</h4>';
+                html += '<div class="database-view">';
+                
+                // Format the value properly
+                if (typeof data.value === 'object') {
+                    html += JSON.stringify(data.value, null, 2);
+                } else {
+                    html += escapeHtml(String(data.value));
+                }
+                
+                html += '</div>';
+                html += '</div>';
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `Redis Key: ${data.key}`;
+            } else {
+                console.log('DEBUG: Processing empty/null value response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Key '${escapeHtml(data.key)}' not found or has no value.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // ConfigMaps event listeners
+        socket.on('configmaps_response', function(data) {
+            updateConfigMapsDropdown(data.tenant, data.configmaps, data.error);
+        });
+
+        socket.on('configmap_json_details_response', function(data) {
+            console.log('DEBUG: Received configmap_json_details_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap JSON details: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.details) {
+                console.log('DEBUG: Processing successful JSON response with details:', data.details);
+                // Display ConfigMap JSON details in tenant details panel
+                let html = `<div class="tenant-info-header">ConfigMap JSON Details (kubectl + jq)</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>ConfigMap Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant/Namespace:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">ConfigMap Name:</div>
+                    <div class="tenant-property-value">${data.configmap}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Timestamp:</div>
+                    <div class="tenant-property-value">${data.details.timestamp}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Command:</div>
+                    <div class="tenant-property-value">kubectl get configmap ${data.configmap} -n ${data.tenant} -o json | jq ".data.config | fromjson"</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add JSON output
+                if (data.details.json_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>JSON Configuration (.data.config | fromjson)</h4>';
+                    html += '<div class="database-view">';
+                    
+                    // Format JSON if possible, otherwise show as text
+                    if (data.details.parsed_json) {
+                        html += JSON.stringify(data.details.parsed_json, null, 2);
+                    } else {
+                        html += escapeHtml(data.details.json_output);
+                    }
+                    
+                    html += '</div>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>JSON Configuration</h4>';
+                    html += '<p>No JSON output returned from the command.</p>';
+                    html += '</div>';
+                }
+                
+                // Add raw output for debugging if needed
+                if (data.details.raw_output && data.details.raw_output !== data.details.json_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Raw Command Output (Debug)</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.raw_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `ConfigMap JSON: ${data.configmap}`;
+            } else {
+                console.log('DEBUG: Processing empty/null JSON details response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' JSON details not found or empty.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        socket.on('configmap_details_response', function(data) {
+            console.log('DEBUG: Received configmap_details_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap details: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.details) {
+                console.log('DEBUG: Processing successful response with details:', data.details);
+                // Display ConfigMap details in tenant details panel
+                let html = `<div class="tenant-info-header">ConfigMap Details</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>ConfigMap Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant/Namespace:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">ConfigMap Name:</div>
+                    <div class="tenant-property-value">${data.configmap}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Timestamp:</div>
+                    <div class="tenant-property-value">${data.details.timestamp}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add describe output
+                if (data.details.describe_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Describe Output</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.describe_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                // Add YAML output
+                if (data.details.yaml_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>YAML Configuration</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.yaml_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `ConfigMap: ${data.configmap}`;
+            } else {
+                console.log('DEBUG: Processing empty/null details response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' not found or has no details.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // Helper functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function connect() {
+            const host = document.getElementById('host').value;
+            const username = document.getElementById('username').value;
+            const ssh_password = document.getElementById('ssh_password').value;
+            const admin_password = document.getElementById('admin_password').value;
+
+            if (!host || !username || !ssh_password || !admin_password) {
+                alert('Please fill in all connection fields');
+                return;
+            }
+
+            socket.emit('ssh_connect', {
+                host: host,
+                username: username,
+                ssh_password: ssh_password,
+                admin_password: admin_password
+            });
+        }
+
+        function disconnect() {
+            socket.emit('ssh_disconnect');
+        }
+
+        function runKubectl() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            socket.emit('run_kubectl');
+        }
+
+        function buildTenantData() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            socket.emit('build_tenant_data');
+        }
+
+        function clearOutput() {
+            socket.emit('clear_output');
+        }
+
+        function showTenantDatabase() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            
+            // Check if button is enabled (meaning tenant data has been built)
+            const showDbBtn = document.getElementById('show-db-btn');
+            if (showDbBtn.disabled) {
+                alert('Please build tenant data first using "Build Tenant Data" button');
+                return;
+            }
+            
+            socket.emit('show_tenant_database');
+        }
+
+        function refreshTenantList() {
+            socket.emit('get_tenant_list');
+        }
+
+        function selectTenant() {
+            const select = document.getElementById('tenant-select');
+            const selectedTenant = select.value;
+            if (selectedTenant) {
+                socket.emit('select_tenant', { tenant: selectedTenant });
+                
+                // Show Redis keys section and load keys for selected tenant
+                document.getElementById('redis-keys-section').style.display = 'block';
+                socket.emit('get_redis_keys', { tenant: selectedTenant });
+                
+                // Reset Redis keys dropdown and disable buttons
+                const redisSelect = document.getElementById('redis-keys-select');
+                redisSelect.innerHTML = '<option value="">-- Loading Redis keys... --</option>';
+                document.getElementById('refresh-keys-btn').disabled = false;
+                document.getElementById('view-key-btn').disabled = true;
+                
+                // Show ConfigMaps section and load ConfigMaps for selected tenant
+                document.getElementById('configmaps-section').style.display = 'block';
+                socket.emit('get_configmaps', { tenant: selectedTenant });
+                
+                // Reset ConfigMaps dropdown and disable buttons
+                const configmapsSelect = document.getElementById('configmaps-select');
+                configmapsSelect.innerHTML = '<option value="">-- Loading ConfigMaps... --</option>';
+                document.getElementById('refresh-configmaps-btn').disabled = false;
+                document.getElementById('view-configmap-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+            } else {
+                // Hide Redis keys section if no tenant selected
+                document.getElementById('redis-keys-section').style.display = 'none';
+                // Hide ConfigMaps section if no tenant selected
+                document.getElementById('configmaps-section').style.display = 'none';
+            }
+        }
+
+        function updateTenantDropdown(tenants) {
+            const select = document.getElementById('tenant-select');
+            select.innerHTML = '<option value="">-- Select a tenant --</option>';
+            tenants.forEach(tenant => {
+                const option = document.createElement('option');
+                option.value = tenant;
+                option.textContent = tenant;
+                select.appendChild(option);
+            });
+        }
+
+        function refreshRedisKeys() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const selectedTenant = tenantSelect.value;
+            if (selectedTenant) {
+                const redisSelect = document.getElementById('redis-keys-select');
+                redisSelect.innerHTML = '<option value="">-- Refreshing Redis keys... --</option>';
+                socket.emit('get_redis_keys', { tenant: selectedTenant });
+                document.getElementById('view-key-btn').disabled = true;
+            }
+        }
+
+        function selectRedisKey() {
+            const select = document.getElementById('redis-keys-select');
+            const selectedKey = select.value;
+            document.getElementById('view-key-btn').disabled = !selectedKey;
+        }
+
+        function viewRedisKeyValue() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const redisSelect = document.getElementById('redis-keys-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedKey = redisSelect.value;
+            
+            console.log('DEBUG: viewRedisKeyValue called with tenant:', selectedTenant, 'key:', selectedKey);
+            
+            if (selectedTenant && selectedKey) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting Redis key value for tenant: ${escapeHtml(selectedTenant)}, key: ${escapeHtml(selectedKey)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_redis_key_value with data:', { tenant: selectedTenant, key: selectedKey });
+                socket.emit('get_redis_key_value', { tenant: selectedTenant, key: selectedKey });
+            } else {
+                console.log('DEBUG: Missing tenant or key selection');
+                alert('Please select both a tenant and a Redis key');
+            }
+        }
+
+        function updateRedisKeysDropdown(tenant, keys, error) {
+            const select = document.getElementById('redis-keys-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-key-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a Redis key --</option>';
+            
+            if (keys && keys.length > 0) {
+                keys.forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = key;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No Redis keys found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-key-btn').disabled = true;
+        }
+
+        // ConfigMaps Functions
+        function selectConfigMap() {
+            const select = document.getElementById('configmaps-select');
+            const viewBtn = document.getElementById('view-configmap-btn');
+            const jsonBtn = document.getElementById('show-configmap-json-btn');
+            
+            if (select.value) {
+                viewBtn.disabled = false;
+                jsonBtn.disabled = false;
+            } else {
+                viewBtn.disabled = true;
+                jsonBtn.disabled = true;
+            }
+        }
+
+        function refreshConfigMaps() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const selectedTenant = tenantSelect.value;
+            
+            if (selectedTenant) {
+                const configmapsSelect = document.getElementById('configmaps-select');
+                configmapsSelect.innerHTML = '<option value="">-- Refreshing ConfigMaps... --</option>';
+                document.getElementById('view-configmap-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+                
+                socket.emit('get_configmaps', { tenant: selectedTenant });
+            }
+        }
+
+        function viewConfigMapDetails() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const configmapSelect = document.getElementById('configmaps-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedConfigMap = configmapSelect.value;
+            
+            console.log('DEBUG: viewConfigMapDetails called with tenant:', selectedTenant, 'configmap:', selectedConfigMap);
+            
+            if (selectedTenant && selectedConfigMap) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_configmap_details with data:', { tenant: selectedTenant, configmap: selectedConfigMap });
+                socket.emit('get_configmap_details', { tenant: selectedTenant, configmap: selectedConfigMap });
+            } else {
+                console.log('DEBUG: Missing tenant or configmap selection');
+                alert('Please select both a tenant and a ConfigMap');
+            }
+        }
+
+        function showConfigMapJSON() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const configmapSelect = document.getElementById('configmaps-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedConfigMap = configmapSelect.value;
+            
+            console.log('DEBUG: showConfigMapJSON called with tenant:', selectedTenant, 'configmap:', selectedConfigMap);
+            
+            if (selectedTenant && selectedConfigMap) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap JSON details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Add command line to show what's being executed
+                const commandLine = document.createElement('div');
+                commandLine.className = 'output-line command';
+                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> kubectl get configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)} -o json | jq ".data.config | fromjson"`;
+                output.appendChild(commandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_configmap_json_details with data:', { tenant: selectedTenant, configmap: selectedConfigMap });
+                socket.emit('get_configmap_json_details', { tenant: selectedTenant, configmap: selectedConfigMap });
+            } else {
+                console.log('DEBUG: Missing tenant or configmap selection');
+                alert('Please select both a tenant and a ConfigMap');
+            }
+        }
+
+        function updateConfigMapsDropdown(tenant, configmaps, error) {
+            const select = document.getElementById('configmaps-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-configmap-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+            
+            if (configmaps && configmaps.length > 0) {
+                configmaps.forEach(configmap => {
+                    const option = document.createElement('option');
+                    option.value = configmap.name;
+                    option.textContent = `${configmap.name} (Data: ${configmap.data_count}, Age: ${configmap.age})`;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No ConfigMaps found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-configmap-btn').disabled = true;
+            document.getElementById('show-configmap-json-btn').disabled = true;
+        }
+
+        function switchToOutput() {
+            document.getElementById('output').style.display = 'block';
+            document.getElementById('tenant-details').style.display = 'none';
+            document.getElementById('panel-title').textContent = 'Command Execution Output';
+        }
+
+        function displayTenantInfo(tenant, info, error) {
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (error) {
+                contentDiv.innerHTML = `<div class="tenant-info-header">Error</div><p>${error}</p>`;
+            } else if (info) {
+                let html = `<div class="tenant-info-header">Tenant Details: ${tenant}</div>`;
+                
+                // Basic Information
+                html += '<div class="tenant-section">';
+                html += '<h4>Basic Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant Name:</div>
+                    <div class="tenant-property-value">${tenant}</div>
+                </div>`;
+                
+                const services = info.services || [];
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Services:</div>
+                    <div class="tenant-property-value">${services.join(', ') || 'None'}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Redis Information
+                if (info.redis_info) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Redis Service Information</h4>';
+                    const redis = info.redis_info;
+                    
+                    Object.entries(redis).forEach(([key, value]) => {
+                        html += `<div class="tenant-property">
+                            <div class="tenant-property-name">${key.replace('_', ' ').toUpperCase()}:</div>
+                            <div class="tenant-property-value">${value || 'N/A'}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Redis Service Information</h4>';
+                    html += '<p>No Redis service found for this tenant</p>';
+                    html += '</div>';
+                }
+                
+                // ConfigMaps Information
+                if (info.configmaps_info) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>ConfigMaps Information</h4>';
+                    const configmaps = info.configmaps_info;
+                    
+                    html += `<div class="tenant-property">
+                        <div class="tenant-property-name">Total ConfigMaps:</div>
+                        <div class="tenant-property-value">${configmaps.total_configmaps || 0}</div>
+                    </div>`;
+                    
+                    if (configmaps.configmaps && configmaps.configmaps.length > 0) {
+                        html += '<h5>ConfigMaps List:</h5>';
+                        configmaps.configmaps.forEach((cm, index) => {
+                            html += `<div class="tenant-property">
+                                <div class="tenant-property-name">${index + 1}. ${cm.name}:</div>
+                                <div class="tenant-property-value">Data: ${cm.data_count}, Age: ${cm.age}</div>
+                            </div>`;
+                        });
+                    }
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>ConfigMaps Information</h4>';
+                    html += '<p>No ConfigMaps found for this tenant</p>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+            }
+            
+            outputDiv.style.display = 'none';
+            detailsDiv.style.display = 'block';
+            document.getElementById('panel-title').textContent = `Tenant Information: ${tenant}`;
+        }
+
+        function displayTenantDatabase(database) {
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            let html = '<div class="tenant-info-header">Complete Tenant Database</div>';
+            html += '<div class="database-view">';
+            html += JSON.stringify(database, null, 2);
+            html += '</div>';
+            
+            contentDiv.innerHTML = html;
+            
+            outputDiv.style.display = 'none';
+            detailsDiv.style.display = 'block';
+            document.getElementById('panel-title').textContent = 'Tenant Database';
+        }
+    </script>
+</body>
+</html>"""
+    
+    with open('templates/index.html', 'w') as f:
+        f.write(html_template)
+    
+    print("Starting VMS Debug Tool Web Interface...")
+    print("Open your web browser and go to: http://localhost:5000")
+    print("Press Ctrl+C to stop the server")
+    
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)

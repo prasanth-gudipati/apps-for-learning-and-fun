@@ -1023,12 +1023,9 @@ def main():
     comprehensive_data = build_comprehensive_tenant_data(shell, include_redis_keys=True)
     
     if comprehensive_data:
-        # Display tenant list for selection
-        tenant_map = display_tenant_list(comprehensive_data)
-        
         # Interactive tenant selection
         while True:
-            # Always show the tenant list before options
+            # Display tenant list before options
             tenant_map = display_tenant_list(comprehensive_data)
             
             print("\nOptions:")

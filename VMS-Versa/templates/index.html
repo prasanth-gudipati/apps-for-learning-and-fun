@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMS Debug Tool - Web Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: 90vh;
+        }
+        
+        .left-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(90vh - 40px);
+        }
+        
+        /* Left panel scrollbar styling */
+        .left-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .left-panel::-webkit-scrollbar-track {
+            background-color: #e8f5e8;
+            border-radius: 4px;
+        }
+        
+        .left-panel::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 4px;
+        }
+        
+        .left-panel::-webkit-scrollbar-thumb:hover {
+            background-color: #2e7d32;
+        }
+        
+        .right-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .form-group-inline label {
+            min-width: 120px;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        
+        .form-group-inline input {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007acc;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #005a9e;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        button:disabled {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #output {
+            flex: 1;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #333;
+            max-height: calc(90vh - 120px);
+            min-height: 400px;
+        }
+        
+        /* Enhanced scrollbar styling */
+        #output::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #output::-webkit-scrollbar-track {
+            background-color: #1b2e1b;
+            border-radius: 6px;
+        }
+        
+        #output::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+            border: 2px solid #1b2e1b;
+        }
+        
+        #output::-webkit-scrollbar-thumb:hover {
+            background-color: #66bb6a;
+        }
+        
+        #output::-webkit-scrollbar-corner {
+            background-color: #1b2e1b;
+        }
+        
+        /* Firefox scrollbar styling */
+        #output {
+            scrollbar-width: thin;
+            scrollbar-color: #4caf50 #1b2e1b;
+        }
+        
+        .output-line {
+            margin: 2px 0;
+        }
+        
+        .command {
+            color: #4fc1ff;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #4ec9b0;
+        }
+        
+        .error {
+            color: #f14c4c;
+        }
+        
+        .info {
+            color: #dcdcaa;
+        }
+        
+        .timestamp {
+            color: #808080;
+        }
+        
+        .normal {
+            color: #d4d4d4;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .output-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .clear-btn {
+            padding: 5px 15px;
+            font-size: 12px;
+            width: auto;
+            margin: 0 2px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        
+        #tenant-details {
+            flex: 1;
+            background-color: #f8f9fa;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            max-height: calc(90vh - 120px);
+            min-height: 400px;
+        }
+        
+        #tenant-details::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-track {
+            background-color: #e8f5e8;
+            border-radius: 6px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-thumb:hover {
+            background-color: #2e7d32;
+        }
+        
+        .tenant-info-header {
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            margin: -15px -15px 15px -15px;
+            border-radius: 4px 4px 0 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .tenant-section {
+            background-color: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .tenant-section h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        
+        .tenant-property {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .tenant-property-name {
+            font-weight: bold;
+            min-width: 120px;
+            color: #495057;
+        }
+        
+        .tenant-property-value {
+            color: #212529;
+            font-family: 'Consolas', monospace;
+        }
+        
+        .database-view {
+            font-family: 'Consolas', monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>VMS Debug Tool - Web Interface</h1>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="section">
+                <h3>Server Connection</h3>
+                <div class="form-group-inline">
+                    <label for="host">Server IP:</label>
+                    <input type="text" id="host" value="vms1-tb163.versa-test.net">
+                </div>
+                <div class="form-group-inline">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" value="admin">
+                </div>
+                <div class="form-group-inline">
+                    <label for="ssh_password">SSH Password:</label>
+                    <input type="password" id="ssh_password" value="THS!5V3r5@vmsP@55">
+                </div>
+                <div class="form-group-inline">
+                    <label for="admin_password">Admin Password:</label>
+                    <input type="password" id="admin_password" value="THS!5V3r5@vmsP@55">
+                </div>
+                <button id="connect-btn" class="btn-primary" onclick="connect()">Connect</button>
+                <button id="disconnect-btn" class="btn-danger" onclick="disconnect()" disabled>Disconnect</button>
+                <div id="status" class="status disconnected">Status: Not Connected</div>
+            </div>
+            
+            <div class="section">
+                <h3>Operations</h3>
+                <button id="kubectl-btn" class="btn-success" onclick="runKubectl()" disabled>Run Kubectl Commands</button>
+                <button id="tenant-btn" class="btn-success" onclick="buildTenantData()" disabled>Build Tenant Data</button>
+                <button id="show-db-btn" class="btn-warning" onclick="showTenantDatabase()" disabled>Show Tenant Database</button>
+            </div>
+            
+            <div class="section" id="tenant-section" style="display:none;">
+                <h3>Tenant Selection</h3>
+                <div class="form-group">
+                    <label for="tenant-select">Select Tenant:</label>
+                    <select id="tenant-select" onchange="selectTenant()">
+                        <option value="">-- Select a tenant --</option>
+                    </select>
+                </div>
+                <button id="refresh-tenants-btn" class="btn-secondary" onclick="refreshTenantList()">Refresh List</button>
+            </div>
+            
+            <div class="section" id="redis-keys-section" style="display:none;">
+                <h3>Redis Keys</h3>
+                <div class="form-group">
+                    <label for="redis-keys-select">Select Redis Key:</label>
+                    <select id="redis-keys-select" onchange="selectRedisKey()">
+                        <option value="">-- Select a Redis key --</option>
+                    </select>
+                </div>
+                <button id="refresh-keys-btn" class="btn-secondary" onclick="refreshRedisKeys()" disabled>Refresh Keys</button>
+                <button id="view-key-btn" class="btn-warning" onclick="viewRedisKeyValue()" disabled>View Key Value</button>
+            </div>
+            
+            <div class="section" id="configmaps-section" style="display:none;">
+                <h3>ConfigMaps</h3>
+                <div class="form-group">
+                    <label for="configmaps-select">Select ConfigMap:</label>
+                    <select id="configmaps-select" onchange="selectConfigMap()">
+                        <option value="">-- Select a ConfigMap --</option>
+                    </select>
+                </div>
+                <button id="refresh-configmaps-btn" class="btn-secondary" onclick="refreshConfigMaps()" disabled>Refresh ConfigMaps</button>
+                <button id="view-configmap-btn" class="btn-warning" onclick="viewConfigMapDetails()" disabled>View ConfigMap Details</button>
+                <button id="show-configmap-json-btn" class="btn-success" onclick="showConfigMapJSON()" disabled>Show Config-Map JSON</button>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="output-header">
+                <h3 id="panel-title">Command Execution Output</h3>
+                <div>
+                    <button class="btn-secondary clear-btn" onclick="switchToOutput()">Command Output</button>
+                    <button class="btn-secondary clear-btn" onclick="clearOutput()">Clear</button>
+                </div>
+            </div>
+            <div id="output"></div>
+            <div id="tenant-details" style="display:none;">
+                <div id="tenant-info-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let connected = false;
+
+        // Socket event handlers
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('log_output', function(data) {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = `output-line ${data.tag}`;
+            line.innerHTML = `<span class="timestamp">[${data.timestamp}]</span> ${escapeHtml(data.message)}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        });
+
+        socket.on('connection_status', function(data) {
+            connected = data.connected;
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const kubectlBtn = document.getElementById('kubectl-btn');
+            const tenantBtn = document.getElementById('tenant-btn');
+            const showDbBtn = document.getElementById('show-db-btn');
+            const inputs = document.querySelectorAll('input');
+
+            if (connected) {
+                status.textContent = 'Status: Connected';
+                status.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                kubectlBtn.disabled = false;
+                tenantBtn.disabled = false;
+                // Keep Show Database button disabled until tenant data is built
+                // showDbBtn.disabled = false; // This will be enabled in tenant_database_updated event
+                inputs.forEach(input => input.disabled = true);
+            } else {
+                status.textContent = `Status: ${data.message}`;
+                status.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                kubectlBtn.disabled = true;
+                tenantBtn.disabled = true;
+                showDbBtn.disabled = true;
+                inputs.forEach(input => input.disabled = false);
+                // Hide tenant section when disconnected
+                document.getElementById('tenant-section').style.display = 'none';
+            }
+        });
+
+        socket.on('clear_output_response', function(data) {
+            document.getElementById('output').innerHTML = '';
+        });
+
+        socket.on('tenant_data', function(data) {
+            console.log('Tenant data received:', data);
+        });
+
+        socket.on('tenant_database_updated', function(data) {
+            updateTenantDropdown(data.tenants);
+            document.getElementById('tenant-section').style.display = 'block';
+            // Enable the Show Database button only after tenant data is built
+            document.getElementById('show-db-btn').disabled = false;
+        });
+
+        socket.on('tenant_list_response', function(data) {
+            updateTenantDropdown(data.tenants);
+        });
+
+        socket.on('tenant_info_response', function(data) {
+            displayTenantInfo(data.tenant, data.info, data.error);
+        });
+
+        socket.on('show_database_response', function(data) {
+            displayTenantDatabase(data.database);
+        });
+
+        socket.on('redis_keys_response', function(data) {
+            updateRedisKeysDropdown(data.tenant, data.keys, data.error);
+        });
+
+        socket.on('redis_key_value_response', function(data) {
+            console.log('DEBUG: Received redis_key_value_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting Redis key value: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.value) {
+                console.log('DEBUG: Processing successful response with value:', data.value);
+                // Display Redis key value in tenant details panel
+                let html = `<div class="tenant-info-header">Redis Key Value</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Key Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Key:</div>
+                    <div class="tenant-property-value">${data.key}</div>
+                </div>`;
+                html += '</div>';
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Key Value</h4>';
+                html += '<div class="database-view">';
+                
+                // Format the value properly
+                if (typeof data.value === 'object') {
+                    html += JSON.stringify(data.value, null, 2);
+                } else {
+                    html += escapeHtml(String(data.value));
+                }
+                
+                html += '</div>';
+                html += '</div>';
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `Redis Key: ${data.key}`;
+            } else {
+                console.log('DEBUG: Processing empty/null value response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Key '${escapeHtml(data.key)}' not found or has no value.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // ConfigMaps event listeners
+        socket.on('configmaps_response', function(data) {
+            updateConfigMapsDropdown(data.tenant, data.configmaps, data.error);
+        });
+
+        socket.on('configmap_json_details_response', function(data) {
+            console.log('DEBUG: Received configmap_json_details_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap JSON details: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.details) {
+                console.log('DEBUG: Processing successful JSON response with details:', data.details);
+                // Display ConfigMap JSON details in tenant details panel
+                let html = `<div class="tenant-info-header">ConfigMap JSON Details (kubectl + jq)</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>ConfigMap Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant/Namespace:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">ConfigMap Name:</div>
+                    <div class="tenant-property-value">${data.configmap}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Timestamp:</div>
+                    <div class="tenant-property-value">${data.details.timestamp}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Command:</div>
+                    <div class="tenant-property-value">kubectl get configmap ${data.configmap} -n ${data.tenant} -o json | jq ".data.config | fromjson"</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add JSON output
+                if (data.details.json_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>JSON Configuration (.data.config | fromjson)</h4>';
+                    html += '<div class="database-view">';
+                    
+                    // Format JSON if possible, otherwise show as text
+                    if (data.details.parsed_json) {
+                        html += JSON.stringify(data.details.parsed_json, null, 2);
+                    } else {
+                        html += escapeHtml(data.details.json_output);
+                    }
+                    
+                    html += '</div>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>JSON Configuration</h4>';
+                    html += '<p>No JSON output returned from the command.</p>';
+                    html += '</div>';
+                }
+                
+                // Add raw output for debugging if needed
+                if (data.details.raw_output && data.details.raw_output !== data.details.json_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Raw Command Output (Debug)</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.raw_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `ConfigMap JSON: ${data.configmap}`;
+            } else {
+                console.log('DEBUG: Processing empty/null JSON details response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' JSON details not found or empty.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        socket.on('configmap_details_response', function(data) {
+            console.log('DEBUG: Received configmap_details_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap details: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.details) {
+                console.log('DEBUG: Processing successful response with details:', data.details);
+                // Display ConfigMap details in tenant details panel
+                let html = `<div class="tenant-info-header">ConfigMap Details</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>ConfigMap Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant/Namespace:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">ConfigMap Name:</div>
+                    <div class="tenant-property-value">${data.configmap}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Timestamp:</div>
+                    <div class="tenant-property-value">${data.details.timestamp}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add describe output
+                if (data.details.describe_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Describe Output</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.describe_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                // Add YAML output
+                if (data.details.yaml_output) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>YAML Configuration</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.yaml_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `ConfigMap: ${data.configmap}`;
+            } else {
+                console.log('DEBUG: Processing empty/null details response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' not found or has no details.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // Helper functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function connect() {
+            const host = document.getElementById('host').value;
+            const username = document.getElementById('username').value;
+            const ssh_password = document.getElementById('ssh_password').value;
+            const admin_password = document.getElementById('admin_password').value;
+
+            if (!host || !username || !ssh_password || !admin_password) {
+                alert('Please fill in all connection fields');
+                return;
+            }
+
+            socket.emit('ssh_connect', {
+                host: host,
+                username: username,
+                ssh_password: ssh_password,
+                admin_password: admin_password
+            });
+        }
+
+        function disconnect() {
+            socket.emit('ssh_disconnect');
+        }
+
+        function runKubectl() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            socket.emit('run_kubectl');
+        }
+
+        function buildTenantData() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            socket.emit('build_tenant_data');
+        }
+
+        function clearOutput() {
+            socket.emit('clear_output');
+        }
+
+        function showTenantDatabase() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            
+            // Check if button is enabled (meaning tenant data has been built)
+            const showDbBtn = document.getElementById('show-db-btn');
+            if (showDbBtn.disabled) {
+                alert('Please build tenant data first using "Build Tenant Data" button');
+                return;
+            }
+            
+            socket.emit('show_tenant_database');
+        }
+
+        function refreshTenantList() {
+            socket.emit('get_tenant_list');
+        }
+
+        function selectTenant() {
+            const select = document.getElementById('tenant-select');
+            const selectedTenant = select.value;
+            if (selectedTenant) {
+                socket.emit('select_tenant', { tenant: selectedTenant });
+                
+                // Show Redis keys section and load keys for selected tenant
+                document.getElementById('redis-keys-section').style.display = 'block';
+                socket.emit('get_redis_keys', { tenant: selectedTenant });
+                
+                // Reset Redis keys dropdown and disable buttons
+                const redisSelect = document.getElementById('redis-keys-select');
+                redisSelect.innerHTML = '<option value="">-- Loading Redis keys... --</option>';
+                document.getElementById('refresh-keys-btn').disabled = false;
+                document.getElementById('view-key-btn').disabled = true;
+                
+                // Show ConfigMaps section and load ConfigMaps for selected tenant
+                document.getElementById('configmaps-section').style.display = 'block';
+                socket.emit('get_configmaps', { tenant: selectedTenant });
+                
+                // Reset ConfigMaps dropdown and disable buttons
+                const configmapsSelect = document.getElementById('configmaps-select');
+                configmapsSelect.innerHTML = '<option value="">-- Loading ConfigMaps... --</option>';
+                document.getElementById('refresh-configmaps-btn').disabled = false;
+                document.getElementById('view-configmap-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+            } else {
+                // Hide Redis keys section if no tenant selected
+                document.getElementById('redis-keys-section').style.display = 'none';
+                // Hide ConfigMaps section if no tenant selected
+                document.getElementById('configmaps-section').style.display = 'none';
+            }
+        }
+
+        function updateTenantDropdown(tenants) {
+            const select = document.getElementById('tenant-select');
+            select.innerHTML = '<option value="">-- Select a tenant --</option>';
+            tenants.forEach(tenant => {
+                const option = document.createElement('option');
+                option.value = tenant;
+                option.textContent = tenant;
+                select.appendChild(option);
+            });
+        }
+
+        function refreshRedisKeys() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const selectedTenant = tenantSelect.value;
+            if (selectedTenant) {
+                const redisSelect = document.getElementById('redis-keys-select');
+                redisSelect.innerHTML = '<option value="">-- Refreshing Redis keys... --</option>';
+                socket.emit('get_redis_keys', { tenant: selectedTenant });
+                document.getElementById('view-key-btn').disabled = true;
+            }
+        }
+
+        function selectRedisKey() {
+            const select = document.getElementById('redis-keys-select');
+            const selectedKey = select.value;
+            document.getElementById('view-key-btn').disabled = !selectedKey;
+        }
+
+        function viewRedisKeyValue() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const redisSelect = document.getElementById('redis-keys-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedKey = redisSelect.value;
+            
+            console.log('DEBUG: viewRedisKeyValue called with tenant:', selectedTenant, 'key:', selectedKey);
+            
+            if (selectedTenant && selectedKey) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting Redis key value for tenant: ${escapeHtml(selectedTenant)}, key: ${escapeHtml(selectedKey)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_redis_key_value with data:', { tenant: selectedTenant, key: selectedKey });
+                socket.emit('get_redis_key_value', { tenant: selectedTenant, key: selectedKey });
+            } else {
+                console.log('DEBUG: Missing tenant or key selection');
+                alert('Please select both a tenant and a Redis key');
+            }
+        }
+
+        function updateRedisKeysDropdown(tenant, keys, error) {
+            const select = document.getElementById('redis-keys-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-key-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a Redis key --</option>';
+            
+            if (keys && keys.length > 0) {
+                keys.forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = key;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No Redis keys found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-key-btn').disabled = true;
+        }
+
+        // ConfigMaps Functions
+        function selectConfigMap() {
+            const select = document.getElementById('configmaps-select');
+            const viewBtn = document.getElementById('view-configmap-btn');
+            const jsonBtn = document.getElementById('show-configmap-json-btn');
+            
+            if (select.value) {
+                viewBtn.disabled = false;
+                jsonBtn.disabled = false;
+            } else {
+                viewBtn.disabled = true;
+                jsonBtn.disabled = true;
+            }
+        }
+
+        function refreshConfigMaps() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const selectedTenant = tenantSelect.value;
+            
+            if (selectedTenant) {
+                const configmapsSelect = document.getElementById('configmaps-select');
+                configmapsSelect.innerHTML = '<option value="">-- Refreshing ConfigMaps... --</option>';
+                document.getElementById('view-configmap-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+                
+                socket.emit('get_configmaps', { tenant: selectedTenant });
+            }
+        }
+
+        function viewConfigMapDetails() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const configmapSelect = document.getElementById('configmaps-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedConfigMap = configmapSelect.value;
+            
+            console.log('DEBUG: viewConfigMapDetails called with tenant:', selectedTenant, 'configmap:', selectedConfigMap);
+            
+            if (selectedTenant && selectedConfigMap) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_configmap_details with data:', { tenant: selectedTenant, configmap: selectedConfigMap });
+                socket.emit('get_configmap_details', { tenant: selectedTenant, configmap: selectedConfigMap });
+            } else {
+                console.log('DEBUG: Missing tenant or configmap selection');
+                alert('Please select both a tenant and a ConfigMap');
+            }
+        }
+
+        function showConfigMapJSON() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const configmapSelect = document.getElementById('configmaps-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedConfigMap = configmapSelect.value;
+            
+            console.log('DEBUG: showConfigMapJSON called with tenant:', selectedTenant, 'configmap:', selectedConfigMap);
+            
+            if (selectedTenant && selectedConfigMap) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap JSON details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Add command line to show what's being executed
+                const commandLine = document.createElement('div');
+                commandLine.className = 'output-line command';
+                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> kubectl get configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)} -o json | jq ".data.config | fromjson"`;
+                output.appendChild(commandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_configmap_json_details with data:', { tenant: selectedTenant, configmap: selectedConfigMap });
+                socket.emit('get_configmap_json_details', { tenant: selectedTenant, configmap: selectedConfigMap });
+            } else {
+                console.log('DEBUG: Missing tenant or configmap selection');
+                alert('Please select both a tenant and a ConfigMap');
+            }
+        }
+
+        function updateConfigMapsDropdown(tenant, configmaps, error) {
+            const select = document.getElementById('configmaps-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-configmap-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+            
+            if (configmaps && configmaps.length > 0) {
+                configmaps.forEach(configmap => {
+                    const option = document.createElement('option');
+                    option.value = configmap.name;
+                    option.textContent = `${configmap.name} (Data: ${configmap.data_count}, Age: ${configmap.age})`;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No ConfigMaps found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-configmap-btn').disabled = true;
+            document.getElementById('show-configmap-json-btn').disabled = true;
+        }
+
+        function switchToOutput() {
+            document.getElementById('output').style.display = 'block';
+            document.getElementById('tenant-details').style.display = 'none';
+            document.getElementById('panel-title').textContent = 'Command Execution Output';
+        }
+
+        function displayTenantInfo(tenant, info, error) {
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (error) {
+                contentDiv.innerHTML = `<div class="tenant-info-header">Error</div><p>${error}</p>`;
+            } else if (info) {
+                let html = `<div class="tenant-info-header">Tenant Details: ${tenant}</div>`;
+                
+                // Basic Information
+                html += '<div class="tenant-section">';
+                html += '<h4>Basic Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant Name:</div>
+                    <div class="tenant-property-value">${tenant}</div>
+                </div>`;
+                
+                const services = info.services || [];
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Services:</div>
+                    <div class="tenant-property-value">${services.join(', ') || 'None'}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Redis Information
+                if (info.redis_info) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Redis Service Information</h4>';
+                    const redis = info.redis_info;
+                    
+                    Object.entries(redis).forEach(([key, value]) => {
+                        html += `<div class="tenant-property">
+                            <div class="tenant-property-name">${key.replace('_', ' ').toUpperCase()}:</div>
+                            <div class="tenant-property-value">${value || 'N/A'}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Redis Service Information</h4>';
+                    html += '<p>No Redis service found for this tenant</p>';
+                    html += '</div>';
+                }
+                
+                // ConfigMaps Information
+                if (info.configmaps_info) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>ConfigMaps Information</h4>';
+                    const configmaps = info.configmaps_info;
+                    
+                    html += `<div class="tenant-property">
+                        <div class="tenant-property-name">Total ConfigMaps:</div>
+                        <div class="tenant-property-value">${configmaps.total_configmaps || 0}</div>
+                    </div>`;
+                    
+                    if (configmaps.configmaps && configmaps.configmaps.length > 0) {
+                        html += '<h5>ConfigMaps List:</h5>';
+                        configmaps.configmaps.forEach((cm, index) => {
+                            html += `<div class="tenant-property">
+                                <div class="tenant-property-name">${index + 1}. ${cm.name}:</div>
+                                <div class="tenant-property-value">Data: ${cm.data_count}, Age: ${cm.age}</div>
+                            </div>`;
+                        });
+                    }
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>ConfigMaps Information</h4>';
+                    html += '<p>No ConfigMaps found for this tenant</p>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+            }
+            
+            outputDiv.style.display = 'none';
+            detailsDiv.style.display = 'block';
+            document.getElementById('panel-title').textContent = `Tenant Information: ${tenant}`;
+        }
+
+        function displayTenantDatabase(database) {
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            let html = '<div class="tenant-info-header">Complete Tenant Database</div>';
+            html += '<div class="database-view">';
+            html += JSON.stringify(database, null, 2);
+            html += '</div>';
+            
+            contentDiv.innerHTML = html;
+            
+            outputDiv.style.display = 'none';
+            detailsDiv.style.display = 'block';
+            document.getElementById('panel-title').textContent = 'Tenant Database';
+        }
+    </script>
+</body>
+</html>
