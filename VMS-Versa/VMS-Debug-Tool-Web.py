@@ -358,9 +358,16 @@ class VMSDebugWeb:
             # Store tenant database
             self.tenant_database = tenant_data
             
+            # Step 6: Automatically scan log files as part of tenant data building
+            self.log_output("Step 6: Scanning log files...", "command")
+            log_files = self.scan_log_files()
+            
             # Send tenant data to web interface
             socketio.emit('tenant_data', {'data': tenant_data, 'filename': filename})
             socketio.emit('tenant_database_updated', {'tenants': list(tenant_data.keys())})
+            
+            # Send log files data to web interface
+            socketio.emit('log_files_response', {'log_files': log_files})
             
         except Exception as e:
             self.log_output(f"Error building tenant data: {str(e)}", "error")
@@ -813,6 +820,165 @@ class VMSDebugWeb:
         except Exception as e:
             self.log_output(f"Error getting Redis key value: {str(e)}", "error")
             return None
+    
+    def scan_log_files(self):
+        """Scan for all log files in /var/log/versa/vms/apps directory and subdirectories, plus vms-admin.log"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return {}
+        
+        try:
+            self.log_output("Scanning for log files in /var/log/versa/vms/apps and vms-admin.log", "info")
+            
+            # Execute find command to get all files in the apps directory and subdirectories, excluding .gz files
+            command = "find /var/log/versa/vms/apps -type f -name '*.log*' ! -name '*.gz' | sort"
+            self.shell.send(f"{command}\n")
+            time.sleep(3)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines = cleaned_output.strip().split('\n')
+            
+            log_files = {}
+            
+            # Process apps directory files
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('find') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Check if it's a valid log file path and exclude .gz files
+                if (line.startswith('/var/log/versa/vms/apps/') and 
+                    ('log' in line.lower()) and 
+                    not line.endswith('.gz')):
+                    # Extract directory and filename
+                    path_parts = line.split('/')
+                    if len(path_parts) >= 6:  # /var/log/versa/vms/apps/[directory]/[filename]
+                        directory = path_parts[6] if len(path_parts) > 6 else 'root'
+                        filename = path_parts[-1]
+                        
+                        if directory not in log_files:
+                            log_files[directory] = []
+                        
+                        log_files[directory].append({
+                            'name': filename,
+                            'path': line,
+                            'directory': directory
+                        })
+            
+            # Add vms-admin.log if it exists
+            self.log_output("Checking for vms-admin.log file...", "info")
+            vms_admin_command = "ls -la /var/log/versa/vms/vms-admin.log 2>/dev/null"
+            self.shell.send(f"{vms_admin_command}\n")
+            time.sleep(2)
+            
+            # Collect vms-admin.log check output
+            vms_admin_output = self._collect_command_output(timeout=10)
+            cleaned_vms_admin_output = self._clean_ansi_codes(vms_admin_output)
+            vms_admin_lines = cleaned_vms_admin_output.strip().split('\n')
+            
+            # Check if vms-admin.log exists
+            vms_admin_exists = False
+            for line in vms_admin_lines:
+                line = line.strip()
+                if (line and 
+                    'vms-admin.log' in line and 
+                    not line.startswith('ls ') and
+                    not line.endswith('# ') and 
+                    not line.endswith('$ ') and
+                    not line.startswith('[root@')):
+                    vms_admin_exists = True
+                    break
+            
+            if vms_admin_exists:
+                # Add vms-admin.log to a special "VMS Admin" category
+                if "VMS Admin" not in log_files:
+                    log_files["VMS Admin"] = []
+                
+                log_files["VMS Admin"].append({
+                    'name': 'vms-admin.log',
+                    'path': '/var/log/versa/vms/vms-admin.log',
+                    'directory': 'VMS Admin'
+                })
+                self.log_output("-> Found vms-admin.log file", "success")
+            else:
+                self.log_output("-> vms-admin.log file not found or not accessible", "info")
+            
+            # Sort files within each directory
+            for directory in log_files:
+                log_files[directory].sort(key=lambda x: x['name'])
+            
+            total_files = sum(len(files) for files in log_files.values())
+            total_dirs = len(log_files)
+            self.log_output(f"-> Found {total_files} log files across {total_dirs} directories (excluding .gz files)", "success")
+            
+            # Log summary for each directory
+            for directory, files in log_files.items():
+                file_names = [f['name'] for f in files[:3]]  # Show first 3 files
+                file_summary = ', '.join(file_names) + ('...' if len(files) > 3 else '')
+                self.log_output(f"  {directory}: {len(files)} files -> {file_summary}", "info")
+            
+            return log_files
+            
+        except Exception as e:
+            self.log_output(f"Error scanning log files: {str(e)}", "error")
+            return {}
+    
+    def get_log_file_tail(self, log_file_path, lines=250):
+        """Get the last N lines of a log file using tail command"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return None
+        
+        try:
+            self.log_output(f"Getting last {lines} lines from: {log_file_path}", "info")
+            
+            # Execute tail command
+            command = f"tail -n {lines} \"{log_file_path}\""
+            self.shell.send(f"{command}\n")
+            time.sleep(2)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=20)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines_output = cleaned_output.strip().split('\n')
+            
+            # Clean lines and remove command echo/prompts
+            cleaned_lines = []
+            for line in lines_output:
+                line = line.rstrip()
+                # Skip command echo, prompts, and empty continuation
+                if (line.startswith('tail ') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                cleaned_lines.append(line)
+            
+            # Join lines back together
+            log_content = '\n'.join(cleaned_lines)
+            
+            self.log_output(f"-> Successfully retrieved {len(cleaned_lines)} lines from log file", "success")
+            
+            return {
+                'path': log_file_path,
+                'lines_requested': lines,
+                'lines_retrieved': len(cleaned_lines),
+                'content': log_content,
+                'command': command,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            self.log_output(f"Error getting log file tail: {str(e)}", "error")
+            return None
 
 # Global instance
 vms_debug = VMSDebugWeb()
@@ -1069,6 +1235,73 @@ def handle_get_configmap_json_details(data):
     thread = threading.Thread(target=get_configmap_json_details, daemon=True)
     thread.start()
 
+@socketio.on('scan_log_files')
+def handle_scan_log_files():
+    """Handle request to scan for log files in /var/log/versa/vms/apps"""
+    if not vms_debug.connected:
+        emit('log_files_response', {
+            'log_files': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to scan log files")
+    
+    # Run log files scanning in separate thread
+    def scan_log_files():
+        print(f"DEBUG: In thread - calling scan_log_files")
+        log_files = vms_debug.scan_log_files()
+        print(f"DEBUG: Got log files result: {len(log_files)} directories")
+        socketio.emit('log_files_response', {
+            'log_files': log_files
+        })
+        print(f"DEBUG: Emitted log_files_response")
+    
+    thread = threading.Thread(target=scan_log_files, daemon=True)
+    thread.start()
+
+@socketio.on('get_log_file_content')
+def handle_get_log_file_content(data):
+    """Handle request to get log file content (last 250 lines)"""
+    log_file_path = data.get('path', '')
+    lines = data.get('lines', 250)  # Default to 250 lines
+    
+    print(f"DEBUG: Received get_log_file_content request - path: '{log_file_path}', lines: {lines}")
+    
+    if not log_file_path:
+        print(f"DEBUG: Missing log file path")
+        emit('log_file_content_response', {
+            'path': log_file_path, 
+            'content': {}, 
+            'error': 'Missing log file path'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('log_file_content_response', {
+            'path': log_file_path, 
+            'content': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get log file content")
+    
+    # Run log file content extraction in separate thread
+    def get_log_file_content():
+        print(f"DEBUG: In thread - calling get_log_file_tail for path '{log_file_path}'")
+        content = vms_debug.get_log_file_tail(log_file_path, lines)
+        print(f"DEBUG: Got log file content result: {type(content)}")
+        socketio.emit('log_file_content_response', {
+            'path': log_file_path,
+            'content': content
+        })
+        print(f"DEBUG: Emitted log_file_content_response")
+    
+    thread = threading.Thread(target=get_log_file_content, daemon=True)
+    thread.start()
+
 if __name__ == '__main__':
     # Create templates directory and HTML file if they don't exist
     if not os.path.exists('templates'):
@@ -1086,7 +1319,7 @@ if __name__ == '__main__':
         body {
             font-family: 'Consolas', 'Monaco', monospace;
             margin: 0;
-            padding: 20px;
+            padding: 10px 20px;
             background-color: #f5f5f5;
         }
         
@@ -1096,7 +1329,7 @@ if __name__ == '__main__':
             display: grid;
             grid-template-columns: 350px 1fr;
             gap: 20px;
-            height: 90vh;
+            height: calc(100vh - 80px);
         }
         
         .left-panel {
@@ -1105,7 +1338,7 @@ if __name__ == '__main__':
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow-y: auto;
-            max-height: calc(90vh - 40px);
+            max-height: calc(100vh - 120px);
         }
         
         /* Left panel scrollbar styling */
@@ -1285,7 +1518,7 @@ if __name__ == '__main__':
             white-space: pre-wrap;
             word-wrap: break-word;
             border: 1px solid #333;
-            max-height: calc(90vh - 120px);
+            max-height: calc(100vh - 160px);
             min-height: 400px;
         }
         
@@ -1351,7 +1584,9 @@ if __name__ == '__main__':
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+            font-size: 24px;
+            margin-top: 10px;
         }
         
         .output-header {
@@ -1394,7 +1629,7 @@ if __name__ == '__main__':
             line-height: 1.4;
             border-radius: 4px;
             border: 1px solid #dee2e6;
-            max-height: calc(90vh - 120px);
+            max-height: calc(100vh - 160px);
             min-height: 400px;
         }
         
@@ -1466,6 +1701,96 @@ if __name__ == '__main__':
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        
+        .help-icon {
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 14px;
+            color: #007acc;
+            display: inline-block;
+            user-select: none;
+        }
+        
+        .help-icon:hover {
+            color: #005a9e;
+            transform: scale(1.1);
+            transition: all 0.2s ease;
+        }
+        
+        .help-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 500px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        .help-popup h4 {
+            margin: 0 0 15px 0;
+            color: #007acc;
+            border-bottom: 1px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .help-popup-content {
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .help-popup-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .help-popup-close:hover {
+            color: #333;
+        }
+        
+        .help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .popout-btn {
+            float: right;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            width: auto;
+            margin-top: -2px;
+        }
+        
+        .popout-btn:hover {
+            background-color: #005a9e;
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
     </style>
 </head>
 <body>
@@ -1496,7 +1821,7 @@ if __name__ == '__main__':
                 <div id="status" class="status disconnected">Status: Not Connected</div>
             </div>
             
-            <div class="section">
+            <div class="section" id="operations-section" style="display:none;">
                 <h3>Operations</h3>
                 <button id="kubectl-btn" class="btn-success" onclick="runKubectl()" disabled>Run Kubectl Commands</button>
                 <button id="tenant-btn" class="btn-success" onclick="buildTenantData()" disabled style="display:none;">Build Tenant Data</button>
@@ -1536,6 +1861,17 @@ if __name__ == '__main__':
                 </div>
                 <button id="refresh-configmaps-btn" class="btn-secondary" onclick="refreshConfigMaps()" disabled>Refresh ConfigMaps</button>
                 <button id="show-configmap-json-btn" class="btn-success" onclick="showConfigMapJSON()" disabled>Show Config-Map</button>
+            </div>
+            
+            <div class="section" id="logs-section" style="display:none;">
+                <h3>System Logs <span class="help-icon" onclick="showLogsHelp()" title="Show path information">ℹ️</span></h3>
+                <div class="form-group">
+                    <label for="logs-select">Select Log File:</label>
+                    <select id="logs-select" onchange="selectLogFile()">
+                        <option value="">-- Select a Log file --</option>
+                    </select>
+                </div>
+                <button id="view-log-btn" class="btn-warning" onclick="viewLogFile()" disabled>View Log (250 lines)</button>
             </div>
         </div>
         
@@ -1588,10 +1924,15 @@ if __name__ == '__main__':
                 status.className = 'status connected';
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
-                // Keep operation buttons disabled until tenant data is built automatically
+                
+                // Do NOT show any sections until tenant data is built
+                // Keep all sections hidden for now
+                
+                // Keep all buttons disabled until tenant data is built automatically
                 kubectlBtn.disabled = true;
                 tenantBtn.disabled = true;
                 showDbBtn.disabled = true;
+                document.getElementById('view-log-btn').disabled = true;
                 inputs.forEach(input => input.disabled = true);
                 
                 // Automatically start building tenant data after successful connection
@@ -1612,21 +1953,27 @@ if __name__ == '__main__':
                 status.className = 'status disconnected';
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
+                
+                // Hide all sections except Server Connection when disconnected
+                document.getElementById('operations-section').style.display = 'none';
+                document.getElementById('logs-section').style.display = 'none';
+                document.getElementById('tenant-section').style.display = 'none';
+                document.getElementById('redis-keys-section').style.display = 'none';
+                document.getElementById('configmaps-section').style.display = 'none';
+                
                 // Disable all operation buttons on disconnect
                 kubectlBtn.disabled = true;
                 tenantBtn.disabled = true;
                 showDbBtn.disabled = true;
+                // Disable logs buttons on disconnect
+                document.getElementById('view-log-btn').disabled = true;
                 inputs.forEach(input => input.disabled = false);
-                
-                // Hide all tenant-related sections when disconnected
-                document.getElementById('tenant-section').style.display = 'none';
-                document.getElementById('redis-keys-section').style.display = 'none';
-                document.getElementById('configmaps-section').style.display = 'none';
                 
                 // Clear all dropdowns
                 document.getElementById('tenant-select').innerHTML = '<option value="">-- Select a tenant --</option>';
                 document.getElementById('redis-keys-select').innerHTML = '<option value="">-- Select a Redis key --</option>';
                 document.getElementById('configmaps-select').innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+                document.getElementById('logs-select').innerHTML = '<option value="">-- Select a Log file --</option>';
                 
                 // Clear output and switch to output view
                 document.getElementById('output').innerHTML = '';
@@ -1656,11 +2003,16 @@ if __name__ == '__main__':
 
         socket.on('tenant_database_updated', function(data) {
             updateTenantDropdown(data.tenants);
+            
+            // Show ALL sections only after tenant data is available
+            document.getElementById('operations-section').style.display = 'block';
+            document.getElementById('logs-section').style.display = 'block';
             document.getElementById('tenant-section').style.display = 'block';
             
             // Enable all operations buttons only after tenant data is built
             document.getElementById('kubectl-btn').disabled = false;
             document.getElementById('show-db-btn').disabled = false;
+            // Log files are automatically scanned during tenant data building
             
             // Add success message to indicate tenant data building is complete
             const output = document.getElementById('output');
@@ -1794,8 +2146,17 @@ if __name__ == '__main__':
                 output.scrollTop = output.scrollHeight;
             } else if (data.details) {
                 console.log('DEBUG: Processing successful response with details:', data.details);
+                
+                // Store ConfigMap content globally for pop-out functionality
+                window.currentConfigMapContent = data.details;
+                window.currentConfigMapTenant = data.tenant;
+                window.currentConfigMapName = data.configmap;
+                
                 // Display ConfigMap details in both formats
-                let html = `<div class="tenant-info-header">ConfigMap Details - Raw & Pretty Formats</div>`;
+                let html = `<div class="tenant-info-header">
+                    ConfigMap Details - Raw & Pretty Formats
+                    <button class="popout-btn" onclick="popoutConfigMapContent()" title="Open in new window">⧉</button>
+                </div>`;
                 
                 html += '<div class="tenant-section">';
                 html += '<h4>ConfigMap Information</h4>';
@@ -1879,6 +2240,78 @@ if __name__ == '__main__':
                 line.className = 'output-line info';
                 const timestamp = new Date().toLocaleTimeString();
                 line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' details not found or empty.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // Log Files event listeners
+        socket.on('log_files_response', function(data) {
+            updateLogFilesDropdown(data.log_files, data.error);
+        });
+
+        socket.on('log_file_content_response', function(data) {
+            console.log('DEBUG: Received log_file_content_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting log file content: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.content) {
+                console.log('DEBUG: Processing successful response with log content:', data.content);
+                
+                // Store the log content globally for pop-out functionality
+                window.currentLogContent = data.content;
+                
+                // Display log file content
+                let html = `<div class="tenant-info-header">
+                    System Log File - Last ${data.content.lines_requested} Lines 
+                    <button class="popout-btn" onclick="popoutLogContent()" title="Open in new window">⧉</button>
+                </div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Log File Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">File Path:</div>
+                    <div class="tenant-property-value">${data.content.path}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add log file content
+                html += '<div class="tenant-section">';
+                html += '<h4>Log File Content</h4>';
+                html += '<div class="database-view" style="max-height: 600px; overflow-y: auto;">';
+                html += escapeHtml(data.content.content);
+                html += '</div>';
+                html += '</div>';
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                
+                // Extract filename from path for display
+                const filename = data.content.path.split('/').pop();
+                document.getElementById('panel-title').textContent = `Log File: ${filename}`;
+            } else {
+                console.log('DEBUG: Processing empty/null content response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Log file '${escapeHtml(data.path)}' content not found or empty.`;
                 output.appendChild(line);
                 output.scrollTop = output.scrollHeight;
             }
@@ -2188,6 +2621,498 @@ if __name__ == '__main__':
             }
             
             document.getElementById('show-configmap-json-btn').disabled = true;
+        }
+
+        // Log Files Functions
+        // Note: Log files are now automatically scanned during tenant data building
+
+        function selectLogFile() {
+            const select = document.getElementById('logs-select');
+            const viewBtn = document.getElementById('view-log-btn');
+            
+            if (select.value) {
+                viewBtn.disabled = false;
+            } else {
+                viewBtn.disabled = true;
+            }
+        }
+
+        function viewLogFile() {
+            const logsSelect = document.getElementById('logs-select');
+            const selectedLogPath = logsSelect.value;
+            
+            console.log('DEBUG: viewLogFile called with path:', selectedLogPath);
+            
+            if (selectedLogPath) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                const filename = selectedLogPath.split('/').pop();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting last 250 lines from log file: ${escapeHtml(filename)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Add command line
+                const commandLine = document.createElement('div');
+                commandLine.className = 'output-line command';
+                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Command: tail -n 250 "${escapeHtml(selectedLogPath)}"`;
+                output.appendChild(commandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                switchToOutput();
+                
+                console.log('DEBUG: Emitting get_log_file_content with path:', selectedLogPath);
+                socket.emit('get_log_file_content', { path: selectedLogPath, lines: 250 });
+            } else {
+                console.log('DEBUG: No log file selected');
+                alert('Please select a log file first');
+            }
+        }
+
+        function updateLogFilesDropdown(logFiles, error) {
+            const select = document.getElementById('logs-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-log-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a log file --</option>';
+            
+            if (logFiles && Object.keys(logFiles).length > 0) {
+                // Create optgroups for each directory
+                for (const [directory, files] of Object.entries(logFiles)) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = directory;
+                    
+                    files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file.path;
+                        option.textContent = file.name;
+                        optgroup.appendChild(option);
+                    });
+                    
+                    select.appendChild(optgroup);
+                }
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No log files found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-log-btn').disabled = true;
+        }
+
+        function showLogsHelp() {
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'help-overlay';
+            overlay.onclick = hideLogsHelp;
+            
+            // Create popup
+            const popup = document.createElement('div');
+            popup.className = 'help-popup';
+            popup.id = 'logs-help-popup';
+            
+            popup.innerHTML = `
+                <button class="help-popup-close" onclick="hideLogsHelp()">×</button>
+                <h4>System Logs - Path Information</h4>
+                <div class="help-popup-content">
+                    <p><strong>Log File Locations:</strong></p>
+                    <ul>
+                        <li><code>/var/log/versa/vms/apps/*</code><br>
+                            <small>All application log files in subdirectories</small></li>
+                        <li><code>/var/log/versa/vms/vms-admin.log</code><br>
+                            <small>VMS administration log file</small></li>
+                    </ul>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Displays last 250 lines of selected log file</li>
+                        <li>Excludes compressed (.gz) files</li>
+                        <li>Organized by application directory</li>
+                    </ul>
+                </div>
+            `;
+            
+            // Add to document
+            document.body.appendChild(overlay);
+            document.body.appendChild(popup);
+            
+            // Prevent popup from closing when clicking inside it
+            popup.onclick = function(e) {
+                e.stopPropagation();
+            };
+        }
+
+        function hideLogsHelp() {
+            const overlay = document.querySelector('.help-overlay');
+            const popup = document.getElementById('logs-help-popup');
+            
+            if (overlay) {
+                document.body.removeChild(overlay);
+            }
+            if (popup) {
+                document.body.removeChild(popup);
+            }
+        }
+
+        // Close help popup with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideLogsHelp();
+            }
+        });
+
+        function popoutLogContent() {
+            if (!window.currentLogContent) {
+                alert('No log content available to pop out');
+                return;
+            }
+            
+            const logData = window.currentLogContent;
+            const filename = logData.path.split('/').pop();
+            
+            // Create HTML content for the pop-out window
+            const popoutHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File: ${filename} - VMS Debug Tool</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #007acc;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .info-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            font-family: 'Consolas', monospace;
+            color: #333;
+        }
+        
+        .content-section {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+        
+        .content-section::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .content-section::-webkit-scrollbar-track {
+            background-color: #1b2e1b;
+            border-radius: 6px;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+            border: 2px solid #1b2e1b;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb:hover {
+            background-color: #66bb6a;
+        }
+        
+        .close-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 Log File: ${escapeHtml(filename)}</h1>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-grid">
+            <div class="info-label">File Path:</div>
+            <div class="info-value">${escapeHtml(logData.path)}</div>
+        </div>
+    </div>
+    
+    <div class="content-section">${escapeHtml(logData.content)}</div>
+    
+    <div class="close-info">
+        💡 Close this window to return to the main interface
+    </div>
+</body>
+</html>`;
+
+            // Open pop-out window
+            const popoutWindow = window.open(
+                '', 
+                'logfile_' + Date.now(), 
+                'width=1000,height=700,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no'
+            );
+            
+            if (popoutWindow) {
+                popoutWindow.document.write(popoutHtml);
+                popoutWindow.document.close();
+                
+                // Focus the new window
+                popoutWindow.focus();
+                
+                // Add status message to main interface
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line success';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ✓ Log file opened in pop-out window: ${escapeHtml(filename)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch back to command output view
+                switchToOutput();
+            } else {
+                alert('Pop-out window was blocked by browser. Please allow pop-ups for this site and try again.');
+            }
+        }
+
+        function popoutConfigMapContent() {
+            if (!window.currentConfigMapContent) {
+                alert('No ConfigMap content available to pop out');
+                return;
+            }
+            
+            const configMapData = window.currentConfigMapContent;
+            const tenant = window.currentConfigMapTenant;
+            const configMapName = window.currentConfigMapName;
+            
+            // Create HTML content for the ConfigMap pop-out window
+            const popoutHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigMap: ${configMapName} (${tenant}) - VMS Debug Tool</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #007acc;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .info-section, .content-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            font-family: 'Consolas', monospace;
+            color: #333;
+        }
+        
+        .content-area {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007acc;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .close-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚙️ ConfigMap: ${escapeHtml(configMapName)} (${escapeHtml(tenant)})</h1>
+    </div>
+    
+    <div class="info-section">
+        <div class="section-title">ConfigMap Information</div>
+        <div class="info-grid">
+            <div class="info-label">Tenant/Namespace:</div>
+            <div class="info-value">${escapeHtml(tenant)}</div>
+            
+            <div class="info-label">ConfigMap Name:</div>
+            <div class="info-value">${escapeHtml(configMapName)}</div>
+            
+            <div class="info-label">Timestamp:</div>
+            <div class="info-value">${configMapData.timestamp}</div>
+        </div>
+    </div>
+    
+    ${configMapData.raw_format ? `
+    <div class="content-section">
+        <div class="section-title">Raw Format Output</div>
+        <p><strong>Command:</strong> <code>${escapeHtml(configMapData.raw_command)}</code></p>
+        <div class="content-area">${escapeHtml(configMapData.raw_format)}</div>
+    </div>
+    ` : ''}
+    
+    ${configMapData.pretty_format ? `
+    <div class="content-section">
+        <div class="section-title">Pretty Format Output (JSON)</div>
+        <p><strong>Command:</strong> <code>${escapeHtml(configMapData.pretty_command)}</code></p>
+        <div class="content-area">${escapeHtml(configMapData.pretty_format)}</div>
+    </div>
+    ` : `
+    <div class="content-section">
+        <div class="section-title">Pretty Format Output (JSON)</div>
+        <p><strong>Command:</strong> <code>${escapeHtml(configMapData.pretty_command)}</code></p>
+        <p><em>No JSON output returned or parsing failed. This might indicate:</em></p>
+        <ul>
+            <li>ConfigMap does not have a "config" field in its data</li>
+            <li>The "config" field is not valid JSON</li>
+            <li>jq command is not available on the server</li>
+        </ul>
+    </div>
+    `}
+    
+    <div class="close-info">
+        💡 Close this window to return to the main interface
+    </div>
+</body>
+</html>`;
+
+            // Open pop-out window
+            const popoutWindow = window.open(
+                '', 
+                'configmap_' + Date.now(), 
+                'width=1200,height=800,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no'
+            );
+            
+            if (popoutWindow) {
+                popoutWindow.document.write(popoutHtml);
+                popoutWindow.document.close();
+                
+                // Focus the new window
+                popoutWindow.focus();
+                
+                // Add status message to main interface
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line success';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ✓ ConfigMap opened in pop-out window: ${escapeHtml(configMapName)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch back to command output view
+                switchToOutput();
+            } else {
+                alert('Pop-out window was blocked by browser. Please allow pop-ups for this site and try again.');
+            }
         }
 
         function switchToOutput() {
