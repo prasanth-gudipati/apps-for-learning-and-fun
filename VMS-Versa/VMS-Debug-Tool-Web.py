@@ -1,14 +1,41 @@
 #!/usr/bin/env python3
 """
 VMS Debug Tool - Web Version
-A web-based application for connecting to VMS servers and executing kubectl commands
-with real-time command execution display.
+A comprehensive web-based application for connecting to VMS servers and executing 
+kubectl commands with real-time command execution display and tenant management.
 
 Features:
-- Web interface for server connection with default values
-- SSH connection management
+- Web interface for server connection with pre-configured default values
+- SSH connection management with automatic sudo elevation
 - Real-time command execution display via WebSocket
-- Tenant data collection and visualization
+- Comprehensive tenant data collection and visualization
+- Interactive tenant selection and management
+- Redis key extraction and value viewing for selected tenants
+- ConfigMap discovery and raw output display
+- Automatic UI reset on disconnect for clean user experience
+
+Supported Operations:
+1. Basic kubectl commands execution (get ns, pods, services, etc.)
+2. Tenant database building with services, Redis info, and ConfigMaps
+3. Redis key enumeration and value extraction per tenant
+4. ConfigMap listing and raw content display per tenant
+5. Real-time command output streaming with color-coded messages
+
+UI Components:
+- Connection panel with server credentials
+- Operations panel with kubectl and tenant data commands  
+- Tenant selection dropdown (appears after building tenant data)
+- Redis keys section with key selection and value viewing
+- ConfigMaps section with ConfigMap selection and raw output display
+- Real-time output panel with command execution logs
+- Tenant details panel for structured data viewing
+
+Technical Details:
+- Flask-SocketIO for real-time communication
+- Paramiko for SSH connections
+- Threaded command execution to prevent UI blocking
+- ANSI escape code cleaning for clean output display
+- Automatic UI state management and reset functionality
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -565,8 +592,28 @@ class VMSDebugWeb:
             self.log_output(f"Error extracting ConfigMaps: {str(e)}", "error")
             return {}
     
-    def get_configmap_details(self, tenant_name, configmap_name):
-        """Get detailed information about a specific configmap"""
+    def get_configmap_json_details(self, tenant_name, configmap_name):
+        """
+        Get ConfigMap details in both raw and pretty formats
+        
+        Executes two commands:
+        a) Raw format: kubectl describe configmap <configmap-name> -n <tenant-name>
+        b) Pretty format: kubectl get configmap <configmap-name> -n <tenant-name> -o json | jq ".data.config | fromjson"
+        
+        Args:
+            tenant_name (str): The tenant/namespace name
+            configmap_name (str): The ConfigMap name
+            
+        Returns:
+            dict: ConfigMap details containing:
+                - name: ConfigMap name
+                - namespace: Tenant/namespace name
+                - raw_format: Output from kubectl describe
+                - pretty_format: Output from kubectl get + jq
+                - raw_command: The describe command executed
+                - pretty_command: The get + jq command executed
+                - timestamp: When the commands were executed
+        """
         if not self.connected:
             self.log_output("Error: Not connected to server", "error")
             return {}
@@ -574,64 +621,50 @@ class VMSDebugWeb:
         try:
             self.log_output(f"Getting ConfigMap details: {configmap_name} in tenant {tenant_name}", "info")
             
-            # Execute kubectl command to describe the configmap
-            command = f"kubectl describe configmap {configmap_name} -n {tenant_name}"
-            self.shell.send(f"{command}\n")
-            time.sleep(2)
+            # Execute Command A: Raw format using kubectl describe
+            raw_command = f"kubectl describe configmap {configmap_name} -n {tenant_name}"
+            self.log_output(f"Executing raw format command: {raw_command}", "command")
+            self.shell.send(f"{raw_command}\n")
+            time.sleep(3)  # Wait for command to complete
             
-            # Collect output
-            output = self._collect_command_output(timeout=10)
-            cleaned_output = self._clean_ansi_codes(output)
+            # Collect raw format output
+            raw_output = self._collect_command_output(timeout=15)
+            cleaned_raw_output = self._clean_ansi_codes(raw_output)
             
-            # Also get the configmap in YAML format for structured data
-            yaml_command = f"kubectl get configmap {configmap_name} -n {tenant_name} -o yaml"
-            self.shell.send(f"{yaml_command}\n")
-            time.sleep(2)
+            # Parse the raw command output
+            raw_lines = cleaned_raw_output.strip().split('\n')
+            raw_result_lines = []
             
-            yaml_output = self._collect_command_output(timeout=10)
-            cleaned_yaml = self._clean_ansi_codes(yaml_output)
-            
-            configmap_details = {
-                'name': configmap_name,
-                'namespace': tenant_name,
-                'describe_output': cleaned_output,
-                'yaml_output': cleaned_yaml,
-                'timestamp': datetime.now().isoformat()
-            }
-            
-            self.log_output(f"Successfully retrieved ConfigMap details for {configmap_name}", "success")
-            return configmap_details
-            
-        except Exception as e:
-            self.log_output(f"Error getting ConfigMap details: {str(e)}", "error")
-            return {}
-    
-    def get_configmap_json_details(self, tenant_name, configmap_name):
-        """Get ConfigMap JSON details using the specified command format"""
-        if not self.connected:
-            self.log_output("Error: Not connected to server", "error")
-            return {}
-        
-        try:
-            self.log_output(f"Getting ConfigMap JSON details: {configmap_name} in tenant {tenant_name}", "info")
-            
-            # Execute the specific command: kubectl get configmap <configmap-name> -n <tenant-name> -o json | jq ".data.config | fromjson"
-            command = f"kubectl get configmap {configmap_name} -n {tenant_name} -o json | jq \".data.config | fromjson\""
-            self.log_output(f"Executing command: {command}", "command")
-            self.shell.send(f"{command}\n")
-            time.sleep(3)  # Give more time for JSON processing
-            
-            # Collect output
-            output = self._collect_command_output(timeout=15)
-            cleaned_output = self._clean_ansi_codes(output)
-            
-            # Parse the JSON output
-            lines = cleaned_output.strip().split('\n')
-            json_lines = []
-            
-            for line in lines:
+            for line in raw_lines:
                 line = line.strip()
                 # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('kubectl') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                raw_result_lines.append(line)
+            
+            raw_format_output = '\n'.join(raw_result_lines)
+            
+            # Execute Command B: Pretty format using kubectl get + jq
+            pretty_command = f"kubectl get configmap {configmap_name} -n {tenant_name} -o json | jq \".data.config | fromjson\""
+            self.log_output(f"Executing pretty format command: {pretty_command}", "command")
+            self.shell.send(f"{pretty_command}\n")
+            time.sleep(4)  # Wait for JSON processing
+            
+            # Collect pretty format output
+            pretty_output = self._collect_command_output(timeout=15)
+            cleaned_pretty_output = self._clean_ansi_codes(pretty_output)
+            
+            # Parse the pretty command output
+            pretty_lines = cleaned_pretty_output.strip().split('\n')
+            pretty_result_lines = []
+            
+            for line in pretty_lines:
+                line = line.strip()
+                # Skip command echo, prompts, empty lines, and jq errors
                 if (not line or 
                     line.startswith('kubectl') or 
                     line.endswith('# ') or 
@@ -639,34 +672,39 @@ class VMSDebugWeb:
                     line.startswith('[root@') or
                     'jq:' in line.lower()):
                     continue
-                json_lines.append(line)
+                pretty_result_lines.append(line)
             
-            # Join the JSON lines
-            json_output = '\n'.join(json_lines)
+            pretty_format_output = '\n'.join(pretty_result_lines)
             
-            # Try to parse as JSON to validate
+            # Try to parse and format JSON if possible
             parsed_json = None
             try:
-                if json_output.strip():
-                    parsed_json = json.loads(json_output)
-            except json.JSONDecodeError as e:
-                self.log_output(f"Warning: Could not parse JSON output: {str(e)}", "error")
-                parsed_json = None
+                if pretty_format_output.strip():
+                    parsed_json = json.loads(pretty_format_output)
+                    # Re-format with proper indentation
+                    pretty_format_output = json.dumps(parsed_json, indent=2)
+            except json.JSONDecodeError:
+                # Keep the original output if JSON parsing fails
+                pass
             
-            configmap_json_details = {
+            configmap_details = {
                 'name': configmap_name,
                 'namespace': tenant_name,
-                'json_output': json_output,
+                'raw_format': raw_format_output,
+                'pretty_format': pretty_format_output,
                 'parsed_json': parsed_json,
-                'raw_output': cleaned_output,
+                'raw_command': raw_command,
+                'pretty_command': pretty_command,
+                'raw_debug_output': cleaned_raw_output,
+                'pretty_debug_output': cleaned_pretty_output,
                 'timestamp': datetime.now().isoformat()
             }
             
-            self.log_output(f"Successfully retrieved ConfigMap JSON details for {configmap_name}", "success")
-            return configmap_json_details
+            self.log_output(f"Successfully retrieved ConfigMap details for {configmap_name} in both formats", "success")
+            return configmap_details
             
         except Exception as e:
-            self.log_output(f"Error getting ConfigMap JSON details: {str(e)}", "error")
+            self.log_output(f"Error getting ConfigMap details: {str(e)}", "error")
             return {}
     
     def get_all_configmaps_for_tenant(self, tenant_name):
@@ -966,51 +1004,6 @@ def handle_get_configmaps(data):
         print(f"DEBUG: Emitted configmaps_response")
     
     thread = threading.Thread(target=get_configmaps, daemon=True)
-    thread.start()
-
-@socketio.on('get_configmap_details')
-def handle_get_configmap_details(data):
-    """Handle request to get ConfigMap details"""
-    tenant_name = data.get('tenant', '')
-    configmap_name = data.get('configmap', '')
-    
-    print(f"DEBUG: Received get_configmap_details request - tenant: '{tenant_name}', configmap: '{configmap_name}'")
-    
-    if not tenant_name or not configmap_name:
-        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', configmap: '{configmap_name}'")
-        emit('configmap_details_response', {
-            'tenant': tenant_name, 
-            'configmap': configmap_name, 
-            'details': {}, 
-            'error': 'Missing tenant or configmap name'
-        })
-        return
-    
-    if not vms_debug.connected:
-        print(f"DEBUG: Not connected to server")
-        emit('configmap_details_response', {
-            'tenant': tenant_name, 
-            'configmap': configmap_name, 
-            'details': {}, 
-            'error': 'Not connected to server'
-        })
-        return
-    
-    print(f"DEBUG: Starting thread to get ConfigMap details")
-    
-    # Run ConfigMap details extraction in separate thread
-    def get_configmap_details():
-        print(f"DEBUG: In thread - calling get_configmap_details for tenant '{tenant_name}', configmap '{configmap_name}'")
-        details = vms_debug.get_configmap_details(tenant_name, configmap_name)
-        print(f"DEBUG: Got ConfigMap details result: {type(details)}")
-        socketio.emit('configmap_details_response', {
-            'tenant': tenant_name,
-            'configmap': configmap_name,
-            'details': details
-        })
-        print(f"DEBUG: Emitted configmap_details_response")
-    
-    thread = threading.Thread(target=get_configmap_details, daemon=True)
     thread.start()
 
 @socketio.on('get_configmap_json_details')
@@ -1524,8 +1517,7 @@ if __name__ == '__main__':
                     </select>
                 </div>
                 <button id="refresh-configmaps-btn" class="btn-secondary" onclick="refreshConfigMaps()" disabled>Refresh ConfigMaps</button>
-                <button id="view-configmap-btn" class="btn-warning" onclick="viewConfigMapDetails()" disabled>View ConfigMap Details</button>
-                <button id="show-configmap-json-btn" class="btn-success" onclick="showConfigMapJSON()" disabled>Show Config-Map JSON</button>
+                <button id="show-configmap-json-btn" class="btn-success" onclick="showConfigMapJSON()" disabled>Show Config-Map</button>
             </div>
         </div>
         
@@ -1591,8 +1583,29 @@ if __name__ == '__main__':
                 tenantBtn.disabled = true;
                 showDbBtn.disabled = true;
                 inputs.forEach(input => input.disabled = false);
-                // Hide tenant section when disconnected
+                
+                // Hide all tenant-related sections when disconnected
                 document.getElementById('tenant-section').style.display = 'none';
+                document.getElementById('redis-keys-section').style.display = 'none';
+                document.getElementById('configmaps-section').style.display = 'none';
+                
+                // Clear all dropdowns
+                document.getElementById('tenant-select').innerHTML = '<option value="">-- Select a tenant --</option>';
+                document.getElementById('redis-keys-select').innerHTML = '<option value="">-- Select a Redis key --</option>';
+                document.getElementById('configmaps-select').innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+                
+                // Clear output and switch to output view
+                document.getElementById('output').innerHTML = '';
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                document.getElementById('tenant-info-content').innerHTML = '';
+                
+                // Disable all action buttons
+                document.getElementById('refresh-keys-btn').disabled = true;
+                document.getElementById('view-key-btn').disabled = true;
+                document.getElementById('refresh-configmaps-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
             }
         });
 
@@ -1713,106 +1726,13 @@ if __name__ == '__main__':
                 const line = document.createElement('div');
                 line.className = 'output-line error';
                 const timestamp = new Date().toLocaleTimeString();
-                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap JSON details: ${escapeHtml(data.error)}`;
-                output.appendChild(line);
-                output.scrollTop = output.scrollHeight;
-            } else if (data.details) {
-                console.log('DEBUG: Processing successful JSON response with details:', data.details);
-                // Display ConfigMap JSON details in tenant details panel
-                let html = `<div class="tenant-info-header">ConfigMap JSON Details (kubectl + jq)</div>`;
-                
-                html += '<div class="tenant-section">';
-                html += '<h4>ConfigMap Information</h4>';
-                html += `<div class="tenant-property">
-                    <div class="tenant-property-name">Tenant/Namespace:</div>
-                    <div class="tenant-property-value">${data.tenant}</div>
-                </div>`;
-                html += `<div class="tenant-property">
-                    <div class="tenant-property-name">ConfigMap Name:</div>
-                    <div class="tenant-property-value">${data.configmap}</div>
-                </div>`;
-                html += `<div class="tenant-property">
-                    <div class="tenant-property-name">Timestamp:</div>
-                    <div class="tenant-property-value">${data.details.timestamp}</div>
-                </div>`;
-                html += `<div class="tenant-property">
-                    <div class="tenant-property-name">Command:</div>
-                    <div class="tenant-property-value">kubectl get configmap ${data.configmap} -n ${data.tenant} -o json | jq ".data.config | fromjson"</div>
-                </div>`;
-                html += '</div>';
-                
-                // Add JSON output
-                if (data.details.json_output) {
-                    html += '<div class="tenant-section">';
-                    html += '<h4>JSON Configuration (.data.config | fromjson)</h4>';
-                    html += '<div class="database-view">';
-                    
-                    // Format JSON if possible, otherwise show as text
-                    if (data.details.parsed_json) {
-                        html += JSON.stringify(data.details.parsed_json, null, 2);
-                    } else {
-                        html += escapeHtml(data.details.json_output);
-                    }
-                    
-                    html += '</div>';
-                    html += '</div>';
-                } else {
-                    html += '<div class="tenant-section">';
-                    html += '<h4>JSON Configuration</h4>';
-                    html += '<p>No JSON output returned from the command.</p>';
-                    html += '</div>';
-                }
-                
-                // Add raw output for debugging if needed
-                if (data.details.raw_output && data.details.raw_output !== data.details.json_output) {
-                    html += '<div class="tenant-section">';
-                    html += '<h4>Raw Command Output (Debug)</h4>';
-                    html += '<div class="database-view">';
-                    html += escapeHtml(data.details.raw_output);
-                    html += '</div>';
-                    html += '</div>';
-                }
-                
-                contentDiv.innerHTML = html;
-                
-                // Switch to details panel to show the result
-                outputDiv.style.display = 'none';
-                detailsDiv.style.display = 'block';
-                document.getElementById('panel-title').textContent = `ConfigMap JSON: ${data.configmap}`;
-            } else {
-                console.log('DEBUG: Processing empty/null JSON details response');
-                // Add message to command output
-                const output = document.getElementById('output');
-                const line = document.createElement('div');
-                line.className = 'output-line info';
-                const timestamp = new Date().toLocaleTimeString();
-                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' JSON details not found or empty.`;
-                output.appendChild(line);
-                output.scrollTop = output.scrollHeight;
-            }
-        });
-
-        socket.on('configmap_details_response', function(data) {
-            console.log('DEBUG: Received configmap_details_response:', data);
-            
-            const outputDiv = document.getElementById('output');
-            const detailsDiv = document.getElementById('tenant-details');
-            const contentDiv = document.getElementById('tenant-info-content');
-            
-            if (data.error) {
-                console.log('DEBUG: Processing error response:', data.error);
-                // Add error to command output
-                const output = document.getElementById('output');
-                const line = document.createElement('div');
-                line.className = 'output-line error';
-                const timestamp = new Date().toLocaleTimeString();
                 line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap details: ${escapeHtml(data.error)}`;
                 output.appendChild(line);
                 output.scrollTop = output.scrollHeight;
             } else if (data.details) {
                 console.log('DEBUG: Processing successful response with details:', data.details);
-                // Display ConfigMap details in tenant details panel
-                let html = `<div class="tenant-info-header">ConfigMap Details</div>`;
+                // Display ConfigMap details in both formats
+                let html = `<div class="tenant-info-header">ConfigMap Details - Raw & Pretty Formats</div>`;
                 
                 html += '<div class="tenant-section">';
                 html += '<h4>ConfigMap Information</h4>';
@@ -1830,22 +1750,54 @@ if __name__ == '__main__':
                 </div>`;
                 html += '</div>';
                 
-                // Add describe output
-                if (data.details.describe_output) {
+                // Add Raw Format Output (kubectl describe)
+                if (data.details.raw_format) {
                     html += '<div class="tenant-section">';
-                    html += '<h4>Describe Output</h4>';
+                    html += '<h4>Raw Format Output</h4>';
+                    html += `<p><strong>Command:</strong> <code>${data.details.raw_command}</code></p>`;
                     html += '<div class="database-view">';
-                    html += escapeHtml(data.details.describe_output);
+                    html += escapeHtml(data.details.raw_format);
                     html += '</div>';
                     html += '</div>';
                 }
                 
-                // Add YAML output
-                if (data.details.yaml_output) {
+                // Add Pretty Format Output (kubectl get + jq)
+                if (data.details.pretty_format) {
                     html += '<div class="tenant-section">';
-                    html += '<h4>YAML Configuration</h4>';
+                    html += '<h4>Pretty Format Output (JSON)</h4>';
+                    html += `<p><strong>Command:</strong> <code>${data.details.pretty_command}</code></p>`;
                     html += '<div class="database-view">';
-                    html += escapeHtml(data.details.yaml_output);
+                    html += escapeHtml(data.details.pretty_format);
+                    html += '</div>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Pretty Format Output (JSON)</h4>';
+                    html += `<p><strong>Command:</strong> <code>${data.details.pretty_command}</code></p>`;
+                    html += '<p><em>No JSON output returned or parsing failed. This might indicate:</em></p>';
+                    html += '<ul>';
+                    html += '<li>ConfigMap does not have a "config" field in its data</li>';
+                    html += '<li>The "config" field is not valid JSON</li>';
+                    html += '<li>jq command is not available on the server</li>';
+                    html += '</ul>';
+                    html += '</div>';
+                }
+                
+                // Add debug sections if available and different from main outputs
+                if (data.details.raw_debug_output && data.details.raw_debug_output !== data.details.raw_format) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Raw Command Debug Output</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.raw_debug_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                if (data.details.pretty_debug_output && data.details.pretty_debug_output !== data.details.pretty_format) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Pretty Command Debug Output</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.pretty_debug_output);
                     html += '</div>';
                     html += '</div>';
                 }
@@ -1855,7 +1807,7 @@ if __name__ == '__main__':
                 // Switch to details panel to show the result
                 outputDiv.style.display = 'none';
                 detailsDiv.style.display = 'block';
-                document.getElementById('panel-title').textContent = `ConfigMap: ${data.configmap}`;
+                document.getElementById('panel-title').textContent = `ConfigMap: ${data.configmap} (Raw & Pretty)`;
             } else {
                 console.log('DEBUG: Processing empty/null details response');
                 // Add message to command output
@@ -1863,7 +1815,7 @@ if __name__ == '__main__':
                 const line = document.createElement('div');
                 line.className = 'output-line info';
                 const timestamp = new Date().toLocaleTimeString();
-                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' not found or has no details.`;
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' details not found or empty.`;
                 output.appendChild(line);
                 output.scrollTop = output.scrollHeight;
             }
@@ -1963,7 +1915,6 @@ if __name__ == '__main__':
                 const configmapsSelect = document.getElementById('configmaps-select');
                 configmapsSelect.innerHTML = '<option value="">-- Loading ConfigMaps... --</option>';
                 document.getElementById('refresh-configmaps-btn').disabled = false;
-                document.getElementById('view-configmap-btn').disabled = true;
                 document.getElementById('show-configmap-json-btn').disabled = true;
             } else {
                 // Hide Redis keys section if no tenant selected
@@ -2063,14 +2014,11 @@ if __name__ == '__main__':
         // ConfigMaps Functions
         function selectConfigMap() {
             const select = document.getElementById('configmaps-select');
-            const viewBtn = document.getElementById('view-configmap-btn');
             const jsonBtn = document.getElementById('show-configmap-json-btn');
             
             if (select.value) {
-                viewBtn.disabled = false;
                 jsonBtn.disabled = false;
             } else {
-                viewBtn.disabled = true;
                 jsonBtn.disabled = true;
             }
         }
@@ -2082,41 +2030,9 @@ if __name__ == '__main__':
             if (selectedTenant) {
                 const configmapsSelect = document.getElementById('configmaps-select');
                 configmapsSelect.innerHTML = '<option value="">-- Refreshing ConfigMaps... --</option>';
-                document.getElementById('view-configmap-btn').disabled = true;
                 document.getElementById('show-configmap-json-btn').disabled = true;
                 
                 socket.emit('get_configmaps', { tenant: selectedTenant });
-            }
-        }
-
-        function viewConfigMapDetails() {
-            const tenantSelect = document.getElementById('tenant-select');
-            const configmapSelect = document.getElementById('configmaps-select');
-            const selectedTenant = tenantSelect.value;
-            const selectedConfigMap = configmapSelect.value;
-            
-            console.log('DEBUG: viewConfigMapDetails called with tenant:', selectedTenant, 'configmap:', selectedConfigMap);
-            
-            if (selectedTenant && selectedConfigMap) {
-                // Add status message to command output
-                const output = document.getElementById('output');
-                const line = document.createElement('div');
-                line.className = 'output-line info';
-                const timestamp = new Date().toLocaleTimeString();
-                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
-                output.appendChild(line);
-                output.scrollTop = output.scrollHeight;
-                
-                // Switch to output view to show the status
-                document.getElementById('output').style.display = 'block';
-                document.getElementById('tenant-details').style.display = 'none';
-                document.getElementById('panel-title').textContent = 'Command Execution Output';
-                
-                console.log('DEBUG: Emitting get_configmap_details with data:', { tenant: selectedTenant, configmap: selectedConfigMap });
-                socket.emit('get_configmap_details', { tenant: selectedTenant, configmap: selectedConfigMap });
-            } else {
-                console.log('DEBUG: Missing tenant or configmap selection');
-                alert('Please select both a tenant and a ConfigMap');
             }
         }
 
@@ -2134,15 +2050,22 @@ if __name__ == '__main__':
                 const line = document.createElement('div');
                 line.className = 'output-line info';
                 const timestamp = new Date().toLocaleTimeString();
-                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap JSON details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
                 output.appendChild(line);
                 output.scrollTop = output.scrollHeight;
                 
-                // Add command line to show what's being executed
-                const commandLine = document.createElement('div');
-                commandLine.className = 'output-line command';
-                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> kubectl get configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)} -o json | jq ".data.config | fromjson"`;
-                output.appendChild(commandLine);
+                // Add raw command line
+                const rawCommandLine = document.createElement('div');
+                rawCommandLine.className = 'output-line command';
+                rawCommandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Raw Format: kubectl describe configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)}`;
+                output.appendChild(rawCommandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Add pretty command line
+                const prettyCommandLine = document.createElement('div');
+                prettyCommandLine.className = 'output-line command';
+                prettyCommandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Pretty Format: kubectl get configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)} -o json | jq ".data.config | fromjson"`;
+                output.appendChild(prettyCommandLine);
                 output.scrollTop = output.scrollHeight;
                 
                 // Switch to output view to show the status
@@ -2163,7 +2086,6 @@ if __name__ == '__main__':
             
             if (error) {
                 select.innerHTML = `<option value="">Error: ${error}</option>`;
-                document.getElementById('view-configmap-btn').disabled = true;
                 document.getElementById('show-configmap-json-btn').disabled = true;
                 return;
             }
@@ -2184,7 +2106,6 @@ if __name__ == '__main__':
                 select.appendChild(option);
             }
             
-            document.getElementById('view-configmap-btn').disabled = true;
             document.getElementById('show-configmap-json-btn').disabled = true;
         }
 
@@ -2298,8 +2219,22 @@ if __name__ == '__main__':
     with open('templates/index.html', 'w') as f:
         f.write(html_template)
     
-    print("Starting VMS Debug Tool Web Interface...")
+    print("=" * 60)
+    print("VMS Debug Tool - Web Interface")
+    print("=" * 60)
+    print("A comprehensive web-based tool for VMS server management")
+    print()
+    print("Features:")
+    print("  • SSH connection with automatic sudo elevation")
+    print("  • Real-time kubectl command execution")
+    print("  • Tenant data collection and visualization") 
+    print("  • Interactive Redis key viewing per tenant")
+    print("  • ConfigMap raw output display per tenant")
+    print("  • Automatic UI reset on disconnect")
+    print()
+    print("Server starting...")
     print("Open your web browser and go to: http://localhost:5000")
     print("Press Ctrl+C to stop the server")
+    print("=" * 60)
     
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
