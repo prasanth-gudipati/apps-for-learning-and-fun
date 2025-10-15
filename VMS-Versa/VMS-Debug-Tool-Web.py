@@ -71,6 +71,23 @@ class VMSDebugWeb:
         
         # Queue for thread communication
         self.output_queue = queue.Queue()
+        
+        # Create Logs directory if it doesn't exist
+        self.logs_dir = "Logs"
+        self._ensure_logs_directory()
+    
+    def _ensure_logs_directory(self):
+        """Create Logs directory if it doesn't exist"""
+        try:
+            if not os.path.exists(self.logs_dir):
+                os.makedirs(self.logs_dir)
+                print(f"Created logs directory: {self.logs_dir}")
+            else:
+                print(f"Logs directory already exists: {self.logs_dir}")
+        except Exception as e:
+            print(f"Warning: Could not create logs directory: {str(e)}")
+            # Fall back to current directory
+            self.logs_dir = "."
     
     def log_output(self, message, tag="normal"):
         """Add message to output display with timestamp"""
@@ -326,12 +343,13 @@ class VMSDebugWeb:
                 self.log_output(f"  ConfigMaps: {configmaps_count} ({configmaps_summary})", "normal")
                 self.log_output("", "normal")
             
-            # Save to file
+            # Save to file in Logs directory
             filename = f"tenant_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filepath = os.path.join(self.logs_dir, filename)
             try:
-                with open(filename, 'w') as f:
+                with open(filepath, 'w') as f:
                     json.dump(tenant_data, f, indent=2)
-                self.log_output(f"Tenant data saved to: {filename}", "success")
+                self.log_output(f"Tenant data saved to: {filepath}", "success")
             except Exception as e:
                 self.log_output(f"Error saving tenant data: {str(e)}", "error")
             
@@ -1481,7 +1499,7 @@ if __name__ == '__main__':
             <div class="section">
                 <h3>Operations</h3>
                 <button id="kubectl-btn" class="btn-success" onclick="runKubectl()" disabled>Run Kubectl Commands</button>
-                <button id="tenant-btn" class="btn-success" onclick="buildTenantData()" disabled>Build Tenant Data</button>
+                <button id="tenant-btn" class="btn-success" onclick="buildTenantData()" disabled style="display:none;">Build Tenant Data</button>
                 <button id="show-db-btn" class="btn-warning" onclick="showTenantDatabase()" disabled>Show Tenant Database</button>
             </div>
             
@@ -1539,6 +1557,7 @@ if __name__ == '__main__':
     <script>
         const socket = io();
         let connected = false;
+        let currentTenantRedisKeys = [];
 
         // Socket event handlers
         socket.on('connect', function() {
@@ -1569,16 +1588,31 @@ if __name__ == '__main__':
                 status.className = 'status connected';
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
-                kubectlBtn.disabled = false;
-                tenantBtn.disabled = false;
-                // Keep Show Database button disabled until tenant data is built
-                // showDbBtn.disabled = false; // This will be enabled in tenant_database_updated event
+                // Keep operation buttons disabled until tenant data is built automatically
+                kubectlBtn.disabled = true;
+                tenantBtn.disabled = true;
+                showDbBtn.disabled = true;
                 inputs.forEach(input => input.disabled = true);
+                
+                // Automatically start building tenant data after successful connection
+                setTimeout(() => {
+                    // Add status message
+                    const output = document.getElementById('output');
+                    const line = document.createElement('div');
+                    line.className = 'output-line info';
+                    const timestamp = new Date().toLocaleTimeString();
+                    line.innerHTML = `<span class="timestamp">[${timestamp}]</span> 🔄 Automatically building tenant data...`;
+                    output.appendChild(line);
+                    output.scrollTop = output.scrollHeight;
+                    
+                    buildTenantData();
+                }, 1000); // Wait 1 second after connection to start building tenant data
             } else {
                 status.textContent = `Status: ${data.message}`;
                 status.className = 'status disconnected';
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
+                // Disable all operation buttons on disconnect
                 kubectlBtn.disabled = true;
                 tenantBtn.disabled = true;
                 showDbBtn.disabled = true;
@@ -1601,6 +1635,9 @@ if __name__ == '__main__':
                 document.getElementById('panel-title').textContent = 'Command Execution Output';
                 document.getElementById('tenant-info-content').innerHTML = '';
                 
+                // Clear stored Redis keys
+                currentTenantRedisKeys = [];
+                
                 // Disable all action buttons
                 document.getElementById('refresh-keys-btn').disabled = true;
                 document.getElementById('view-key-btn').disabled = true;
@@ -1620,8 +1657,19 @@ if __name__ == '__main__':
         socket.on('tenant_database_updated', function(data) {
             updateTenantDropdown(data.tenants);
             document.getElementById('tenant-section').style.display = 'block';
-            // Enable the Show Database button only after tenant data is built
+            
+            // Enable all operations buttons only after tenant data is built
+            document.getElementById('kubectl-btn').disabled = false;
             document.getElementById('show-db-btn').disabled = false;
+            
+            // Add success message to indicate tenant data building is complete
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = 'output-line success';
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ✓ Tenant data building completed! All operations are now available.`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
         });
 
         socket.on('tenant_list_response', function(data) {
@@ -1638,6 +1686,21 @@ if __name__ == '__main__':
 
         socket.on('redis_keys_response', function(data) {
             updateRedisKeysDropdown(data.tenant, data.keys, data.error);
+            
+            // Store Redis keys for tenant details display
+            if (!data.error && data.keys) {
+                currentTenantRedisKeys = data.keys;
+                
+                // Refresh tenant info if currently displayed and matches the tenant
+                const tenantSelect = document.getElementById('tenant-select');
+                const detailsDiv = document.getElementById('tenant-details');
+                if (tenantSelect.value === data.tenant && detailsDiv.style.display === 'block') {
+                    // Re-emit select_tenant to refresh the display with Redis keys
+                    socket.emit('select_tenant', { tenant: data.tenant });
+                }
+            } else {
+                currentTenantRedisKeys = [];
+            }
         });
 
         socket.on('redis_key_value_response', function(data) {
@@ -1839,6 +1902,9 @@ if __name__ == '__main__':
                 return;
             }
 
+            // Switch to output view to show connection logs
+            switchToOutput();
+
             socket.emit('ssh_connect', {
                 host: host,
                 username: username,
@@ -1856,14 +1922,26 @@ if __name__ == '__main__':
                 alert('Please connect to server first');
                 return;
             }
+            
+            // Automatically switch to command output view when running kubectl commands
+            switchToOutput();
+            
             socket.emit('run_kubectl');
         }
 
         function buildTenantData() {
             if (!connected) {
-                alert('Please connect to server first');
+                // Only show alert if this is a manual call (when connected is false and button is clicked)
+                // For automatic calls after connection, this check prevents execution
+                if (document.getElementById('tenant-btn').style.display !== 'none') {
+                    alert('Please connect to server first');
+                }
                 return;
             }
+            
+            // Automatically switch to command output view when building tenant data
+            switchToOutput();
+            
             socket.emit('build_tenant_data');
         }
 
@@ -1895,6 +1973,9 @@ if __name__ == '__main__':
             const select = document.getElementById('tenant-select');
             const selectedTenant = select.value;
             if (selectedTenant) {
+                // Clear previous tenant's Redis keys
+                currentTenantRedisKeys = [];
+                
                 socket.emit('select_tenant', { tenant: selectedTenant });
                 
                 // Show Redis keys section and load keys for selected tenant
@@ -2160,6 +2241,35 @@ if __name__ == '__main__':
                     html += '</div>';
                 }
                 
+                // Redis Keys Information
+                html += '<div class="tenant-section">';
+                html += '<h4>Redis Keys Information</h4>';
+                if (info.redis_info && currentTenantRedisKeys.length > 0) {
+                    html += `<div class="tenant-property">
+                        <div class="tenant-property-name">Total Redis Keys:</div>
+                        <div class="tenant-property-value">${currentTenantRedisKeys.length}</div>
+                    </div>`;
+                    
+                    html += '<h5>Available Redis Keys:</h5>';
+                    html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; background-color: #f8f9fa;">';
+                    
+                    currentTenantRedisKeys.forEach((key, index) => {
+                        html += `<div class="tenant-property" style="margin-bottom: 5px; font-size: 11px;">
+                            <div class="tenant-property-name" style="min-width: 40px;">${index + 1}.</div>
+                            <div class="tenant-property-value" style="font-family: 'Consolas', monospace; word-break: break-all;">${escapeHtml(key)}</div>
+                        </div>`;
+                    });
+                    
+                    html += '</div>';
+                    html += '<p style="margin-top: 10px; font-size: 11px; color: #6c757d;"><em>Use the Redis Keys section in the left panel to view individual key values.</em></p>';
+                } else if (info.redis_info && currentTenantRedisKeys.length === 0) {
+                    html += '<p>Redis service available but no keys found or keys are still loading...</p>';
+                    html += '<p style="font-size: 11px; color: #6c757d;"><em>Keys may still be loading. Check the Redis Keys section in the left panel.</em></p>';
+                } else {
+                    html += '<p>No Redis service found for this tenant</p>';
+                }
+                html += '</div>';
+
                 // ConfigMaps Information
                 if (info.configmaps_info) {
                     html += '<div class="tenant-section">';
