@@ -308,6 +308,22 @@
             box-sizing: border-box;
             background-color: white;
         }
+
+        input[type="number"], input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.1);
+        }
         
         #tenant-details {
             flex: 1;
@@ -561,7 +577,24 @@
                         <option value="">-- Select a Log file --</option>
                     </select>
                 </div>
-                <button id="view-log-btn" class="btn-warning" onclick="viewLogFile()" disabled>View Log (250 lines)</button>
+                <div class="form-group">
+                    <label for="log-lines">Number of lines:</label>
+                    <select id="log-lines">
+                        <option value="500">500</option>
+                        <option value="1500" selected>1500</option>
+                        <option value="5000">5000</option>
+                        <option value="10000">10000</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="log-filter">Log filter:</label>
+                    <select id="log-filter">
+                        <option value="all">All</option>
+                        <option value="errors">Errors</option>
+                        <option value="pretty">Pretty format</option>
+                    </select>
+                </div>
+                <button id="view-log-btn" class="btn-warning" onclick="viewLogFile()" disabled>View Logs</button>
             </div>
         </div>
         
@@ -963,9 +996,13 @@
                 // Store the log content globally for pop-out functionality
                 window.currentLogContent = data.content;
                 
+                // Get filter info
+                const filterText = data.filter && data.filter !== 'all' ? ` (${data.filter} filter)` : '';
+                const linesText = data.lines || data.content.lines_requested || 250;
+                
                 // Display log file content
                 let html = `<div class="tenant-info-header">
-                    System Log File - Last ${data.content.lines_requested} Lines 
+                    System Log File - Last ${linesText} Lines${filterText}
                     <button class="popout-btn" onclick="popoutLogContent()" title="Open in new window">⧉</button>
                 </div>`;
                 
@@ -977,11 +1014,21 @@
                 </div>`;
                 html += '</div>';
                 
-                // Add log file content
+                // Add log file content with special formatting for pretty mode
                 html += '<div class="tenant-section">';
                 html += '<h4>Log File Content</h4>';
                 html += '<div class="database-view" style="max-height: 600px; overflow-y: auto;">';
-                html += escapeHtml(data.content.content);
+                
+                let logContent = data.content.content;
+                if (data.filter === 'pretty') {
+                    // First escape HTML, then apply pretty formatting
+                    logContent = escapeHtml(logContent);
+                    logContent = logContent.replace(/^.*[Ee][Rr][Rr][Oo][Rr].*$/gm, '<span style="color: #ff6b6b; font-weight: bold;">$&</span>');
+                    html += logContent;
+                } else {
+                    html += escapeHtml(logContent);
+                }
+                
                 html += '</div>';
                 html += '</div>';
                 
@@ -1329,9 +1376,14 @@
 
         function viewLogFile() {
             const logsSelect = document.getElementById('logs-select');
-            const selectedLogPath = logsSelect.value;
+            const logLinesSelect = document.getElementById('log-lines');
+            const logFilterSelect = document.getElementById('log-filter');
             
-            console.log('DEBUG: viewLogFile called with path:', selectedLogPath);
+            const selectedLogPath = logsSelect.value;
+            const numLines = parseInt(logLinesSelect.value) || 1500;
+            const logFilter = logFilterSelect.value;
+            
+            console.log('DEBUG: viewLogFile called with path:', selectedLogPath, 'lines:', numLines, 'filter:', logFilter);
             
             if (selectedLogPath) {
                 // Add status message to command output
@@ -1340,22 +1392,31 @@
                 line.className = 'output-line info';
                 const timestamp = new Date().toLocaleTimeString();
                 const filename = selectedLogPath.split('/').pop();
-                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting last 250 lines from log file: ${escapeHtml(filename)}`;
+                const filterText = logFilter === 'all' ? '' : ` (${logFilter} filter)`;
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting last ${numLines} lines from log file: ${escapeHtml(filename)}${filterText}`;
                 output.appendChild(line);
                 output.scrollTop = output.scrollHeight;
+                
+                // Build command based on filter
+                let commandText = `tail -n ${numLines} "${selectedLogPath}"`;
+                if (logFilter === 'errors') {
+                    commandText += ' | grep -i error | sed "s/^/  /"';
+                } else if (logFilter === 'pretty') {
+                    commandText += ' | sed "/[Ee][Rr][Rr][Oo][Rr]/i\\"';
+                }
                 
                 // Add command line
                 const commandLine = document.createElement('div');
                 commandLine.className = 'output-line command';
-                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Command: tail -n 250 "${escapeHtml(selectedLogPath)}"`;
+                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Command: ${escapeHtml(commandText)}`;
                 output.appendChild(commandLine);
                 output.scrollTop = output.scrollHeight;
                 
                 // Switch to output view to show the status
                 switchToOutput();
                 
-                console.log('DEBUG: Emitting get_log_file_content with path:', selectedLogPath);
-                socket.emit('get_log_file_content', { path: selectedLogPath, lines: 250 });
+                console.log('DEBUG: Emitting get_log_file_content with path:', selectedLogPath, 'lines:', numLines, 'filter:', logFilter);
+                socket.emit('get_log_file_content', { path: selectedLogPath, lines: numLines, filter: logFilter });
             } else {
                 console.log('DEBUG: No log file selected');
                 alert('Please select a log file first');
