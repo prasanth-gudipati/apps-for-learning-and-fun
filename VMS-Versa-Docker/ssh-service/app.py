@@ -12,6 +12,7 @@ import os
 import time
 import threading
 import logging
+import requests
 from datetime import datetime
 
 # Configure logging
@@ -23,6 +24,7 @@ app = Flask(__name__)
 # Service configuration
 SERVICE_PORT = int(os.getenv('SERVICE_PORT', 8001))
 SESSION_REDIS_URL = os.getenv('SESSION_REDIS_URL', 'redis://localhost:6379')
+WEB_FRONTEND_URL = os.getenv('WEB_FRONTEND_URL', 'http://web-frontend:5000')
 
 # Redis client for session management
 try:
@@ -47,66 +49,132 @@ class SSHConnectionManager:
         self.ssh_password = ""
         self.admin_password = ""
         
+    def emit_progress(self, step, message, status="info"):
+        """Send progress update to web frontend"""
+        try:
+            progress_data = {
+                'step': step,
+                'message': message,
+                'status': status,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # Store in Redis for the session
+            if redis_client:
+                redis_client.publish(f"progress:{self.session_id}", json.dumps(progress_data))
+                
+            logger.info(f"Session {self.session_id} - Step {step}: {message}")
+        except Exception as e:
+            logger.error(f"Failed to emit progress: {e}")
+        
     def connect(self, host, username, ssh_password, admin_password):
-        """Establish SSH connection with sudo elevation"""
+        """Establish SSH connection with sudo elevation and detailed progress tracking"""
         try:
             self.host = host
             self.username = username
             self.ssh_password = ssh_password
             self.admin_password = admin_password
             
-            logger.info(f"Session {self.session_id}: Attempting SSH connection to {host}")
+            # Step 1: Starting connection process
+            self.emit_progress(1, f"🔄 Starting SSH connection to {host}...", "info")
             
-            # Create SSH client
+            # Step 2: Creating SSH client
+            self.emit_progress(2, "🔧 Creating SSH client...", "info")
             self.ssh_client = paramiko.SSHClient()
             self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             
-            # Connect
+            # Step 3: Attempting connection
+            self.emit_progress(3, f"🌐 Connecting to {host} as {username}...", "info")
+            
+            # Connect with timeout
             self.ssh_client.connect(
                 hostname=host,
                 username=username,
                 password=ssh_password,
                 look_for_keys=False,
-                timeout=10
+                timeout=15
             )
             
-            logger.info(f"Session {self.session_id}: SSH connection successful")
+            # Step 4: Connection established
+            self.emit_progress(4, "✓ SSH connection established successfully!", "success")
             
-            # Create shell
+            # Step 5: Creating interactive shell
+            self.emit_progress(5, "🖥️ Creating interactive shell session...", "info")
             self.shell = self.ssh_client.invoke_shell()
-            time.sleep(1)
-            self.shell.recv(10000)  # Clear banner
+            time.sleep(1.5)
             
-            # Execute sudo su
-            logger.info(f"Session {self.session_id}: Executing sudo su")
+            # Clear the banner/welcome message
+            if self.shell.recv_ready():
+                self.shell.recv(10000)
+            
+            # Step 6: Elevating privileges with sudo
+            self.emit_progress(6, "🔐 Elevating privileges with sudo...", "info")
             self.shell.send("sudo su\n")
             
-            # Wait for password prompt
+            # Step 7: Waiting for password prompt
+            self.emit_progress(7, "⏳ Waiting for sudo password prompt...", "info")
+            
+            # Wait for password prompt with timeout
             buff = ""
             start_time = time.time()
-            while time.time() - start_time < 10:  # 10 second timeout
+            password_prompt_found = False
+            
+            while time.time() - start_time < 15:  # 15 second timeout
                 if self.shell.recv_ready():
                     resp = self.shell.recv(1000).decode('utf-8', errors='ignore')
                     buff += resp
-                    if "password for" in buff.lower():
+                    if "password for" in buff.lower() or "[sudo]" in buff.lower():
+                        password_prompt_found = True
                         break
                 time.sleep(0.2)
             
-            if "password for" not in buff.lower():
+            if not password_prompt_found:
+                self.emit_progress(8, "❌ Sudo password prompt not found - authentication may have failed", "error")
                 raise Exception("Sudo password prompt not found")
             
-            # Send admin password
+            # Step 8: Sending sudo password
+            self.emit_progress(8, "🔑 Sending admin password for sudo access...", "info")
             self.shell.send(admin_password + "\n")
-            time.sleep(1.5)
+            time.sleep(2)
+            
+            # Step 9: Verifying sudo elevation
+            self.emit_progress(9, "⚡ Verifying sudo elevation...", "info")
             
             # Check if sudo was successful
-            output = self.shell.recv(10000).decode('utf-8', errors='ignore')
+            output = ""
+            start_time = time.time()
+            while time.time() - start_time < 10:
+                if self.shell.recv_ready():
+                    chunk = self.shell.recv(1000).decode('utf-8', errors='ignore')
+                    output += chunk
+                time.sleep(0.2)
             
-            # Set kubectl alias
-            logger.info(f"Session {self.session_id}: Setting kubectl alias")
+            # Check for sudo failure indicators
+            if "sorry, try again" in output.lower() or "incorrect password" in output.lower():
+                self.emit_progress(10, "❌ Sudo authentication failed - incorrect admin password", "error")
+                raise Exception("Sudo authentication failed")
+            
+            # Step 10: Setting up environment
+            self.emit_progress(10, "⚙️ Setting up command environment...", "info")
+            
+            # Set kubectl alias for convenience
             self.shell.send("alias k=kubectl\n")
             time.sleep(0.5)
-            self.shell.recv(10000).decode('utf-8', errors='ignore')  # Clear response
+            if self.shell.recv_ready():
+                self.shell.recv(10000)  # Clear response
+            
+            # Test command execution
+            self.shell.send("whoami\n")
+            time.sleep(1)
+            whoami_output = ""
+            if self.shell.recv_ready():
+                whoami_output = self.shell.recv(1000).decode('utf-8', errors='ignore')
+            
+            # Step 11: Final verification
+            if "root" in whoami_output:
+                self.emit_progress(11, "✅ Root access confirmed - connection ready!", "success")
+            else:
+                self.emit_progress(11, "✓ Connection established (user access)", "success")
             
             self.connected = True
             
@@ -120,10 +188,14 @@ class SSHConnectionManager:
                 }
                 redis_client.setex(f"ssh_session:{self.session_id}", 3600, json.dumps(connection_info))
             
-            logger.info(f"Session {self.session_id}: SSH connection and sudo elevation successful")
+            # Step 12: Connection complete
+            self.emit_progress(12, f"🎉 SSH connection to {host} completed successfully! Ready for operations.", "success")
+            
             return True
             
         except Exception as e:
+            error_msg = f"Connection failed: {str(e)}"
+            self.emit_progress("ERROR", f"❌ {error_msg}", "error")
             logger.error(f"Session {self.session_id}: SSH connection failed: {e}")
             self.connected = False
             return False

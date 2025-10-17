@@ -11,6 +11,7 @@ import redis
 import json
 import uuid
 import os
+import threading
 from datetime import datetime
 import logging
 
@@ -34,6 +35,29 @@ try:
     redis_client = redis.from_url(SESSION_REDIS_URL)
     redis_client.ping()
     logger.info("Connected to Redis successfully")
+    
+    # Set up progress monitoring
+    def monitor_progress():
+        """Monitor Redis for progress updates"""
+        pubsub = redis_client.pubsub()
+        pubsub.psubscribe('progress:*')
+        
+        for message in pubsub.listen():
+            if message['type'] == 'pmessage':
+                try:
+                    channel = message['channel'].decode('utf-8')
+                    session_id = channel.split(':')[1]
+                    progress_data = json.loads(message['data'])
+                    
+                    # Emit progress to specific session
+                    socketio.emit('connection_progress', progress_data, room=session_id)
+                except Exception as e:
+                    logger.error(f"Error processing progress message: {e}")
+    
+    # Start progress monitoring in background thread
+    progress_thread = threading.Thread(target=monitor_progress, daemon=True)
+    progress_thread.start()
+    
 except Exception as e:
     logger.error(f"Failed to connect to Redis: {e}")
     redis_client = None

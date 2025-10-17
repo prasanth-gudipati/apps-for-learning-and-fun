@@ -1176,10 +1176,12 @@ def handle_get_redis_keys(data):
         emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'Not connected to server'})
         return
     
+    session_id = request.sid
+    
     # Run Redis key extraction in separate thread
     def extract_keys():
         keys = client_vms.extract_redis_keys_for_tenant(tenant_name)
-        socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys}, room=request.sid)
+        socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys}, room=session_id)
     
     thread = threading.Thread(target=extract_keys, daemon=True)
     thread.start()
@@ -1214,19 +1216,20 @@ def handle_get_redis_key_value(data):
         })
         return
     
-    print(f"DEBUG: Session {request.sid} - Starting thread to get Redis key value")
+    session_id = request.sid
+    print(f"DEBUG: Session {session_id} - Starting thread to get Redis key value")
     
     # Run Redis key value extraction in separate thread
     def get_key_value():
-        print(f"DEBUG: Session {request.sid} - In thread - calling get_redis_key_value for tenant '{tenant_name}', key '{key_name}'")
+        print(f"DEBUG: Session {session_id} - In thread - calling get_redis_key_value for tenant '{tenant_name}', key '{key_name}'")
         key_value = client_vms.get_redis_key_value(tenant_name, key_name)
-        print(f"DEBUG: Session {request.sid} - Got key value result: {type(key_value)} - {key_value}")
+        print(f"DEBUG: Session {session_id} - Got key value result: {type(key_value)} - {key_value}")
         socketio.emit('redis_key_value_response', {
             'tenant': tenant_name,
             'key': key_name, 
             'value': key_value
-        }, room=request.sid)
-        print(f"DEBUG: Session {request.sid} - Emitted redis_key_value_response")
+        }, room=session_id)
+        print(f"DEBUG: Session {session_id} - Emitted redis_key_value_response")
     
     thread = threading.Thread(target=get_key_value, daemon=True)
     thread.start()
@@ -1257,18 +1260,19 @@ def handle_get_configmaps(data):
         })
         return
     
-    print(f"DEBUG: Session {request.sid} - Starting thread to get ConfigMaps")
+    session_id = request.sid
+    print(f"DEBUG: Session {session_id} - Starting thread to get ConfigMaps")
     
     # Run ConfigMaps extraction in separate thread
     def get_configmaps():
-        print(f"DEBUG: Session {request.sid} - In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
+        print(f"DEBUG: Session {session_id} - In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
         configmaps = client_vms.get_all_configmaps_for_tenant(tenant_name)
-        print(f"DEBUG: Session {request.sid} - Got ConfigMaps result: {len(configmaps)} configmaps")
+        print(f"DEBUG: Session {session_id} - Got ConfigMaps result: {len(configmaps)} configmaps")
         socketio.emit('configmaps_response', {
             'tenant': tenant_name,
             'configmaps': configmaps
-        }, room=request.sid)
-        print(f"DEBUG: Session {request.sid} - Emitted configmaps_response")
+        }, room=session_id)
+        print(f"DEBUG: Session {session_id} - Emitted configmaps_response")
     
     thread = threading.Thread(target=get_configmaps, daemon=True)
     thread.start()
@@ -1302,19 +1306,20 @@ def handle_get_configmap_json_details(data):
         })
         return
     
-    print(f"DEBUG: Session {request.sid} - Starting thread to get ConfigMap JSON details")
+    session_id = request.sid
+    print(f"DEBUG: Session {session_id} - Starting thread to get ConfigMap JSON details")
     
     # Run ConfigMap JSON details extraction in separate thread
     def get_configmap_json_details():
-        print(f"DEBUG: Session {request.sid} - In thread - calling get_configmap_json_details for tenant '{tenant_name}', configmap '{configmap_name}'")
+        print(f"DEBUG: Session {session_id} - In thread - calling get_configmap_json_details for tenant '{tenant_name}', configmap '{configmap_name}'")
         details = client_vms.get_configmap_json_details(tenant_name, configmap_name)
-        print(f"DEBUG: Session {request.sid} - Got ConfigMap JSON details result: {type(details)}")
+        print(f"DEBUG: Session {session_id} - Got ConfigMap JSON details result: {type(details)}")
         socketio.emit('configmap_json_details_response', {
             'tenant': tenant_name,
             'configmap': configmap_name,
             'details': details
-        }, room=request.sid)
-        print(f"DEBUG: Session {request.sid} - Emitted configmap_json_details_response")
+        }, room=session_id)
+        print(f"DEBUG: Session {session_id} - Emitted configmap_json_details_response")
     
     thread = threading.Thread(target=get_configmap_json_details, daemon=True)
     thread.start()
@@ -1330,17 +1335,18 @@ def handle_scan_log_files():
         })
         return
     
-    print(f"DEBUG: Session {request.sid} - Starting thread to scan log files")
+    session_id = request.sid
+    print(f"DEBUG: Session {session_id} - Starting thread to scan log files")
     
     # Run log files scanning in separate thread
     def scan_log_files():
-        print(f"DEBUG: Session {request.sid} - In thread - calling scan_log_files")
+        print(f"DEBUG: Session {session_id} - In thread - calling scan_log_files")
         log_files = client_vms.scan_log_files()
-        print(f"DEBUG: Session {request.sid} - Got log files result: {len(log_files)} directories")
+        print(f"DEBUG: Session {session_id} - Got log files result: {len(log_files)} directories")
         socketio.emit('log_files_response', {
             'log_files': log_files
-        }, room=request.sid)
-        print(f"DEBUG: Session {request.sid} - Emitted log_files_response")
+        }, room=session_id)
+        print(f"DEBUG: Session {session_id} - Emitted log_files_response")
     
     thread = threading.Thread(target=scan_log_files, daemon=True)
     thread.start()
@@ -1373,20 +1379,21 @@ def handle_get_log_file_content(data):
         })
         return
     
-    print(f"DEBUG: Session {request.sid} - Starting thread to get log file content")
+    session_id = request.sid
+    print(f"DEBUG: Session {session_id} - Starting thread to get log file content")
     
     # Run log file content extraction in separate thread
     def get_log_file_content():
-        print(f"DEBUG: Session {request.sid} - In thread - calling get_log_file_tail for path '{log_file_path}' with {lines} lines, filter: {log_filter}")
+        print(f"DEBUG: Session {session_id} - In thread - calling get_log_file_tail for path '{log_file_path}' with {lines} lines, filter: {log_filter}")
         content = client_vms.get_log_file_tail(log_file_path, lines, log_filter)
-        print(f"DEBUG: Session {request.sid} - Got log file content result: {type(content)}")
+        print(f"DEBUG: Session {session_id} - Got log file content result: {type(content)}")
         socketio.emit('log_file_content_response', {
             'path': log_file_path,
             'content': content,
             'lines': lines,
             'filter': log_filter
-        }, room=request.sid)
-        print(f"DEBUG: Session {request.sid} - Emitted log_file_content_response")
+        }, room=session_id)
+        print(f"DEBUG: Session {session_id} - Emitted log_file_content_response")
     
     thread = threading.Thread(target=get_log_file_content, daemon=True)
     thread.start()
