@@ -78,6 +78,12 @@ class VMSDebugWeb:
         # Create Logs directory if it doesn't exist
         self.logs_dir = "Logs"
         self._ensure_logs_directory()
+        
+        # Setup persistent log file
+        self.persistent_log_file = os.path.join(self.logs_dir, "vms_debug_tool.log")
+        
+        # Initialize log file if it doesn't exist
+        self._initialize_log_file()
     
     def _ensure_logs_directory(self):
         """Create Logs directory if it doesn't exist"""
@@ -110,6 +116,81 @@ class VMSDebugWeb:
                 'tag': tag,
                 'timestamp': timestamp
             })
+        
+        # Also write to persistent log file
+        self._write_to_log_file(message, tag)
+    
+    def _write_to_log_file(self, message, tag="normal"):
+        """Write message to persistent log file with timestamp and decorative separator"""
+        try:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Create log entry with decorative separator for new sessions/operations
+            if tag == "session_start":
+                log_entry = f"\n{'='*80}\n🚀 NEW SESSION STARTED - {timestamp}\n{'='*80}\n{message}\n"
+            elif tag == "operation_start":
+                log_entry = f"\n{'-'*60}\n⚡ NEW OPERATION - {timestamp}\n{'-'*60}\n{message}\n"
+            else:
+                log_entry = f"[{timestamp}] [{tag.upper()}] {message}\n"
+            
+            # Append to the persistent log file
+            with open(self.persistent_log_file, 'a', encoding='utf-8') as f:
+                f.write(log_entry)
+                
+        except Exception as e:
+            # Don't let logging errors break the application
+            print(f"Warning: Could not write to log file: {str(e)}")
+    
+    def start_new_session_log(self):
+        """Start a new session in the log file with decorative separator"""
+        self._write_to_log_file(f"VMS Debug Tool Session Started", "session_start")
+    
+    def start_new_operation_log(self, operation_name):
+        """Start a new operation in the log file with decorative separator"""
+        self._write_to_log_file(f"Starting Operation: {operation_name}", "operation_start")
+    
+    def _get_execution_count(self):
+        """Get the current execution count from existing tenant data file"""
+        try:
+            filename = "tenant_data.json"
+            filepath = os.path.join(self.logs_dir, filename)
+            
+            if os.path.exists(filepath):
+                with open(filepath, 'r') as f:
+                    data = json.load(f)
+                    if "_metadata" in data and "execution_count" in data["_metadata"]:
+                        return data["_metadata"]["execution_count"]
+            
+            return 0
+        except Exception:
+            return 0
+    
+    def _initialize_log_file(self):
+        """Initialize the log file with a header if it doesn't exist or is empty"""
+        try:
+            # Check if log file exists and has content
+            needs_header = True
+            if os.path.exists(self.persistent_log_file):
+                with open(self.persistent_log_file, 'r') as f:
+                    content = f.read().strip()
+                    if content:
+                        needs_header = False
+            
+            if needs_header:
+                header = f"""{'='*100}
+🔧 VMS DEBUG TOOL - PERSISTENT LOG FILE
+{'='*100}
+Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Purpose: This file contains all VMS Debug Tool activities in chronological order
+Note: Each new session and operation is marked with decorative separators
+{'='*100}
+
+"""
+                with open(self.persistent_log_file, 'w', encoding='utf-8') as f:
+                    f.write(header)
+                    
+        except Exception as e:
+            print(f"Warning: Could not initialize log file: {str(e)}")
     
     def connect_to_server(self, host, username, ssh_password, admin_password):
         """Connect to the SSH server in a separate thread"""
@@ -117,6 +198,9 @@ class VMSDebugWeb:
         self.username = username
         self.ssh_password = ssh_password
         self.admin_password = admin_password
+        
+        # Start new session in log file
+        self.start_new_session_log()
         
         try:
             self.log_output("Attempting SSH connection...", "info")
@@ -206,6 +290,9 @@ class VMSDebugWeb:
         except Exception as e:
             self.log_output(f"Error during disconnect: {str(e)}", "error")
         
+        # Log session end
+        self._write_to_log_file(f"SESSION ENDED - Disconnected from {self.host}", "session_start")
+        
         # Reset connection state
         self.connected = False
         self.ssh_client = None
@@ -222,6 +309,9 @@ class VMSDebugWeb:
         if not self.connected:
             self.log_output("Error: Not connected to server", "error")
             return
+        
+        # Start new operation log
+        self.start_new_operation_log("Kubectl Commands Execution")
         
         commands = [
             ("kubectl get ns", "Get all namespaces"),
@@ -273,6 +363,9 @@ class VMSDebugWeb:
         if not self.connected:
             self.log_output("Error: Not connected to server", "error")
             return
+        
+        # Start new operation log
+        self.start_new_operation_log("Tenant Data Building")
         
         try:
             self.log_output("Building comprehensive tenant data structure...", "info")
@@ -363,13 +456,30 @@ class VMSDebugWeb:
                 self.log_output(f"  ConfigMaps: {configmaps_count} ({configmaps_summary})", "normal")
                 self.log_output("", "normal")
             
-            # Save to file in Logs directory
-            filename = f"tenant_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            # Save to persistent tenant data file
+            filename = "tenant_data.json"
             filepath = os.path.join(self.logs_dir, filename)
             try:
+                # Add timestamp header to the JSON file
+                current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                tenant_data_with_meta = {
+                    "_metadata": {
+                        "last_updated": current_timestamp,
+                        "session_info": f"Host: {self.host}, User: {self.username}",
+                        "execution_count": self._get_execution_count() + 1
+                    },
+                    "tenant_data": tenant_data
+                }
+                
                 with open(filepath, 'w') as f:
-                    json.dump(tenant_data, f, indent=2)
-                self.log_output(f"Tenant data saved to: {filepath}", "success")
+                    json.dump(tenant_data_with_meta, f, indent=2)
+                    
+                # Write separators and metadata to log file
+                self._write_to_log_file("", "operation_start")  # Separator
+                self._write_to_log_file(f"Tenant data updated in persistent file: {filepath}", "success")
+                self._write_to_log_file(f"Total tenants found: {len(tenant_data)}", "info")
+                
+                self.log_output(f"Tenant data updated in: {filepath}", "success")
             except Exception as e:
                 self.log_output(f"Error saving tenant data: {str(e)}", "error")
             
@@ -522,6 +632,9 @@ class VMSDebugWeb:
         
         if not redis_info or not redis_info.get('cluster_ip'):
             return []
+        
+        # Start new operation log
+        self.start_new_operation_log(f"Redis Keys Extraction - Tenant: {tenant_name}")
         
         redis_ip = redis_info['cluster_ip']
         self.log_output(f"Extracting Redis keys from {tenant_name} (IP: {redis_ip})", "info")
@@ -851,6 +964,9 @@ class VMSDebugWeb:
         if not self.connected:
             self.log_output("Error: Not connected to server", "error")
             return {}
+        
+        # Start new operation log
+        self.start_new_operation_log("System Log Files Scanning")
         
         try:
             self.log_output("Scanning for log files in /var/log/versa/vms/apps and vms-admin.log", "info")
