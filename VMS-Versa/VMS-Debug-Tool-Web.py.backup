@@ -1,0 +1,3389 @@
+#!/usr/bin/env python3
+"""
+VMS Debug Tool - Web Version
+A comprehensive web-based application for connecting to VMS servers and executing 
+kubectl commands with real-time command execution display and tenant management.
+
+Features:
+- Web interface for server connection with pre-configured default values
+- SSH connection management with automatic sudo elevation
+- Real-time command execution display via WebSocket
+- Comprehensive tenant data collection and visualization
+- Interactive tenant selection and management
+- Redis key extraction and value viewing for selected tenants
+- ConfigMap discovery and raw output display
+- Automatic UI reset on disconnect for clean user experience
+
+Supported Operations:
+1. Basic kubectl commands execution (get ns, pods, services, etc.)
+2. Tenant database building with services, Redis info, and ConfigMaps
+3. Redis key enumeration and value extraction per tenant
+4. ConfigMap listing and raw content display per tenant
+5. Real-time command output streaming with color-coded messages
+
+UI Components:
+- Connection panel with server credentials
+- Operations panel with kubectl and tenant data commands  
+- Tenant selection dropdown (appears after building tenant data)
+- Redis keys section with key selection and value viewing
+- ConfigMaps section with ConfigMap selection and raw output display
+- Real-time output panel with command execution logs
+- Tenant details panel for structured data viewing
+
+Technical Details:
+- Flask-SocketIO for real-time communication
+- Paramiko for SSH connections
+- Threaded command execution to prevent UI blocking
+- ANSI escape code cleaning for clean output display
+- Automatic UI state management and reset functionality
+"""
+
+from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO, emit
+import threading
+import queue
+import time
+import paramiko
+import json
+import re
+from datetime import datetime
+import os
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'vms-debug-tool-secret-key'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+class VMSDebugWeb:
+    def __init__(self):
+        # SSH connection variables
+        self.ssh_client = None
+        self.shell = None
+        self.connected = False
+        
+        # Connection details
+        self.host = ""
+        self.username = ""
+        self.ssh_password = ""
+        self.admin_password = ""
+        
+        # Tenant database
+        self.tenant_database = {}
+        
+        # Queue for thread communication
+        self.output_queue = queue.Queue()
+        
+        # Create Logs directory if it doesn't exist
+        self.logs_dir = "Logs"
+        self._ensure_logs_directory()
+    
+    def _ensure_logs_directory(self):
+        """Create Logs directory if it doesn't exist"""
+        try:
+            if not os.path.exists(self.logs_dir):
+                os.makedirs(self.logs_dir)
+                print(f"Created logs directory: {self.logs_dir}")
+            else:
+                print(f"Logs directory already exists: {self.logs_dir}")
+        except Exception as e:
+            print(f"Warning: Could not create logs directory: {str(e)}")
+            # Fall back to current directory
+            self.logs_dir = "."
+    
+    def log_output(self, message, tag="normal"):
+        """Add message to output display with timestamp"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        
+        # Emit to web interface
+        socketio.emit('log_output', {
+            'message': message,
+            'tag': tag,
+            'timestamp': timestamp
+        })
+    
+    def connect_to_server(self, host, username, ssh_password, admin_password):
+        """Connect to the SSH server in a separate thread"""
+        self.host = host
+        self.username = username
+        self.ssh_password = ssh_password
+        self.admin_password = admin_password
+        
+        try:
+            self.log_output("Attempting SSH connection...", "info")
+            
+            # Create SSH client
+            self.ssh_client = paramiko.SSHClient()
+            self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            # Connect
+            self.ssh_client.connect(
+                hostname=host,
+                username=username,
+                password=ssh_password,
+                look_for_keys=False,
+                timeout=10
+            )
+            
+            self.log_output(f"SSH connection successful to {host}", "success")
+            
+            # Create shell
+            self.shell = self.ssh_client.invoke_shell()
+            time.sleep(1)
+            self.shell.recv(10000)  # Clear banner
+            
+            self.log_output("Shell session established", "success")
+            
+            # Execute sudo su
+            self.log_output("Executing 'sudo su' command...", "command")
+            self.shell.send("sudo su\n")
+            
+            # Wait for password prompt
+            buff = ""
+            start_time = time.time()
+            while time.time() - start_time < 10:  # 10 second timeout
+                if self.shell.recv_ready():
+                    resp = self.shell.recv(1000).decode('utf-8', errors='ignore')
+                    buff += resp
+                    if "password for" in buff.lower():
+                        break
+                time.sleep(0.2)
+            
+            if "password for" not in buff.lower():
+                raise Exception("Sudo password prompt not found")
+            
+            # Send admin password
+            self.shell.send(admin_password + "\n")
+            time.sleep(1.5)
+            
+            # Check if sudo was successful
+            output = self.shell.recv(10000).decode('utf-8', errors='ignore')
+            self.log_output("Sudo elevation successful", "success")
+            
+            # Set kubectl alias
+            self.log_output("Setting kubectl alias...", "info")
+            self.shell.send("alias k=kubectl\n")
+            time.sleep(0.5)
+            self.shell.recv(10000).decode('utf-8', errors='ignore')  # Clear response
+            
+            # Update connection state
+            self.connected = True
+            socketio.emit('connection_status', {'connected': True, 'message': 'Connected successfully'})
+            
+        except Exception as e:
+            error_msg = f"Connection failed: {str(e)}"
+            self.log_output(error_msg, "error")
+            self.connected = False
+            socketio.emit('connection_status', {'connected': False, 'message': error_msg})
+    
+    def disconnect_from_server(self):
+        """Disconnect from SSH server"""
+        if not self.connected:
+            return
+        
+        try:
+            self.log_output("Disconnecting from server...", "info")
+            if self.shell:
+                self.shell.send("exit\n")
+                time.sleep(0.5)
+            if self.ssh_client:
+                self.ssh_client.close()
+        except Exception as e:
+            self.log_output(f"Error during disconnect: {str(e)}", "error")
+        
+        # Reset connection state
+        self.connected = False
+        self.ssh_client = None
+        self.shell = None
+        
+        self.log_output("Disconnected from server", "info")
+        socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected'})
+    
+    def run_kubectl_commands(self):
+        """Run basic kubectl commands"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return
+        
+        commands = [
+            ("kubectl get ns", "Get all namespaces"),
+            ("kubectl get pods -A", "Get all pods across all namespaces"),
+            ("kubectl get svc -A", "Get all services across all namespaces"),
+            ("kubectl get pv", "Get persistent volumes"),
+            ("kubectl get pvc -A", "Get persistent volume claims"),
+            ("kubectl get cm -A", "Get config maps"),
+            ("kubectl get svc -A | grep redis", "Get Redis services")
+        ]
+        
+        try:
+            self.log_output("Starting kubectl commands execution...", "info")
+            
+            for command, description in commands:
+                self.log_output(f"Running: {command}", "command")
+                self.log_output(f"Description: {description}", "info")
+                
+                # Execute command
+                self.shell.send(f"{command}\n")
+                time.sleep(3)
+                
+                # Collect output
+                output = self._collect_command_output()
+                
+                # Clean and display output
+                cleaned_output = self._clean_ansi_codes(output)
+                lines = cleaned_output.split('\n')
+                
+                line_count = 0
+                for line in lines:
+                    line = line.strip()
+                    if (line and not line.startswith('kubectl') and 
+                        not line.endswith('# ') and not line.endswith('$ ') and
+                        not line.startswith('[root@')):
+                        self.log_output(f"  {line}", "normal")
+                        line_count += 1
+                
+                self.log_output(f"-> Collected {line_count} lines of output", "success")
+                self.log_output("", "normal")  # Empty line for separation
+            
+            self.log_output("All kubectl commands completed successfully!", "success")
+            
+        except Exception as e:
+            self.log_output(f"Error running kubectl commands: {str(e)}", "error")
+    
+    def build_tenant_data(self):
+        """Build comprehensive tenant data"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return
+        
+        try:
+            self.log_output("Building comprehensive tenant data structure...", "info")
+            
+            # Step 1: Get all services
+            self.log_output("Step 1: Getting all services...", "command")
+            self.shell.send("kubectl get svc -A\n")
+            time.sleep(2)
+            kubectl_output = self._collect_command_output()
+            
+            # Parse tenant services
+            tenant_data = self._parse_kubectl_output(kubectl_output)
+            service_count = len(tenant_data)
+            self.log_output(f"-> Found {service_count} tenant namespaces", "success")
+            
+            # Step 2: Get Redis information
+            self.log_output("Step 2: Getting Redis information...", "command")
+            redis_info = self._extract_redis_ips()
+            redis_count = len(redis_info)
+            self.log_output(f"-> Found {redis_count} Redis services", "success")
+            
+            # Step 3: Integrate Redis information
+            self.log_output("Step 3: Integrating Redis information with tenant data...", "info")
+            for tenant, redis_details in redis_info.items():
+                if tenant in tenant_data:
+                    # Ensure tenant_data[tenant] is not None
+                    if tenant_data[tenant] is None:
+                        tenant_data[tenant] = {'services': [], 'redis_info': None}
+                    tenant_data[tenant]['redis_info'] = redis_details
+                    self.log_output(f"  Updated Redis info for existing tenant: {tenant}", "info")
+                else:
+                    tenant_data[tenant] = {
+                        'services': ['redis'],
+                        'redis_info': redis_details
+                    }
+                    self.log_output(f"  Added new tenant with Redis: {tenant}", "info")
+            
+            # Step 4: Get ConfigMaps information
+            self.log_output("Step 4: Getting ConfigMaps information...", "command")
+            configmaps_info = self._extract_configmaps_for_all_tenants()
+            
+            # Step 5: Integrate ConfigMaps information
+            self.log_output("Step 5: Integrating ConfigMaps information with tenant data...", "info")
+            for tenant, configmap_details in configmaps_info.items():
+                if tenant in tenant_data:
+                    # Ensure tenant_data[tenant] is not None
+                    if tenant_data[tenant] is None:
+                        tenant_data[tenant] = {'services': [], 'redis_info': None, 'configmaps_info': None}
+                    tenant_data[tenant]['configmaps_info'] = configmap_details
+                    self.log_output(f"  Updated ConfigMaps info for existing tenant: {tenant}", "info")
+                else:
+                    # Create new tenant entry if it doesn't exist
+                    tenant_data[tenant] = {
+                        'services': [],
+                        'redis_info': None,
+                        'configmaps_info': configmap_details
+                    }
+                    self.log_output(f"  Added new tenant with ConfigMaps: {tenant}", "info")
+            
+            # Display results
+            self.log_output("", "normal")
+            self.log_output("=== TENANT DATA SUMMARY ===", "success")
+            
+            for tenant, data in tenant_data.items():
+                # Ensure data is not None and has proper structure
+                if data is None:
+                    data = {'services': [], 'redis_info': None, 'configmaps_info': None}
+                
+                services = ', '.join(data.get('services', []))
+                redis_info = data.get('redis_info', {})
+                if redis_info is None:
+                    redis_info = {}
+                redis_ip = redis_info.get('cluster_ip', 'N/A')
+                
+                # ConfigMaps information
+                configmaps_info = data.get('configmaps_info', {})
+                if configmaps_info is None:
+                    configmaps_info = {}
+                configmaps_count = configmaps_info.get('total_configmaps', 0)
+                configmaps_names = []
+                if configmaps_info.get('configmaps'):
+                    configmaps_names = [cm['name'] for cm in configmaps_info['configmaps'][:3]]
+                configmaps_summary = ', '.join(configmaps_names) + ('...' if configmaps_count > 3 else '')
+                
+                self.log_output(f"Tenant: {tenant}", "info")
+                self.log_output(f"  Services: {services}", "normal")
+                self.log_output(f"  Redis IP: {redis_ip}", "normal")
+                self.log_output(f"  ConfigMaps: {configmaps_count} ({configmaps_summary})", "normal")
+                self.log_output("", "normal")
+            
+            # Save to file in Logs directory
+            filename = f"tenant_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filepath = os.path.join(self.logs_dir, filename)
+            try:
+                with open(filepath, 'w') as f:
+                    json.dump(tenant_data, f, indent=2)
+                self.log_output(f"Tenant data saved to: {filepath}", "success")
+            except Exception as e:
+                self.log_output(f"Error saving tenant data: {str(e)}", "error")
+            
+            self.log_output("Tenant data building completed successfully!", "success")
+            
+            # Store tenant database
+            self.tenant_database = tenant_data
+            
+            # Step 6: Automatically scan log files as part of tenant data building
+            self.log_output("Step 6: Scanning log files...", "command")
+            log_files = self.scan_log_files()
+            
+            # Send tenant data to web interface
+            socketio.emit('tenant_data', {'data': tenant_data, 'filename': filename})
+            socketio.emit('tenant_database_updated', {'tenants': list(tenant_data.keys())})
+            
+            # Send log files data to web interface
+            socketio.emit('log_files_response', {'log_files': log_files})
+            
+        except Exception as e:
+            self.log_output(f"Error building tenant data: {str(e)}", "error")
+    
+    def _collect_command_output(self, timeout=10):
+        """Collect output from shell command"""
+        output = ""
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            if self.shell.recv_ready():
+                chunk = self.shell.recv(4096).decode('utf-8', errors='ignore')
+                output += chunk
+                if chunk.endswith('# ') or chunk.endswith('$ '):
+                    break
+            time.sleep(0.1)
+        
+        return output
+    
+    def _clean_ansi_codes(self, text):
+        """Remove ANSI escape codes from text"""
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        return ansi_escape.sub('', text)
+    
+    def _parse_kubectl_output(self, output):
+        """Parse kubectl get svc -A output and extract tenant information"""
+        tenant_services = {}
+        cleaned_output = self._clean_ansi_codes(output)
+        lines = cleaned_output.strip().split('\n')
+        
+        self.log_output(f"Debug: Parsing {len(lines)} lines of kubectl output", "info")
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith('NAMESPACE') or line.startswith('kubectl'):
+                continue
+            
+            parts = line.split()
+            if len(parts) >= 2:
+                namespace = parts[0]
+                service = parts[1]
+                
+                # Skip system namespaces
+                if namespace in ['kube-system', 'kube-public', 'kube-node-lease', 'default']:
+                    continue
+                
+                # Ensure we create valid tenant entry
+                if namespace not in tenant_services:
+                    tenant_services[namespace] = {
+                        'services': [],
+                        'redis_info': None
+                    }
+                    self.log_output(f"  Found new tenant namespace: {namespace}", "info")
+                
+                # Ensure the tenant entry is valid before adding service
+                if tenant_services[namespace] is not None and isinstance(tenant_services[namespace], dict):
+                    if 'services' not in tenant_services[namespace]:
+                        tenant_services[namespace]['services'] = []
+                    
+                    if service not in tenant_services[namespace]['services']:
+                        tenant_services[namespace]['services'].append(service)
+        
+        # Validate all entries before returning
+        validated_services = {}
+        for tenant, data in tenant_services.items():
+            if data is not None and isinstance(data, dict):
+                validated_services[tenant] = {
+                    'services': data.get('services', []),
+                    'redis_info': data.get('redis_info', None)
+                }
+            else:
+                self.log_output(f"Warning: Invalid data for tenant {tenant}, creating default structure", "error")
+                validated_services[tenant] = {
+                    'services': [],
+                    'redis_info': None
+                }
+        
+        return validated_services
+    
+    def _extract_redis_ips(self):
+        """Extract Redis service IPs for each tenant/namespace"""
+        self.shell.send("kubectl get svc -A | grep redis\n")
+        time.sleep(2)
+        
+        output = self._collect_command_output()
+        cleaned_output = self._clean_ansi_codes(output)
+        
+        redis_info = {}
+        lines = cleaned_output.strip().split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith('kubectl') or line.endswith('# ') or line.endswith('$ '):
+                continue
+            
+            parts = line.split()
+            if len(parts) >= 4 and 'redis' in line.lower():
+                namespace = parts[0]
+                service_name = parts[1]
+                service_type = parts[2]
+                cluster_ip = parts[3]
+                external_ip = parts[4] if len(parts) > 4 else "N/A"
+                ports = parts[5] if len(parts) > 5 else "N/A"
+                age = parts[6] if len(parts) > 6 else "N/A"
+                
+                redis_info[namespace] = {
+                    'service_name': service_name,
+                    'service_type': service_type,
+                    'cluster_ip': cluster_ip,
+                    'external_ip': external_ip,
+                    'ports': ports,
+                    'age': age
+                }
+        
+        return redis_info
+    
+    def extract_redis_keys_for_tenant(self, tenant_name):
+        """Extract Redis keys for a specific tenant"""
+        if not self.connected:
+            return []
+        
+        if tenant_name not in self.tenant_database:
+            return []
+        
+        tenant_info = self.tenant_database[tenant_name]
+        redis_info = tenant_info.get('redis_info')
+        
+        if not redis_info or not redis_info.get('cluster_ip'):
+            return []
+        
+        redis_ip = redis_info['cluster_ip']
+        self.log_output(f"Extracting Redis keys from {tenant_name} (IP: {redis_ip})", "info")
+        
+        try:
+            # Execute redis-cli command to get all keys
+            command = f"redis-cli -h {redis_ip} -p 6379 keys \"*\""
+            self.shell.send(f"{command}\n")
+            time.sleep(3)  # Wait for Redis response
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines = cleaned_output.strip().split('\n')
+            
+            keys = []
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('redis-cli') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Redis keys are typically numbered like "1) keyname"
+                if line and not line.startswith('(error)'):
+                    # Remove numbering if present (e.g., "1) keyname" -> "keyname")
+                    if ')' in line and line.split(')')[0].strip().isdigit():
+                        key = ')'.join(line.split(')')[1:]).strip()
+                        # Remove quotes if present
+                        key = key.strip('"\'')
+                        if key:
+                            keys.append(key)
+                    else:
+                        # If no numbering, treat the whole line as a key
+                        key = line.strip('"\'')
+                        if key and not key.startswith('redis'):  # Avoid command echoes
+                            keys.append(key)
+            
+            self.log_output(f"Found {len(keys)} Redis keys for {tenant_name}", "success")
+            return keys
+            
+        except Exception as e:
+            self.log_output(f"Error extracting Redis keys for {tenant_name}: {str(e)}", "error")
+            return []
+    
+    def _extract_configmaps_for_all_tenants(self):
+        """Extract all configmaps for all tenants/namespaces"""
+        self.log_output("Extracting ConfigMaps for all tenants...", "info")
+        
+        try:
+            # Execute kubectl command to get all configmaps
+            self.shell.send("kubectl get configmaps -A\n")
+            time.sleep(3)  # Wait for command to complete
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            
+            # Parse configmaps data
+            configmaps_data = {}
+            lines = cleaned_output.strip().split('\n')
+            
+            for line in lines:
+                line = line.strip()
+                # Skip header line, empty lines, command echo, and prompts
+                if (not line or 
+                    line.startswith('NAMESPACE') or 
+                    line.startswith('kubectl') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Parse configmap lines
+                # Expected format: NAMESPACE  NAME  DATA  AGE
+                parts = line.split()
+                if len(parts) >= 3:
+                    namespace = parts[0]  # Namespace (same as tenant)
+                    configmap_name = parts[1]  # ConfigMap name
+                    data_count = parts[2]  # Number of data items
+                    age = parts[3] if len(parts) > 3 else "N/A"
+                    
+                    # Skip system namespaces (optional filtering)
+                    if namespace in ['kube-system', 'kube-public', 'kube-node-lease', 'default']:
+                        continue
+                    
+                    if namespace not in configmaps_data:
+                        configmaps_data[namespace] = {
+                            'configmaps': [],
+                            'total_configmaps': 0
+                        }
+                    
+                    configmap_info = {
+                        'name': configmap_name,
+                        'data_count': data_count,
+                        'age': age
+                    }
+                    
+                    configmaps_data[namespace]['configmaps'].append(configmap_info)
+                    configmaps_data[namespace]['total_configmaps'] = len(configmaps_data[namespace]['configmaps'])
+            
+            # Log summary
+            total_tenants_with_configmaps = len(configmaps_data)
+            total_configmaps = sum(data['total_configmaps'] for data in configmaps_data.values())
+            self.log_output(f"-> Found {total_configmaps} configmaps across {total_tenants_with_configmaps} tenants", "success")
+            
+            # Log details for each tenant
+            for tenant, data in configmaps_data.items():
+                configmap_names = [cm['name'] for cm in data['configmaps']]
+                self.log_output(f"  {tenant}: {data['total_configmaps']} configmaps -> {', '.join(configmap_names[:3])}{'...' if len(configmap_names) > 3 else ''}", "info")
+            
+            return configmaps_data
+            
+        except Exception as e:
+            self.log_output(f"Error extracting ConfigMaps: {str(e)}", "error")
+            return {}
+    
+    def get_configmap_json_details(self, tenant_name, configmap_name):
+        """
+        Get ConfigMap details in both raw and pretty formats
+        
+        Executes two commands:
+        a) Raw format: kubectl describe configmap <configmap-name> -n <tenant-name>
+        b) Pretty format: kubectl get configmap <configmap-name> -n <tenant-name> -o json | jq ".data.config | fromjson"
+        
+        Args:
+            tenant_name (str): The tenant/namespace name
+            configmap_name (str): The ConfigMap name
+            
+        Returns:
+            dict: ConfigMap details containing:
+                - name: ConfigMap name
+                - namespace: Tenant/namespace name
+                - raw_format: Output from kubectl describe
+                - pretty_format: Output from kubectl get + jq
+                - raw_command: The describe command executed
+                - pretty_command: The get + jq command executed
+                - timestamp: When the commands were executed
+        """
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return {}
+        
+        try:
+            self.log_output(f"Getting ConfigMap details: {configmap_name} in tenant {tenant_name}", "info")
+            
+            # Execute Command A: Raw format using kubectl describe
+            raw_command = f"kubectl describe configmap {configmap_name} -n {tenant_name}"
+            self.log_output(f"Executing raw format command: {raw_command}", "command")
+            self.shell.send(f"{raw_command}\n")
+            time.sleep(3)  # Wait for command to complete
+            
+            # Collect raw format output
+            raw_output = self._collect_command_output(timeout=15)
+            cleaned_raw_output = self._clean_ansi_codes(raw_output)
+            
+            # Parse the raw command output
+            raw_lines = cleaned_raw_output.strip().split('\n')
+            raw_result_lines = []
+            
+            for line in raw_lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('kubectl') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                raw_result_lines.append(line)
+            
+            raw_format_output = '\n'.join(raw_result_lines)
+            
+            # Execute Command B: Pretty format using kubectl get + jq
+            pretty_command = f"kubectl get configmap {configmap_name} -n {tenant_name} -o json | jq \".data.config | fromjson\""
+            self.log_output(f"Executing pretty format command: {pretty_command}", "command")
+            self.shell.send(f"{pretty_command}\n")
+            time.sleep(4)  # Wait for JSON processing
+            
+            # Collect pretty format output
+            pretty_output = self._collect_command_output(timeout=15)
+            cleaned_pretty_output = self._clean_ansi_codes(pretty_output)
+            
+            # Parse the pretty command output
+            pretty_lines = cleaned_pretty_output.strip().split('\n')
+            pretty_result_lines = []
+            
+            for line in pretty_lines:
+                line = line.strip()
+                # Skip command echo, prompts, empty lines, and jq errors
+                if (not line or 
+                    line.startswith('kubectl') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@') or
+                    'jq:' in line.lower()):
+                    continue
+                pretty_result_lines.append(line)
+            
+            pretty_format_output = '\n'.join(pretty_result_lines)
+            
+            # Try to parse and format JSON if possible
+            parsed_json = None
+            try:
+                if pretty_format_output.strip():
+                    parsed_json = json.loads(pretty_format_output)
+                    # Re-format with proper indentation
+                    pretty_format_output = json.dumps(parsed_json, indent=2)
+            except json.JSONDecodeError:
+                # Keep the original output if JSON parsing fails
+                pass
+            
+            configmap_details = {
+                'name': configmap_name,
+                'namespace': tenant_name,
+                'raw_format': raw_format_output,
+                'pretty_format': pretty_format_output,
+                'parsed_json': parsed_json,
+                'raw_command': raw_command,
+                'pretty_command': pretty_command,
+                'raw_debug_output': cleaned_raw_output,
+                'pretty_debug_output': cleaned_pretty_output,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            self.log_output(f"Successfully retrieved ConfigMap details for {configmap_name} in both formats", "success")
+            return configmap_details
+            
+        except Exception as e:
+            self.log_output(f"Error getting ConfigMap details: {str(e)}", "error")
+            return {}
+    
+    def get_all_configmaps_for_tenant(self, tenant_name):
+        """Get list of all configmaps for a specific tenant"""
+        if not self.connected:
+            return []
+        
+        if tenant_name not in self.tenant_database:
+            return []
+        
+        tenant_info = self.tenant_database[tenant_name]
+        configmaps_info = tenant_info.get('configmaps_info', {})
+        
+        if not configmaps_info or not configmaps_info.get('configmaps'):
+            return []
+        
+        return configmaps_info['configmaps']
+    
+    def get_redis_key_value(self, tenant_name, key_name):
+        """Get the value of a specific Redis key for a tenant"""
+        if not self.connected or tenant_name not in self.tenant_database:
+            return None
+        
+        tenant_info = self.tenant_database[tenant_name]
+        redis_info = tenant_info.get('redis_info')
+        
+        if not redis_info or not redis_info.get('cluster_ip'):
+            return None
+        
+        redis_ip = redis_info['cluster_ip']
+        self.log_output(f"Getting Redis key value: {key_name} from {tenant_name}", "info")
+        
+        try:
+            # Execute redis-cli hgetall command
+            command = f"redis-cli -h {redis_ip} -p 6379 hgetall \"{key_name}\""
+            self.shell.send(f"{command}\n")
+            time.sleep(2)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=10)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines = cleaned_output.strip().split('\n')
+            
+            # Clean lines and remove Redis CLI numbering
+            cleaned_lines = []
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('redis-cli') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Remove Redis CLI numbering format like "1) \"field\"" -> "field"
+                if ')' in line and line.split(')')[0].strip().isdigit():
+                    line = ')'.join(line.split(')')[1:]).strip()
+                
+                # Remove outer quotes
+                line = line.strip('"\'')
+                cleaned_lines.append(line)
+            
+            # Parse field-value pairs
+            key_value_pairs = {}
+            current_field = None
+            
+            for line in cleaned_lines:
+                if current_field is None:
+                    current_field = line
+                else:
+                    value = line
+                    # Handle escaped JSON strings
+                    if value.startswith('{') and '\\\"' in value:
+                        try:
+                            # Replace escaped quotes and parse as JSON
+                            unescaped_value = value.replace('\\"', '"').replace('\\\\', '\\')
+                            json_obj = json.loads(unescaped_value)
+                            value = json_obj
+                        except (json.JSONDecodeError, ValueError):
+                            value = value.replace('\\"', '"').replace('\\\\', '\\')
+                    
+                    key_value_pairs[current_field] = value
+                    current_field = None
+            
+            return key_value_pairs
+            
+        except Exception as e:
+            self.log_output(f"Error getting Redis key value: {str(e)}", "error")
+            return None
+    
+    def scan_log_files(self):
+        """Scan for all log files in /var/log/versa/vms/apps directory and subdirectories, plus vms-admin.log"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return {}
+        
+        try:
+            self.log_output("Scanning for log files in /var/log/versa/vms/apps and vms-admin.log", "info")
+            
+            # Execute find command to get all files in the apps directory and subdirectories, excluding .gz files
+            command = "find /var/log/versa/vms/apps -type f -name '*.log*' ! -name '*.gz' | sort"
+            self.shell.send(f"{command}\n")
+            time.sleep(3)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=15)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines = cleaned_output.strip().split('\n')
+            
+            log_files = {}
+            
+            # Process apps directory files
+            for line in lines:
+                line = line.strip()
+                # Skip command echo, prompts, and empty lines
+                if (not line or 
+                    line.startswith('find') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                # Check if it's a valid log file path and exclude .gz files
+                if (line.startswith('/var/log/versa/vms/apps/') and 
+                    ('log' in line.lower()) and 
+                    not line.endswith('.gz')):
+                    # Extract directory and filename
+                    path_parts = line.split('/')
+                    if len(path_parts) >= 6:  # /var/log/versa/vms/apps/[directory]/[filename]
+                        directory = path_parts[6] if len(path_parts) > 6 else 'root'
+                        filename = path_parts[-1]
+                        
+                        if directory not in log_files:
+                            log_files[directory] = []
+                        
+                        log_files[directory].append({
+                            'name': filename,
+                            'path': line,
+                            'directory': directory
+                        })
+            
+            # Add vms-admin.log if it exists
+            self.log_output("Checking for vms-admin.log file...", "info")
+            vms_admin_command = "ls -la /var/log/versa/vms/vms-admin.log 2>/dev/null"
+            self.shell.send(f"{vms_admin_command}\n")
+            time.sleep(2)
+            
+            # Collect vms-admin.log check output
+            vms_admin_output = self._collect_command_output(timeout=10)
+            cleaned_vms_admin_output = self._clean_ansi_codes(vms_admin_output)
+            vms_admin_lines = cleaned_vms_admin_output.strip().split('\n')
+            
+            # Check if vms-admin.log exists
+            vms_admin_exists = False
+            for line in vms_admin_lines:
+                line = line.strip()
+                if (line and 
+                    'vms-admin.log' in line and 
+                    not line.startswith('ls ') and
+                    not line.endswith('# ') and 
+                    not line.endswith('$ ') and
+                    not line.startswith('[root@')):
+                    vms_admin_exists = True
+                    break
+            
+            if vms_admin_exists:
+                # Add vms-admin.log to a special "VMS Admin" category
+                if "VMS Admin" not in log_files:
+                    log_files["VMS Admin"] = []
+                
+                log_files["VMS Admin"].append({
+                    'name': 'vms-admin.log',
+                    'path': '/var/log/versa/vms/vms-admin.log',
+                    'directory': 'VMS Admin'
+                })
+                self.log_output("-> Found vms-admin.log file", "success")
+            else:
+                self.log_output("-> vms-admin.log file not found or not accessible", "info")
+            
+            # Sort files within each directory
+            for directory in log_files:
+                log_files[directory].sort(key=lambda x: x['name'])
+            
+            total_files = sum(len(files) for files in log_files.values())
+            total_dirs = len(log_files)
+            self.log_output(f"-> Found {total_files} log files across {total_dirs} directories (excluding .gz files)", "success")
+            
+            # Log summary for each directory
+            for directory, files in log_files.items():
+                file_names = [f['name'] for f in files[:3]]  # Show first 3 files
+                file_summary = ', '.join(file_names) + ('...' if len(files) > 3 else '')
+                self.log_output(f"  {directory}: {len(files)} files -> {file_summary}", "info")
+            
+            return log_files
+            
+        except Exception as e:
+            self.log_output(f"Error scanning log files: {str(e)}", "error")
+            return {}
+    
+    def get_log_file_tail(self, log_file_path, lines=250, log_filter='all'):
+        """Get the last N lines of a log file with filtering options"""
+        if not self.connected:
+            self.log_output("Error: Not connected to server", "error")
+            return None
+        
+        try:
+            self.log_output(f"Getting last {lines} lines from: {log_file_path} (filter: {log_filter})", "info")
+            
+            # Build command based on filter type
+            if log_filter == 'all':
+                # Show last N lines as raw format
+                command = f"tail -n {lines} \"{log_file_path}\""
+            elif log_filter == 'errors':
+                # Show only ERROR messages in last N lines with 2 spaces before each error
+                command = f"tail -n {lines} \"{log_file_path}\" | grep -i error | sed 's/^/  /'"
+            elif log_filter == 'pretty':
+                # Show all N logs but highlight errors with empty line before each error
+                command = f"tail -n {lines} \"{log_file_path}\" | sed '/[Ee][Rr][Rr][Oo][Rr]/i\\\\'"
+            else:
+                command = f"tail -n {lines} \"{log_file_path}\""
+            
+            self.shell.send(f"{command}\n")
+            time.sleep(2)
+            
+            # Collect output
+            output = self._collect_command_output(timeout=20)
+            cleaned_output = self._clean_ansi_codes(output)
+            lines_output = cleaned_output.strip().split('\n')
+            
+            # Clean lines and remove command echo/prompts
+            cleaned_lines = []
+            for line in lines_output:
+                line = line.rstrip()
+                # Skip command echo, prompts, and empty continuation
+                if (line.startswith('tail ') or 
+                    line.endswith('# ') or 
+                    line.endswith('$ ') or
+                    line.startswith('[root@')):
+                    continue
+                
+                cleaned_lines.append(line)
+            
+            # Join lines back together
+            log_content = '\n'.join(cleaned_lines)
+            
+            self.log_output(f"-> Successfully retrieved {len(cleaned_lines)} lines from log file", "success")
+            
+            return {
+                'path': log_file_path,
+                'lines_requested': lines,
+                'lines_retrieved': len(cleaned_lines),
+                'content': log_content,
+                'command': command,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            self.log_output(f"Error getting log file tail: {str(e)}", "error")
+            return None
+
+# Session-based instances - each client gets their own instance
+client_instances = {}
+
+def get_client_instance():
+    """Get or create a VMSDebugWeb instance for the current client session"""
+    from flask import has_request_context
+    
+    if has_request_context() and hasattr(request, 'sid'):
+        session_id = request.sid
+    else:
+        session_id = 'default'
+    
+    if session_id not in client_instances:
+        print(f"DEBUG: Creating new VMSDebugWeb instance for session: {session_id}")
+        client_instances[session_id] = VMSDebugWeb()
+    
+    return client_instances[session_id]
+
+def cleanup_client_instance(session_id):
+    """Clean up client instance when session disconnects"""
+    if session_id in client_instances:
+        print(f"DEBUG: Cleaning up VMSDebugWeb instance for session: {session_id}")
+        try:
+            client_instances[session_id].disconnect()
+        except:
+            pass
+        del client_instances[session_id]
+
+@app.route('/')
+def index():
+    """Main page"""
+    return render_template('index.html')
+
+@socketio.on('connect')
+def handle_connect():
+    """Handle client connection"""
+    session_id = request.sid
+    print(f'Client connected with session ID: {session_id}')
+    
+    # Get client-specific instance
+    client_vms = get_client_instance()
+    
+    # Send the actual SSH connection status, not WebSocket status
+    if client_vms.connected:
+        emit('connection_status', {'connected': True, 'message': 'Connected to SSH server'})
+    else:
+        emit('connection_status', {'connected': False, 'message': 'Not Connected'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handle client disconnection"""
+    session_id = request.sid
+    print(f'Client disconnected with session ID: {session_id}')
+    
+    # Clean up client instance
+    cleanup_client_instance(session_id)
+
+@socketio.on('ssh_connect')
+def handle_ssh_connect(data):
+    """Handle SSH connection request"""
+    host = data.get('host', '')
+    username = data.get('username', '')
+    ssh_password = data.get('ssh_password', '')
+    admin_password = data.get('admin_password', '')
+    
+    if not all([host, username, ssh_password, admin_password]):
+        emit('connection_status', {'connected': False, 'message': 'Missing connection parameters'})
+        return
+    
+    # Get client-specific instance
+    client_vms = get_client_instance()
+    
+    # Run connection in separate thread
+    thread = threading.Thread(
+        target=client_vms.connect_to_server,
+        args=(host, username, ssh_password, admin_password),
+        daemon=True
+    )
+    thread.start()
+
+@socketio.on('ssh_disconnect')
+def handle_ssh_disconnect():
+    """Handle SSH disconnection request"""
+    client_vms = get_client_instance()
+    client_vms.disconnect_from_server()
+
+@socketio.on('run_kubectl')
+def handle_run_kubectl():
+    """Handle kubectl commands execution"""
+    if not vms_debug.connected:
+        emit('log_output', {
+            'message': 'Error: Not connected to server',
+            'tag': 'error',
+            'timestamp': datetime.now().strftime("%H:%M:%S")
+        })
+        return
+    
+    # Run kubectl commands in separate thread
+    thread = threading.Thread(target=vms_debug.run_kubectl_commands, daemon=True)
+    thread.start()
+
+@socketio.on('build_tenant_data')
+def handle_build_tenant_data():
+    """Handle tenant data building"""
+    if not vms_debug.connected:
+        emit('log_output', {
+            'message': 'Error: Not connected to server',
+            'tag': 'error',
+            'timestamp': datetime.now().strftime("%H:%M:%S")
+        })
+        return
+    
+    # Run tenant data building in separate thread
+    thread = threading.Thread(target=vms_debug.build_tenant_data, daemon=True)
+    thread.start()
+
+@socketio.on('clear_output')
+def handle_clear_output():
+    """Handle clear output request"""
+    emit('clear_output_response', {})
+
+@socketio.on('get_tenant_list')
+def handle_get_tenant_list():
+    """Handle request for tenant list"""
+    tenants = list(vms_debug.tenant_database.keys()) if vms_debug.tenant_database else []
+    emit('tenant_list_response', {'tenants': tenants})
+
+@socketio.on('select_tenant')
+def handle_select_tenant(data):
+    """Handle tenant selection"""
+    tenant_name = data.get('tenant', '')
+    if tenant_name in vms_debug.tenant_database:
+        tenant_info = vms_debug.tenant_database[tenant_name]
+        emit('tenant_info_response', {'tenant': tenant_name, 'info': tenant_info})
+    else:
+        emit('tenant_info_response', {'tenant': tenant_name, 'info': None, 'error': 'Tenant not found'})
+
+@socketio.on('show_tenant_database')
+def handle_show_tenant_database():
+    """Handle request to show complete tenant database"""
+    emit('show_database_response', {'database': vms_debug.tenant_database})
+
+@socketio.on('get_redis_keys')
+def handle_get_redis_keys(data):
+    """Handle request to get Redis keys for a tenant"""
+    tenant_name = data.get('tenant', '')
+    if not tenant_name:
+        emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'No tenant specified'})
+        return
+    
+    if not vms_debug.connected:
+        emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'Not connected to server'})
+        return
+    
+    # Run Redis key extraction in separate thread
+    def extract_keys():
+        keys = vms_debug.extract_redis_keys_for_tenant(tenant_name)
+        socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys})
+    
+    thread = threading.Thread(target=extract_keys, daemon=True)
+    thread.start()
+
+@socketio.on('get_redis_key_value')
+def handle_get_redis_key_value(data):
+    """Handle request to get Redis key value"""
+    tenant_name = data.get('tenant', '')
+    key_name = data.get('key', '')
+    
+    # Add debug logging
+    print(f"DEBUG: Received get_redis_key_value request - tenant: '{tenant_name}', key: '{key_name}'")
+    
+    if not tenant_name or not key_name:
+        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', key: '{key_name}'")
+        emit('redis_key_value_response', {
+            'tenant': tenant_name, 
+            'key': key_name, 
+            'value': None, 
+            'error': 'Missing tenant or key name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('redis_key_value_response', {
+            'tenant': tenant_name, 
+            'key': key_name, 
+            'value': None, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get Redis key value")
+    
+    # Run Redis key value extraction in separate thread
+    def get_key_value():
+        print(f"DEBUG: In thread - calling get_redis_key_value for tenant '{tenant_name}', key '{key_name}'")
+        key_value = vms_debug.get_redis_key_value(tenant_name, key_name)
+        print(f"DEBUG: Got key value result: {type(key_value)} - {key_value}")
+        socketio.emit('redis_key_value_response', {
+            'tenant': tenant_name,
+            'key': key_name, 
+            'value': key_value
+        })
+        print(f"DEBUG: Emitted redis_key_value_response")
+    
+    thread = threading.Thread(target=get_key_value, daemon=True)
+    thread.start()
+
+@socketio.on('get_configmaps')
+def handle_get_configmaps(data):
+    """Handle request to get ConfigMaps for a tenant"""
+    tenant_name = data.get('tenant', '')
+    
+    print(f"DEBUG: Received get_configmaps request - tenant: '{tenant_name}'")
+    
+    if not tenant_name:
+        print(f"DEBUG: Missing tenant parameter")
+        emit('configmaps_response', {
+            'tenant': tenant_name, 
+            'configmaps': [], 
+            'error': 'Missing tenant name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('configmaps_response', {
+            'tenant': tenant_name, 
+            'configmaps': [], 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get ConfigMaps")
+    
+    # Run ConfigMaps extraction in separate thread
+    def get_configmaps():
+        print(f"DEBUG: In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
+        configmaps = vms_debug.get_all_configmaps_for_tenant(tenant_name)
+        print(f"DEBUG: Got ConfigMaps result: {len(configmaps)} configmaps")
+        socketio.emit('configmaps_response', {
+            'tenant': tenant_name,
+            'configmaps': configmaps
+        })
+        print(f"DEBUG: Emitted configmaps_response")
+    
+    thread = threading.Thread(target=get_configmaps, daemon=True)
+    thread.start()
+
+@socketio.on('get_configmap_json_details')
+def handle_get_configmap_json_details(data):
+    """Handle request to get ConfigMap JSON details using the kubectl + jq command"""
+    tenant_name = data.get('tenant', '')
+    configmap_name = data.get('configmap', '')
+    
+    print(f"DEBUG: Received get_configmap_json_details request - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+    
+    if not tenant_name or not configmap_name:
+        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+        emit('configmap_json_details_response', {
+            'tenant': tenant_name, 
+            'configmap': configmap_name, 
+            'details': {}, 
+            'error': 'Missing tenant or configmap name'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('configmap_json_details_response', {
+            'tenant': tenant_name, 
+            'configmap': configmap_name, 
+            'details': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get ConfigMap JSON details")
+    
+    # Run ConfigMap JSON details extraction in separate thread
+    def get_configmap_json_details():
+        print(f"DEBUG: In thread - calling get_configmap_json_details for tenant '{tenant_name}', configmap '{configmap_name}'")
+        details = vms_debug.get_configmap_json_details(tenant_name, configmap_name)
+        print(f"DEBUG: Got ConfigMap JSON details result: {type(details)}")
+        socketio.emit('configmap_json_details_response', {
+            'tenant': tenant_name,
+            'configmap': configmap_name,
+            'details': details
+        })
+        print(f"DEBUG: Emitted configmap_json_details_response")
+    
+    thread = threading.Thread(target=get_configmap_json_details, daemon=True)
+    thread.start()
+
+@socketio.on('scan_log_files')
+def handle_scan_log_files():
+    """Handle request to scan for log files in /var/log/versa/vms/apps"""
+    if not vms_debug.connected:
+        emit('log_files_response', {
+            'log_files': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to scan log files")
+    
+    # Run log files scanning in separate thread
+    def scan_log_files():
+        print(f"DEBUG: In thread - calling scan_log_files")
+        log_files = vms_debug.scan_log_files()
+        print(f"DEBUG: Got log files result: {len(log_files)} directories")
+        socketio.emit('log_files_response', {
+            'log_files': log_files
+        })
+        print(f"DEBUG: Emitted log_files_response")
+    
+    thread = threading.Thread(target=scan_log_files, daemon=True)
+    thread.start()
+
+@socketio.on('get_log_file_content')
+def handle_get_log_file_content(data):
+    """Handle request to get log file content with filtering options"""
+    log_file_path = data.get('path', '')
+    lines = data.get('lines', 250)  # Default to 250 lines
+    log_filter = data.get('filter', 'all')  # Default to 'all'
+    
+    print(f"DEBUG: Received get_log_file_content request - path: '{log_file_path}', lines: {lines}, filter: {log_filter}")
+    
+    if not log_file_path:
+        print(f"DEBUG: Missing log file path")
+        emit('log_file_content_response', {
+            'path': log_file_path, 
+            'content': {}, 
+            'error': 'Missing log file path'
+        })
+        return
+    
+    if not vms_debug.connected:
+        print(f"DEBUG: Not connected to server")
+        emit('log_file_content_response', {
+            'path': log_file_path, 
+            'content': {}, 
+            'error': 'Not connected to server'
+        })
+        return
+    
+    print(f"DEBUG: Starting thread to get log file content")
+    
+    # Run log file content extraction in separate thread
+    def get_log_file_content():
+        print(f"DEBUG: In thread - calling get_log_file_tail for path '{log_file_path}' with {lines} lines, filter: {log_filter}")
+        content = vms_debug.get_log_file_tail(log_file_path, lines, log_filter)
+        print(f"DEBUG: Got log file content result: {type(content)}")
+        socketio.emit('log_file_content_response', {
+            'path': log_file_path,
+            'content': content,
+            'lines': lines,
+            'filter': log_filter
+        })
+        print(f"DEBUG: Emitted log_file_content_response")
+    
+    thread = threading.Thread(target=get_log_file_content, daemon=True)
+    thread.start()
+
+if __name__ == '__main__':
+    # Create templates directory and HTML file if they don't exist
+    if not os.path.exists('templates'):
+        os.makedirs('templates')
+    
+    # Create the HTML template
+    html_template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMS Debug Tool - Web Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 10px 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: calc(100vh - 80px);
+        }
+        
+        .left-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+        
+        /* Left panel scrollbar styling */
+        .left-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .left-panel::-webkit-scrollbar-track {
+            background-color: #e8f5e8;
+            border-radius: 4px;
+        }
+        
+        .left-panel::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 4px;
+        }
+        
+        .left-panel::-webkit-scrollbar-thumb:hover {
+            background-color: #2e7d32;
+        }
+        
+        .right-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .form-group-inline label {
+            min-width: 120px;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        
+        .form-group-inline input {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007acc;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #005a9e;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        button:disabled {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #output {
+            flex: 1;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #333;
+            max-height: calc(100vh - 160px);
+            min-height: 400px;
+        }
+        
+        /* Enhanced scrollbar styling */
+        #output::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #output::-webkit-scrollbar-track {
+            background-color: #1b2e1b;
+            border-radius: 6px;
+        }
+        
+        #output::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+            border: 2px solid #1b2e1b;
+        }
+        
+        #output::-webkit-scrollbar-thumb:hover {
+            background-color: #66bb6a;
+        }
+        
+        #output::-webkit-scrollbar-corner {
+            background-color: #1b2e1b;
+        }
+        
+        /* Firefox scrollbar styling */
+        #output {
+            scrollbar-width: thin;
+            scrollbar-color: #4caf50 #1b2e1b;
+        }
+        
+        .output-line {
+            margin: 2px 0;
+        }
+        
+        .command {
+            color: #4fc1ff;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #4ec9b0;
+        }
+        
+        .error {
+            color: #f14c4c;
+        }
+        
+        .info {
+            color: #dcdcaa;
+        }
+        
+        .timestamp {
+            color: #808080;
+        }
+        
+        .normal {
+            color: #d4d4d4;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 24px;
+            margin-top: 10px;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .output-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .clear-btn {
+            padding: 5px 15px;
+            font-size: 12px;
+            width: auto;
+            margin: 0 2px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.1);
+        }
+        
+        #tenant-details {
+            flex: 1;
+            background-color: #f8f9fa;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            max-height: calc(100vh - 160px);
+            min-height: 400px;
+        }
+        
+        #tenant-details::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-track {
+            background-color: #e8f5e8;
+            border-radius: 6px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+        }
+        
+        #tenant-details::-webkit-scrollbar-thumb:hover {
+            background-color: #2e7d32;
+        }
+        
+        .tenant-info-header {
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            margin: -15px -15px 15px -15px;
+            border-radius: 4px 4px 0 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .tenant-section {
+            background-color: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .tenant-section h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        
+        .tenant-property {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .tenant-property-name {
+            font-weight: bold;
+            min-width: 120px;
+            color: #495057;
+        }
+        
+        .tenant-property-value {
+            color: #212529;
+            font-family: 'Consolas', monospace;
+        }
+        
+        .database-view {
+            font-family: 'Consolas', monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .help-icon {
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 14px;
+            color: #007acc;
+            display: inline-block;
+            user-select: none;
+        }
+        
+        .help-icon:hover {
+            color: #005a9e;
+            transform: scale(1.1);
+            transition: all 0.2s ease;
+        }
+        
+        .help-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 500px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        .help-popup h4 {
+            margin: 0 0 15px 0;
+            color: #007acc;
+            border-bottom: 1px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .help-popup-content {
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .help-popup-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .help-popup-close:hover {
+            color: #333;
+        }
+        
+        .help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .popout-btn {
+            float: right;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            width: auto;
+            margin-top: -2px;
+        }
+        
+        .popout-btn:hover {
+            background-color: #005a9e;
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>VMS Debug Tool - Web Interface</h1>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="section">
+                <h3>Server Connection</h3>
+                <div class="form-group-inline">
+                    <label for="host">Server IP:</label>
+                    <input type="text" id="host" value="vms1-tb163.versa-test.net">
+                </div>
+                <div class="form-group-inline">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" value="admin">
+                </div>
+                <div class="form-group-inline">
+                    <label for="ssh_password">SSH Password:</label>
+                    <input type="password" id="ssh_password" value="THS!5V3r5@vmsP@55">
+                </div>
+                <div class="form-group-inline">
+                    <label for="admin_password">Admin Password:</label>
+                    <input type="password" id="admin_password" value="THS!5V3r5@vmsP@55">
+                </div>
+                <button id="connect-btn" class="btn-primary" onclick="connect()">Connect</button>
+                <button id="disconnect-btn" class="btn-danger" onclick="disconnect()" disabled>Disconnect</button>
+                <div id="status" class="status disconnected">Status: Not Connected</div>
+            </div>
+            
+            <div class="section" id="operations-section" style="display:none;">
+                <h3>Operations</h3>
+                <button id="kubectl-btn" class="btn-success" onclick="runKubectl()" disabled>Run Kubectl Commands</button>
+                <button id="tenant-btn" class="btn-success" onclick="buildTenantData()" disabled style="display:none;">Build Tenant Data</button>
+                <button id="show-db-btn" class="btn-warning" onclick="showTenantDatabase()" disabled>Show Tenant Database</button>
+            </div>
+            
+            <div class="section" id="tenant-section" style="display:none;">
+                <h3>Tenant Selection</h3>
+                <div class="form-group">
+                    <label for="tenant-select">Select Tenant:</label>
+                    <select id="tenant-select" onchange="selectTenant()">
+                        <option value="">-- Select a tenant --</option>
+                    </select>
+                </div>
+                <button id="refresh-tenants-btn" class="btn-secondary" onclick="refreshTenantList()">Refresh List</button>
+            </div>
+            
+            <div class="section" id="redis-keys-section" style="display:none;">
+                <h3>Redis Keys</h3>
+                <div class="form-group">
+                    <label for="redis-keys-select">Select Redis Key:</label>
+                    <select id="redis-keys-select" onchange="selectRedisKey()">
+                        <option value="">-- Select a Redis key --</option>
+                    </select>
+                </div>
+                <button id="refresh-keys-btn" class="btn-secondary" onclick="refreshRedisKeys()" disabled>Refresh Keys</button>
+                <button id="view-key-btn" class="btn-warning" onclick="viewRedisKeyValue()" disabled>View Key Value</button>
+            </div>
+            
+            <div class="section" id="configmaps-section" style="display:none;">
+                <h3>ConfigMaps</h3>
+                <div class="form-group">
+                    <label for="configmaps-select">Select ConfigMap:</label>
+                    <select id="configmaps-select" onchange="selectConfigMap()">
+                        <option value="">-- Select a ConfigMap --</option>
+                    </select>
+                </div>
+                <button id="refresh-configmaps-btn" class="btn-secondary" onclick="refreshConfigMaps()" disabled>Refresh ConfigMaps</button>
+                <button id="show-configmap-json-btn" class="btn-success" onclick="showConfigMapJSON()" disabled>Show Config-Map</button>
+            </div>
+            
+            <div class="section" id="logs-section" style="display:none;">
+                <h3>System Logs <span class="help-icon" onclick="showLogsHelp()" title="Show path information">ℹ️</span></h3>
+                <div class="form-group">
+                    <label for="logs-select">Select Log File:</label>
+                    <select id="logs-select" onchange="selectLogFile()">
+                        <option value="">-- Select a Log file --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="log-lines">Number of lines:</label>
+                    <select id="log-lines">
+                        <option value="500">500</option>
+                        <option value="1500" selected>1500</option>
+                        <option value="5000">5000</option>
+                        <option value="10000">10000</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="log-filter">Log filter:</label>
+                    <select id="log-filter">
+                        <option value="all">All</option>
+                        <option value="errors">Errors</option>
+                        <option value="pretty">Pretty format</option>
+                    </select>
+                </div>
+                <button id="view-log-btn" class="btn-warning" onclick="viewLogFile()" disabled>View Logs</button>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="output-header">
+                <h3 id="panel-title">Command Execution Output</h3>
+                <div>
+                    <button class="btn-secondary clear-btn" onclick="switchToOutput()">Command Output</button>
+                    <button class="btn-secondary clear-btn" onclick="clearOutput()">Clear</button>
+                </div>
+            </div>
+            <div id="output"></div>
+            <div id="tenant-details" style="display:none;">
+                <div id="tenant-info-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let connected = false;
+        let currentTenantRedisKeys = [];
+
+        // Socket event handlers
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('log_output', function(data) {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = `output-line ${data.tag}`;
+            line.innerHTML = `<span class="timestamp">[${data.timestamp}]</span> ${escapeHtml(data.message)}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        });
+
+        socket.on('connection_status', function(data) {
+            connected = data.connected;
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const kubectlBtn = document.getElementById('kubectl-btn');
+            const tenantBtn = document.getElementById('tenant-btn');
+            const showDbBtn = document.getElementById('show-db-btn');
+            const inputs = document.querySelectorAll('input');
+
+            if (connected) {
+                status.textContent = 'Status: Connected';
+                status.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                
+                // Do NOT show any sections until tenant data is built
+                // Keep all sections hidden for now
+                
+                // Keep all buttons disabled until tenant data is built automatically
+                kubectlBtn.disabled = true;
+                tenantBtn.disabled = true;
+                showDbBtn.disabled = true;
+                document.getElementById('view-log-btn').disabled = true;
+                inputs.forEach(input => input.disabled = true);
+                
+                // Automatically start building tenant data after successful connection
+                setTimeout(() => {
+                    // Add status message
+                    const output = document.getElementById('output');
+                    const line = document.createElement('div');
+                    line.className = 'output-line info';
+                    const timestamp = new Date().toLocaleTimeString();
+                    line.innerHTML = `<span class="timestamp">[${timestamp}]</span> 🔄 Automatically building tenant data...`;
+                    output.appendChild(line);
+                    output.scrollTop = output.scrollHeight;
+                    
+                    buildTenantData();
+                }, 1000); // Wait 1 second after connection to start building tenant data
+            } else {
+                status.textContent = `Status: ${data.message}`;
+                status.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                
+                // Hide all sections except Server Connection when disconnected
+                document.getElementById('operations-section').style.display = 'none';
+                document.getElementById('logs-section').style.display = 'none';
+                document.getElementById('tenant-section').style.display = 'none';
+                document.getElementById('redis-keys-section').style.display = 'none';
+                document.getElementById('configmaps-section').style.display = 'none';
+                
+                // Disable all operation buttons on disconnect
+                kubectlBtn.disabled = true;
+                tenantBtn.disabled = true;
+                showDbBtn.disabled = true;
+                // Disable logs buttons on disconnect
+                document.getElementById('view-log-btn').disabled = true;
+                inputs.forEach(input => input.disabled = false);
+                
+                // Clear all dropdowns
+                document.getElementById('tenant-select').innerHTML = '<option value="">-- Select a tenant --</option>';
+                document.getElementById('redis-keys-select').innerHTML = '<option value="">-- Select a Redis key --</option>';
+                document.getElementById('configmaps-select').innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+                document.getElementById('logs-select').innerHTML = '<option value="">-- Select a Log file --</option>';
+                
+                // Clear output and switch to output view
+                document.getElementById('output').innerHTML = '';
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                document.getElementById('tenant-info-content').innerHTML = '';
+                
+                // Clear stored Redis keys
+                currentTenantRedisKeys = [];
+                
+                // Disable all action buttons
+                document.getElementById('refresh-keys-btn').disabled = true;
+                document.getElementById('view-key-btn').disabled = true;
+                document.getElementById('refresh-configmaps-btn').disabled = true;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+            }
+        });
+
+        socket.on('clear_output_response', function(data) {
+            document.getElementById('output').innerHTML = '';
+        });
+
+        socket.on('tenant_data', function(data) {
+            console.log('Tenant data received:', data);
+        });
+
+        socket.on('tenant_database_updated', function(data) {
+            updateTenantDropdown(data.tenants);
+            
+            // Show ALL sections only after tenant data is available
+            document.getElementById('operations-section').style.display = 'block';
+            document.getElementById('logs-section').style.display = 'block';
+            document.getElementById('tenant-section').style.display = 'block';
+            
+            // Enable all operations buttons only after tenant data is built
+            document.getElementById('kubectl-btn').disabled = false;
+            document.getElementById('show-db-btn').disabled = false;
+            // Log files are automatically scanned during tenant data building
+            
+            // Add success message to indicate tenant data building is complete
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = 'output-line success';
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ✓ Tenant data building completed! All operations are now available.`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        });
+
+        socket.on('tenant_list_response', function(data) {
+            updateTenantDropdown(data.tenants);
+        });
+
+        socket.on('tenant_info_response', function(data) {
+            displayTenantInfo(data.tenant, data.info, data.error);
+        });
+
+        socket.on('show_database_response', function(data) {
+            displayTenantDatabase(data.database);
+        });
+
+        socket.on('redis_keys_response', function(data) {
+            updateRedisKeysDropdown(data.tenant, data.keys, data.error);
+            
+            // Store Redis keys for tenant details display
+            if (!data.error && data.keys) {
+                currentTenantRedisKeys = data.keys;
+                
+                // Refresh tenant info if currently displayed and matches the tenant
+                const tenantSelect = document.getElementById('tenant-select');
+                const detailsDiv = document.getElementById('tenant-details');
+                if (tenantSelect.value === data.tenant && detailsDiv.style.display === 'block') {
+                    // Re-emit select_tenant to refresh the display with Redis keys
+                    socket.emit('select_tenant', { tenant: data.tenant });
+                }
+            } else {
+                currentTenantRedisKeys = [];
+            }
+        });
+
+        socket.on('redis_key_value_response', function(data) {
+            console.log('DEBUG: Received redis_key_value_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting Redis key value: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.value) {
+                console.log('DEBUG: Processing successful response with value:', data.value);
+                // Display Redis key value in tenant details panel
+                let html = `<div class="tenant-info-header">Redis Key Value</div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Key Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Key:</div>
+                    <div class="tenant-property-value">${data.key}</div>
+                </div>`;
+                html += '</div>';
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Key Value</h4>';
+                html += '<div class="database-view">';
+                
+                // Format the value properly
+                if (typeof data.value === 'object') {
+                    html += JSON.stringify(data.value, null, 2);
+                } else {
+                    html += escapeHtml(String(data.value));
+                }
+                
+                html += '</div>';
+                html += '</div>';
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `Redis Key: ${data.key}`;
+            } else {
+                console.log('DEBUG: Processing empty/null value response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Key '${escapeHtml(data.key)}' not found or has no value.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // ConfigMaps event listeners
+        socket.on('configmaps_response', function(data) {
+            updateConfigMapsDropdown(data.tenant, data.configmaps, data.error);
+        });
+
+        socket.on('configmap_json_details_response', function(data) {
+            console.log('DEBUG: Received configmap_json_details_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting ConfigMap details: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.details) {
+                console.log('DEBUG: Processing successful response with details:', data.details);
+                
+                // Store ConfigMap content globally for pop-out functionality
+                window.currentConfigMapContent = data.details;
+                window.currentConfigMapTenant = data.tenant;
+                window.currentConfigMapName = data.configmap;
+                
+                // Display ConfigMap details in both formats
+                let html = `<div class="tenant-info-header">
+                    ConfigMap Details - Raw & Pretty Formats
+                    <button class="popout-btn" onclick="popoutConfigMapContent()" title="Open in new window">⧉</button>
+                </div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>ConfigMap Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant/Namespace:</div>
+                    <div class="tenant-property-value">${data.tenant}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">ConfigMap Name:</div>
+                    <div class="tenant-property-value">${data.configmap}</div>
+                </div>`;
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Timestamp:</div>
+                    <div class="tenant-property-value">${data.details.timestamp}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add Raw Format Output (kubectl describe)
+                if (data.details.raw_format) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Raw Format Output</h4>';
+                    html += `<p><strong>Command:</strong> <code>${data.details.raw_command}</code></p>`;
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.raw_format);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                // Add Pretty Format Output (kubectl get + jq)
+                if (data.details.pretty_format) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Pretty Format Output (JSON)</h4>';
+                    html += `<p><strong>Command:</strong> <code>${data.details.pretty_command}</code></p>`;
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.pretty_format);
+                    html += '</div>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Pretty Format Output (JSON)</h4>';
+                    html += `<p><strong>Command:</strong> <code>${data.details.pretty_command}</code></p>`;
+                    html += '<p><em>No JSON output returned or parsing failed. This might indicate:</em></p>';
+                    html += '<ul>';
+                    html += '<li>ConfigMap does not have a "config" field in its data</li>';
+                    html += '<li>The "config" field is not valid JSON</li>';
+                    html += '<li>jq command is not available on the server</li>';
+                    html += '</ul>';
+                    html += '</div>';
+                }
+                
+                // Add debug sections if available and different from main outputs
+                if (data.details.raw_debug_output && data.details.raw_debug_output !== data.details.raw_format) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Raw Command Debug Output</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.raw_debug_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                if (data.details.pretty_debug_output && data.details.pretty_debug_output !== data.details.pretty_format) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Pretty Command Debug Output</h4>';
+                    html += '<div class="database-view">';
+                    html += escapeHtml(data.details.pretty_debug_output);
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                document.getElementById('panel-title').textContent = `ConfigMap: ${data.configmap} (Raw & Pretty)`;
+            } else {
+                console.log('DEBUG: Processing empty/null details response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ConfigMap '${escapeHtml(data.configmap)}' details not found or empty.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // Log Files event listeners
+        socket.on('log_files_response', function(data) {
+            updateLogFilesDropdown(data.log_files, data.error);
+        });
+
+        socket.on('log_file_content_response', function(data) {
+            console.log('DEBUG: Received log_file_content_response:', data);
+            
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (data.error) {
+                console.log('DEBUG: Processing error response:', data.error);
+                // Add error to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line error';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Error getting log file content: ${escapeHtml(data.error)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            } else if (data.content) {
+                console.log('DEBUG: Processing successful response with log content:', data.content);
+                
+                // Store the log content globally for pop-out functionality
+                window.currentLogContent = data.content;
+                
+                // Get filter info
+                const filterText = data.filter && data.filter !== 'all' ? ` (${data.filter} filter)` : '';
+                const linesText = data.lines || data.content.lines_requested || 250;
+                
+                // Display log file content
+                let html = `<div class="tenant-info-header">
+                    System Log File - Last ${linesText} Lines${filterText}
+                    <button class="popout-btn" onclick="popoutLogContent()" title="Open in new window">⧉</button>
+                </div>`;
+                
+                html += '<div class="tenant-section">';
+                html += '<h4>Log File Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">File Path:</div>
+                    <div class="tenant-property-value">${data.content.path}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Add log file content with special formatting for pretty mode
+                html += '<div class="tenant-section">';
+                html += '<h4>Log File Content</h4>';
+                html += '<div class="database-view" style="max-height: 600px; overflow-y: auto;">';
+                
+                let logContent = data.content.content;
+                if (data.filter === 'pretty') {
+                    // First escape HTML, then apply pretty formatting
+                    logContent = escapeHtml(logContent);
+                    logContent = logContent.replace(/^.*[Ee][Rr][Rr][Oo][Rr].*$/gm, '<span style="color: #ff6b6b; font-weight: bold;">$&</span>');
+                    html += logContent;
+                } else {
+                    html += escapeHtml(logContent);
+                }
+                
+                html += '</div>';
+                html += '</div>';
+                
+                contentDiv.innerHTML = html;
+                
+                // Switch to details panel to show the result
+                outputDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+                
+                // Extract filename from path for display
+                const filename = data.content.path.split('/').pop();
+                document.getElementById('panel-title').textContent = `Log File: ${filename}`;
+            } else {
+                console.log('DEBUG: Processing empty/null content response');
+                // Add message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Log file '${escapeHtml(data.path)}' content not found or empty.`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // Helper functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function connect() {
+            const host = document.getElementById('host').value;
+            const username = document.getElementById('username').value;
+            const ssh_password = document.getElementById('ssh_password').value;
+            const admin_password = document.getElementById('admin_password').value;
+
+            if (!host || !username || !ssh_password || !admin_password) {
+                alert('Please fill in all connection fields');
+                return;
+            }
+
+            // Switch to output view to show connection logs
+            switchToOutput();
+
+            socket.emit('ssh_connect', {
+                host: host,
+                username: username,
+                ssh_password: ssh_password,
+                admin_password: admin_password
+            });
+        }
+
+        function disconnect() {
+            socket.emit('ssh_disconnect');
+        }
+
+        function runKubectl() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            
+            // Automatically switch to command output view when running kubectl commands
+            switchToOutput();
+            
+            socket.emit('run_kubectl');
+        }
+
+        function buildTenantData() {
+            if (!connected) {
+                // Only show alert if this is a manual call (when connected is false and button is clicked)
+                // For automatic calls after connection, this check prevents execution
+                if (document.getElementById('tenant-btn').style.display !== 'none') {
+                    alert('Please connect to server first');
+                }
+                return;
+            }
+            
+            // Automatically switch to command output view when building tenant data
+            switchToOutput();
+            
+            socket.emit('build_tenant_data');
+        }
+
+        function clearOutput() {
+            socket.emit('clear_output');
+        }
+
+        function showTenantDatabase() {
+            if (!connected) {
+                alert('Please connect to server first');
+                return;
+            }
+            
+            // Check if button is enabled (meaning tenant data has been built)
+            const showDbBtn = document.getElementById('show-db-btn');
+            if (showDbBtn.disabled) {
+                alert('Please build tenant data first using "Build Tenant Data" button');
+                return;
+            }
+            
+            socket.emit('show_tenant_database');
+        }
+
+        function refreshTenantList() {
+            socket.emit('get_tenant_list');
+        }
+
+        function selectTenant() {
+            const select = document.getElementById('tenant-select');
+            const selectedTenant = select.value;
+            if (selectedTenant) {
+                // Clear previous tenant's Redis keys
+                currentTenantRedisKeys = [];
+                
+                socket.emit('select_tenant', { tenant: selectedTenant });
+                
+                // Show Redis keys section and load keys for selected tenant
+                document.getElementById('redis-keys-section').style.display = 'block';
+                socket.emit('get_redis_keys', { tenant: selectedTenant });
+                
+                // Reset Redis keys dropdown and disable buttons
+                const redisSelect = document.getElementById('redis-keys-select');
+                redisSelect.innerHTML = '<option value="">-- Loading Redis keys... --</option>';
+                document.getElementById('refresh-keys-btn').disabled = false;
+                document.getElementById('view-key-btn').disabled = true;
+                
+                // Show ConfigMaps section and load ConfigMaps for selected tenant
+                document.getElementById('configmaps-section').style.display = 'block';
+                socket.emit('get_configmaps', { tenant: selectedTenant });
+                
+                // Reset ConfigMaps dropdown and disable buttons
+                const configmapsSelect = document.getElementById('configmaps-select');
+                configmapsSelect.innerHTML = '<option value="">-- Loading ConfigMaps... --</option>';
+                document.getElementById('refresh-configmaps-btn').disabled = false;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+            } else {
+                // Hide Redis keys section if no tenant selected
+                document.getElementById('redis-keys-section').style.display = 'none';
+                // Hide ConfigMaps section if no tenant selected
+                document.getElementById('configmaps-section').style.display = 'none';
+            }
+        }
+
+        function updateTenantDropdown(tenants) {
+            const select = document.getElementById('tenant-select');
+            select.innerHTML = '<option value="">-- Select a tenant --</option>';
+            tenants.forEach(tenant => {
+                const option = document.createElement('option');
+                option.value = tenant;
+                option.textContent = tenant;
+                select.appendChild(option);
+            });
+        }
+
+        function refreshRedisKeys() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const selectedTenant = tenantSelect.value;
+            if (selectedTenant) {
+                const redisSelect = document.getElementById('redis-keys-select');
+                redisSelect.innerHTML = '<option value="">-- Refreshing Redis keys... --</option>';
+                socket.emit('get_redis_keys', { tenant: selectedTenant });
+                document.getElementById('view-key-btn').disabled = true;
+            }
+        }
+
+        function selectRedisKey() {
+            const select = document.getElementById('redis-keys-select');
+            const selectedKey = select.value;
+            document.getElementById('view-key-btn').disabled = !selectedKey;
+        }
+
+        function viewRedisKeyValue() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const redisSelect = document.getElementById('redis-keys-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedKey = redisSelect.value;
+            
+            console.log('DEBUG: viewRedisKeyValue called with tenant:', selectedTenant, 'key:', selectedKey);
+            
+            if (selectedTenant && selectedKey) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting Redis key value for tenant: ${escapeHtml(selectedTenant)}, key: ${escapeHtml(selectedKey)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_redis_key_value with data:', { tenant: selectedTenant, key: selectedKey });
+                socket.emit('get_redis_key_value', { tenant: selectedTenant, key: selectedKey });
+            } else {
+                console.log('DEBUG: Missing tenant or key selection');
+                alert('Please select both a tenant and a Redis key');
+            }
+        }
+
+        function updateRedisKeysDropdown(tenant, keys, error) {
+            const select = document.getElementById('redis-keys-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-key-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a Redis key --</option>';
+            
+            if (keys && keys.length > 0) {
+                keys.forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = key;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No Redis keys found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-key-btn').disabled = true;
+        }
+
+        // ConfigMaps Functions
+        function selectConfigMap() {
+            const select = document.getElementById('configmaps-select');
+            const jsonBtn = document.getElementById('show-configmap-json-btn');
+            
+            if (select.value) {
+                jsonBtn.disabled = false;
+            } else {
+                jsonBtn.disabled = true;
+            }
+        }
+
+        function refreshConfigMaps() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const selectedTenant = tenantSelect.value;
+            
+            if (selectedTenant) {
+                const configmapsSelect = document.getElementById('configmaps-select');
+                configmapsSelect.innerHTML = '<option value="">-- Refreshing ConfigMaps... --</option>';
+                document.getElementById('show-configmap-json-btn').disabled = true;
+                
+                socket.emit('get_configmaps', { tenant: selectedTenant });
+            }
+        }
+
+        function showConfigMapJSON() {
+            const tenantSelect = document.getElementById('tenant-select');
+            const configmapSelect = document.getElementById('configmaps-select');
+            const selectedTenant = tenantSelect.value;
+            const selectedConfigMap = configmapSelect.value;
+            
+            console.log('DEBUG: showConfigMapJSON called with tenant:', selectedTenant, 'configmap:', selectedConfigMap);
+            
+            if (selectedTenant && selectedConfigMap) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting ConfigMap details for tenant: ${escapeHtml(selectedTenant)}, configmap: ${escapeHtml(selectedConfigMap)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Add raw command line
+                const rawCommandLine = document.createElement('div');
+                rawCommandLine.className = 'output-line command';
+                rawCommandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Raw Format: kubectl describe configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)}`;
+                output.appendChild(rawCommandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Add pretty command line
+                const prettyCommandLine = document.createElement('div');
+                prettyCommandLine.className = 'output-line command';
+                prettyCommandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Pretty Format: kubectl get configmap ${escapeHtml(selectedConfigMap)} -n ${escapeHtml(selectedTenant)} -o json | jq ".data.config | fromjson"`;
+                output.appendChild(prettyCommandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('tenant-details').style.display = 'none';
+                document.getElementById('panel-title').textContent = 'Command Execution Output';
+                
+                console.log('DEBUG: Emitting get_configmap_json_details with data:', { tenant: selectedTenant, configmap: selectedConfigMap });
+                socket.emit('get_configmap_json_details', { tenant: selectedTenant, configmap: selectedConfigMap });
+            } else {
+                console.log('DEBUG: Missing tenant or configmap selection');
+                alert('Please select both a tenant and a ConfigMap');
+            }
+        }
+
+        function updateConfigMapsDropdown(tenant, configmaps, error) {
+            const select = document.getElementById('configmaps-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('show-configmap-json-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+            
+            if (configmaps && configmaps.length > 0) {
+                configmaps.forEach(configmap => {
+                    const option = document.createElement('option');
+                    option.value = configmap.name;
+                    option.textContent = `${configmap.name} (Data: ${configmap.data_count}, Age: ${configmap.age})`;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No ConfigMaps found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('show-configmap-json-btn').disabled = true;
+        }
+
+        // Log Files Functions
+        // Note: Log files are now automatically scanned during tenant data building
+
+        function selectLogFile() {
+            const select = document.getElementById('logs-select');
+            const viewBtn = document.getElementById('view-log-btn');
+            
+            if (select.value) {
+                viewBtn.disabled = false;
+            } else {
+                viewBtn.disabled = true;
+            }
+        }
+
+        function viewLogFile() {
+            const logsSelect = document.getElementById('logs-select');
+            const logLinesSelect = document.getElementById('log-lines');
+            const logFilterSelect = document.getElementById('log-filter');
+            
+            const selectedLogPath = logsSelect.value;
+            const numLines = parseInt(logLinesSelect.value) || 1500;
+            const logFilter = logFilterSelect.value;
+            
+            console.log('DEBUG: viewLogFile called with path:', selectedLogPath, 'lines:', numLines, 'filter:', logFilter);
+            
+            if (selectedLogPath) {
+                // Add status message to command output
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line info';
+                const timestamp = new Date().toLocaleTimeString();
+                const filename = selectedLogPath.split('/').pop();
+                const filterText = logFilter === 'all' ? '' : ` (${logFilter} filter)`;
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> Getting last ${numLines} lines from log file: ${escapeHtml(filename)}${filterText}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Build command based on filter
+                let commandText = `tail -n ${numLines} "${selectedLogPath}"`;
+                if (logFilter === 'errors') {
+                    commandText += ' | grep -i error | sed "s/^/  /"';
+                } else if (logFilter === 'pretty') {
+                    commandText += ' | sed "/[Ee][Rr][Rr][Oo][Rr]/i\\\\"';
+                }
+                
+                // Add command line
+                const commandLine = document.createElement('div');
+                commandLine.className = 'output-line command';
+                commandLine.innerHTML = `<span class="timestamp">[${timestamp}]</span> Command: ${escapeHtml(commandText)}`;
+                output.appendChild(commandLine);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch to output view to show the status
+                switchToOutput();
+                
+                console.log('DEBUG: Emitting get_log_file_content with path:', selectedLogPath, 'lines:', numLines, 'filter:', logFilter);
+                socket.emit('get_log_file_content', { path: selectedLogPath, lines: numLines, filter: logFilter });
+            } else {
+                console.log('DEBUG: No log file selected');
+                alert('Please select a log file first');
+            }
+        }
+
+        function updateLogFilesDropdown(logFiles, error) {
+            const select = document.getElementById('logs-select');
+            
+            if (error) {
+                select.innerHTML = `<option value="">Error: ${error}</option>`;
+                document.getElementById('view-log-btn').disabled = true;
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Select a log file --</option>';
+            
+            if (logFiles && Object.keys(logFiles).length > 0) {
+                // Create optgroups for each directory
+                for (const [directory, files] of Object.entries(logFiles)) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = directory;
+                    
+                    files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file.path;
+                        option.textContent = file.name;
+                        optgroup.appendChild(option);
+                    });
+                    
+                    select.appendChild(optgroup);
+                }
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No log files found --';
+                select.appendChild(option);
+            }
+            
+            document.getElementById('view-log-btn').disabled = true;
+        }
+
+        function showLogsHelp() {
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'help-overlay';
+            overlay.onclick = hideLogsHelp;
+            
+            // Create popup
+            const popup = document.createElement('div');
+            popup.className = 'help-popup';
+            popup.id = 'logs-help-popup';
+            
+            popup.innerHTML = `
+                <button class="help-popup-close" onclick="hideLogsHelp()">×</button>
+                <h4>System Logs - Path Information</h4>
+                <div class="help-popup-content">
+                    <p><strong>Log File Locations:</strong></p>
+                    <ul>
+                        <li><code>/var/log/versa/vms/apps/*</code><br>
+                            <small>All application log files in subdirectories</small></li>
+                        <li><code>/var/log/versa/vms/vms-admin.log</code><br>
+                            <small>VMS administration log file</small></li>
+                    </ul>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Displays last 250 lines of selected log file</li>
+                        <li>Excludes compressed (.gz) files</li>
+                        <li>Organized by application directory</li>
+                    </ul>
+                </div>
+            `;
+            
+            // Add to document
+            document.body.appendChild(overlay);
+            document.body.appendChild(popup);
+            
+            // Prevent popup from closing when clicking inside it
+            popup.onclick = function(e) {
+                e.stopPropagation();
+            };
+        }
+
+        function hideLogsHelp() {
+            const overlay = document.querySelector('.help-overlay');
+            const popup = document.getElementById('logs-help-popup');
+            
+            if (overlay) {
+                document.body.removeChild(overlay);
+            }
+            if (popup) {
+                document.body.removeChild(popup);
+            }
+        }
+
+        // Close help popup with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideLogsHelp();
+            }
+        });
+
+        function popoutLogContent() {
+            if (!window.currentLogContent) {
+                alert('No log content available to pop out');
+                return;
+            }
+            
+            const logData = window.currentLogContent;
+            const filename = logData.path.split('/').pop();
+            
+            // Create HTML content for the pop-out window
+            const popoutHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log File: ${filename} - VMS Debug Tool</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #007acc;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .info-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            font-family: 'Consolas', monospace;
+            color: #333;
+        }
+        
+        .content-section {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+        
+        .content-section::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .content-section::-webkit-scrollbar-track {
+            background-color: #1b2e1b;
+            border-radius: 6px;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 6px;
+            border: 2px solid #1b2e1b;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb:hover {
+            background-color: #66bb6a;
+        }
+        
+        .close-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 Log File: ${escapeHtml(filename)}</h1>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-grid">
+            <div class="info-label">File Path:</div>
+            <div class="info-value">${escapeHtml(logData.path)}</div>
+        </div>
+    </div>
+    
+    <div class="content-section">${escapeHtml(logData.content)}</div>
+    
+    <div class="close-info">
+        💡 Close this window to return to the main interface
+    </div>
+</body>
+</html>`;
+
+            // Open pop-out window
+            const popoutWindow = window.open(
+                '', 
+                'logfile_' + Date.now(), 
+                'width=1000,height=700,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no'
+            );
+            
+            if (popoutWindow) {
+                popoutWindow.document.write(popoutHtml);
+                popoutWindow.document.close();
+                
+                // Focus the new window
+                popoutWindow.focus();
+                
+                // Add status message to main interface
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line success';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ✓ Log file opened in pop-out window: ${escapeHtml(filename)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch back to command output view
+                switchToOutput();
+            } else {
+                alert('Pop-out window was blocked by browser. Please allow pop-ups for this site and try again.');
+            }
+        }
+
+        function popoutConfigMapContent() {
+            if (!window.currentConfigMapContent) {
+                alert('No ConfigMap content available to pop out');
+                return;
+            }
+            
+            const configMapData = window.currentConfigMapContent;
+            const tenant = window.currentConfigMapTenant;
+            const configMapName = window.currentConfigMapName;
+            
+            // Create HTML content for the ConfigMap pop-out window
+            const popoutHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigMap: ${configMapName} (${tenant}) - VMS Debug Tool</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #007acc;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .info-section, .content-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            font-family: 'Consolas', monospace;
+            color: #333;
+        }
+        
+        .content-area {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007acc;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 5px;
+        }
+        
+        .close-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚙️ ConfigMap: ${escapeHtml(configMapName)} (${escapeHtml(tenant)})</h1>
+    </div>
+    
+    <div class="info-section">
+        <div class="section-title">ConfigMap Information</div>
+        <div class="info-grid">
+            <div class="info-label">Tenant/Namespace:</div>
+            <div class="info-value">${escapeHtml(tenant)}</div>
+            
+            <div class="info-label">ConfigMap Name:</div>
+            <div class="info-value">${escapeHtml(configMapName)}</div>
+            
+            <div class="info-label">Timestamp:</div>
+            <div class="info-value">${configMapData.timestamp}</div>
+        </div>
+    </div>
+    
+    ${configMapData.raw_format ? `
+    <div class="content-section">
+        <div class="section-title">Raw Format Output</div>
+        <p><strong>Command:</strong> <code>${escapeHtml(configMapData.raw_command)}</code></p>
+        <div class="content-area">${escapeHtml(configMapData.raw_format)}</div>
+    </div>
+    ` : ''}
+    
+    ${configMapData.pretty_format ? `
+    <div class="content-section">
+        <div class="section-title">Pretty Format Output (JSON)</div>
+        <p><strong>Command:</strong> <code>${escapeHtml(configMapData.pretty_command)}</code></p>
+        <div class="content-area">${escapeHtml(configMapData.pretty_format)}</div>
+    </div>
+    ` : `
+    <div class="content-section">
+        <div class="section-title">Pretty Format Output (JSON)</div>
+        <p><strong>Command:</strong> <code>${escapeHtml(configMapData.pretty_command)}</code></p>
+        <p><em>No JSON output returned or parsing failed. This might indicate:</em></p>
+        <ul>
+            <li>ConfigMap does not have a "config" field in its data</li>
+            <li>The "config" field is not valid JSON</li>
+            <li>jq command is not available on the server</li>
+        </ul>
+    </div>
+    `}
+    
+    <div class="close-info">
+        💡 Close this window to return to the main interface
+    </div>
+</body>
+</html>`;
+
+            // Open pop-out window
+            const popoutWindow = window.open(
+                '', 
+                'configmap_' + Date.now(), 
+                'width=1200,height=800,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no'
+            );
+            
+            if (popoutWindow) {
+                popoutWindow.document.write(popoutHtml);
+                popoutWindow.document.close();
+                
+                // Focus the new window
+                popoutWindow.focus();
+                
+                // Add status message to main interface
+                const output = document.getElementById('output');
+                const line = document.createElement('div');
+                line.className = 'output-line success';
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ✓ ConfigMap opened in pop-out window: ${escapeHtml(configMapName)}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                
+                // Switch back to command output view
+                switchToOutput();
+            } else {
+                alert('Pop-out window was blocked by browser. Please allow pop-ups for this site and try again.');
+            }
+        }
+
+        function switchToOutput() {
+            document.getElementById('output').style.display = 'block';
+            document.getElementById('tenant-details').style.display = 'none';
+            document.getElementById('panel-title').textContent = 'Command Execution Output';
+        }
+
+        function displayTenantInfo(tenant, info, error) {
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            if (error) {
+                contentDiv.innerHTML = `<div class="tenant-info-header">Error</div><p>${error}</p>`;
+            } else if (info) {
+                let html = `<div class="tenant-info-header">Tenant Details: ${tenant}</div>`;
+                
+                // Basic Information
+                html += '<div class="tenant-section">';
+                html += '<h4>Basic Information</h4>';
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Tenant Name:</div>
+                    <div class="tenant-property-value">${tenant}</div>
+                </div>`;
+                
+                const services = info.services || [];
+                html += `<div class="tenant-property">
+                    <div class="tenant-property-name">Services:</div>
+                    <div class="tenant-property-value">${services.join(', ') || 'None'}</div>
+                </div>`;
+                html += '</div>';
+                
+                // Redis Information
+                if (info.redis_info) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Redis Service Information</h4>';
+                    const redis = info.redis_info;
+                    
+                    Object.entries(redis).forEach(([key, value]) => {
+                        html += `<div class="tenant-property">
+                            <div class="tenant-property-name">${key.replace('_', ' ').toUpperCase()}:</div>
+                            <div class="tenant-property-value">${value || 'N/A'}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>Redis Service Information</h4>';
+                    html += '<p>No Redis service found for this tenant</p>';
+                    html += '</div>';
+                }
+                
+                // Redis Keys Information
+                html += '<div class="tenant-section">';
+                html += '<h4>Redis Keys Information</h4>';
+                if (info.redis_info && currentTenantRedisKeys.length > 0) {
+                    html += `<div class="tenant-property">
+                        <div class="tenant-property-name">Total Redis Keys:</div>
+                        <div class="tenant-property-value">${currentTenantRedisKeys.length}</div>
+                    </div>`;
+                    
+                    html += '<h5>Available Redis Keys:</h5>';
+                    html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; background-color: #f8f9fa;">';
+                    
+                    currentTenantRedisKeys.forEach((key, index) => {
+                        html += `<div class="tenant-property" style="margin-bottom: 5px; font-size: 11px;">
+                            <div class="tenant-property-name" style="min-width: 40px;">${index + 1}.</div>
+                            <div class="tenant-property-value" style="font-family: 'Consolas', monospace; word-break: break-all;">${escapeHtml(key)}</div>
+                        </div>`;
+                    });
+                    
+                    html += '</div>';
+                    html += '<p style="margin-top: 10px; font-size: 11px; color: #6c757d;"><em>Use the Redis Keys section in the left panel to view individual key values.</em></p>';
+                } else if (info.redis_info && currentTenantRedisKeys.length === 0) {
+                    html += '<p>Redis service available but no keys found or keys are still loading...</p>';
+                    html += '<p style="font-size: 11px; color: #6c757d;"><em>Keys may still be loading. Check the Redis Keys section in the left panel.</em></p>';
+                } else {
+                    html += '<p>No Redis service found for this tenant</p>';
+                }
+                html += '</div>';
+
+                // ConfigMaps Information
+                if (info.configmaps_info) {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>ConfigMaps Information</h4>';
+                    const configmaps = info.configmaps_info;
+                    
+                    html += `<div class="tenant-property">
+                        <div class="tenant-property-name">Total ConfigMaps:</div>
+                        <div class="tenant-property-value">${configmaps.total_configmaps || 0}</div>
+                    </div>`;
+                    
+                    if (configmaps.configmaps && configmaps.configmaps.length > 0) {
+                        html += '<h5>ConfigMaps List:</h5>';
+                        configmaps.configmaps.forEach((cm, index) => {
+                            html += `<div class="tenant-property">
+                                <div class="tenant-property-name">${index + 1}. ${cm.name}:</div>
+                                <div class="tenant-property-value">Data: ${cm.data_count}, Age: ${cm.age}</div>
+                            </div>`;
+                        });
+                    }
+                    html += '</div>';
+                } else {
+                    html += '<div class="tenant-section">';
+                    html += '<h4>ConfigMaps Information</h4>';
+                    html += '<p>No ConfigMaps found for this tenant</p>';
+                    html += '</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+            }
+            
+            outputDiv.style.display = 'none';
+            detailsDiv.style.display = 'block';
+            document.getElementById('panel-title').textContent = `Tenant Information: ${tenant}`;
+        }
+
+        function displayTenantDatabase(database) {
+            const outputDiv = document.getElementById('output');
+            const detailsDiv = document.getElementById('tenant-details');
+            const contentDiv = document.getElementById('tenant-info-content');
+            
+            let html = '<div class="tenant-info-header">Complete Tenant Database</div>';
+            html += '<div class="database-view">';
+            html += JSON.stringify(database, null, 2);
+            html += '</div>';
+            
+            contentDiv.innerHTML = html;
+            
+            outputDiv.style.display = 'none';
+            detailsDiv.style.display = 'block';
+            document.getElementById('panel-title').textContent = 'Tenant Database';
+        }
+    </script>
+</body>
+</html>"""
+    
+    with open('templates/index.html', 'w') as f:
+        f.write(html_template)
+    
+    print("=" * 60)
+    print("VMS Debug Tool - Web Interface")
+    print("=" * 60)
+    print("A comprehensive web-based tool for VMS server management")
+    print()
+    print("Features:")
+    print("  • SSH connection with automatic sudo elevation")
+    print("  • Real-time kubectl command execution")
+    print("  • Tenant data collection and visualization") 
+    print("  • Interactive Redis key viewing per tenant")
+    print("  • ConfigMap raw output display per tenant")
+    print("  • Automatic UI reset on disconnect")
+    print()
+    print("Server starting...")
+    print("Open your web browser and go to: http://localhost:5000")
+    print("Press Ctrl+C to stop the server")
+    print("=" * 60)
+    
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)

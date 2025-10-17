@@ -1,0 +1,48 @@
+{
+  "meta163": {
+    "services": [
+      "redis"
+    ],
+    "redis_info": {
+      "service_name": "redis-configmap-meta163",
+      "service_type": "1",
+      "cluster_ip": "19d",
+      "external_ip": "N/A",
+      "ports": "N/A",
+      "age": "N/A"
+    }
+  },
+  "provider-org": {
+    "services": [
+      "redis"
+    ],
+    "redis_info": {
+      "service_name": "redis-configmap-provider-org",
+      "service_type": "1",
+      "cluster_ip": "185d",
+      "external_ip": "N/A",
+      "ports": "N/A",
+      "age": "N/A"
+    }
+  },
+  "[root@vms1-tb163:": {
+    "services": [
+      "admin]"
+    ],
+    "redis_info": null
+  },
+  "find": {
+    "services": [],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "/var/log/versa/vms/apps",
+          "data_count": "-type",
+          "age": "f"
+        }
+      ],
+      "total_configmaps": 1
+    }
+  }
+}

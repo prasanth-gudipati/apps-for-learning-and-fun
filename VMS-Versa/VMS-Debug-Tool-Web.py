@@ -54,11 +54,14 @@ app.config['SECRET_KEY'] = 'vms-debug-tool-secret-key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 class VMSDebugWeb:
-    def __init__(self):
+    def __init__(self, session_id=None):
         # SSH connection variables
         self.ssh_client = None
         self.shell = None
         self.connected = False
+        
+        # Session tracking
+        self.session_id = session_id
         
         # Connection details
         self.host = ""
@@ -93,12 +96,20 @@ class VMSDebugWeb:
         """Add message to output display with timestamp"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         
-        # Emit to web interface
-        socketio.emit('log_output', {
-            'message': message,
-            'tag': tag,
-            'timestamp': timestamp
-        })
+        # Emit to web interface - use instance session_id if available
+        if self.session_id:
+            socketio.emit('log_output', {
+                'message': message,
+                'tag': tag,
+                'timestamp': timestamp
+            }, room=self.session_id)
+        else:
+            # Fallback: emit to all clients (for backward compatibility)
+            socketio.emit('log_output', {
+                'message': message,
+                'tag': tag,
+                'timestamp': timestamp
+            })
     
     def connect_to_server(self, host, username, ssh_password, admin_password):
         """Connect to the SSH server in a separate thread"""
@@ -166,13 +177,19 @@ class VMSDebugWeb:
             
             # Update connection state
             self.connected = True
-            socketio.emit('connection_status', {'connected': True, 'message': 'Connected successfully'})
+            if self.session_id:
+                socketio.emit('connection_status', {'connected': True, 'message': 'Connected successfully'}, room=self.session_id)
+            else:
+                socketio.emit('connection_status', {'connected': True, 'message': 'Connected successfully'})
             
         except Exception as e:
             error_msg = f"Connection failed: {str(e)}"
             self.log_output(error_msg, "error")
             self.connected = False
-            socketio.emit('connection_status', {'connected': False, 'message': error_msg})
+            if self.session_id:
+                socketio.emit('connection_status', {'connected': False, 'message': error_msg}, room=self.session_id)
+            else:
+                socketio.emit('connection_status', {'connected': False, 'message': error_msg})
     
     def disconnect_from_server(self):
         """Disconnect from SSH server"""
@@ -195,7 +212,10 @@ class VMSDebugWeb:
         self.shell = None
         
         self.log_output("Disconnected from server", "info")
-        socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected'})
+        if self.session_id:
+            socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected'}, room=self.session_id)
+        else:
+            socketio.emit('connection_status', {'connected': False, 'message': 'Disconnected'})
     
     def run_kubectl_commands(self):
         """Run basic kubectl commands"""
@@ -363,11 +383,16 @@ class VMSDebugWeb:
             log_files = self.scan_log_files()
             
             # Send tenant data to web interface
-            socketio.emit('tenant_data', {'data': tenant_data, 'filename': filename})
-            socketio.emit('tenant_database_updated', {'tenants': list(tenant_data.keys())})
-            
-            # Send log files data to web interface
-            socketio.emit('log_files_response', {'log_files': log_files})
+            if self.session_id:
+                socketio.emit('tenant_data', {'data': tenant_data, 'filename': filename}, room=self.session_id)
+                socketio.emit('tenant_database_updated', {'tenants': list(tenant_data.keys())}, room=self.session_id)
+                # Send log files data to web interface
+                socketio.emit('log_files_response', {'log_files': log_files}, room=self.session_id)
+            else:
+                socketio.emit('tenant_data', {'data': tenant_data, 'filename': filename})
+                socketio.emit('tenant_database_updated', {'tenants': list(tenant_data.keys())})
+                # Send log files data to web interface
+                socketio.emit('log_files_response', {'log_files': log_files})
             
         except Exception as e:
             self.log_output(f"Error building tenant data: {str(e)}", "error")
@@ -991,8 +1016,33 @@ class VMSDebugWeb:
             self.log_output(f"Error getting log file tail: {str(e)}", "error")
             return None
 
-# Global instance
-vms_debug = VMSDebugWeb()
+# Session-based instances - each client gets their own instance
+client_instances = {}
+
+def get_client_instance():
+    """Get or create a VMSDebugWeb instance for the current client session"""
+    from flask import has_request_context
+    
+    if has_request_context() and hasattr(request, 'sid'):
+        session_id = request.sid
+    else:
+        session_id = 'default'
+    
+    if session_id not in client_instances:
+        print(f"DEBUG: Creating new VMSDebugWeb instance for session: {session_id}")
+        client_instances[session_id] = VMSDebugWeb(session_id=session_id)
+    
+    return client_instances[session_id]
+
+def cleanup_client_instance(session_id):
+    """Clean up client instance when session disconnects"""
+    if session_id in client_instances:
+        print(f"DEBUG: Cleaning up VMSDebugWeb instance for session: {session_id}")
+        try:
+            client_instances[session_id].disconnect_from_server()
+        except:
+            pass
+        del client_instances[session_id]
 
 @app.route('/')
 def index():
@@ -1002,8 +1052,14 @@ def index():
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection"""
+    session_id = request.sid
+    print(f'Client connected with session ID: {session_id}')
+    
+    # Get client-specific instance
+    client_vms = get_client_instance()
+    
     # Send the actual SSH connection status, not WebSocket status
-    if vms_debug.connected:
+    if client_vms.connected:
         emit('connection_status', {'connected': True, 'message': 'Connected to SSH server'})
     else:
         emit('connection_status', {'connected': False, 'message': 'Not Connected'})
@@ -1011,7 +1067,11 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     """Handle client disconnection"""
-    print('Client disconnected')
+    session_id = request.sid
+    print(f'Client disconnected with session ID: {session_id}')
+    
+    # Clean up client instance
+    cleanup_client_instance(session_id)
 
 @socketio.on('ssh_connect')
 def handle_ssh_connect(data):
@@ -1025,9 +1085,12 @@ def handle_ssh_connect(data):
         emit('connection_status', {'connected': False, 'message': 'Missing connection parameters'})
         return
     
+    # Get client-specific instance
+    client_vms = get_client_instance()
+    
     # Run connection in separate thread
     thread = threading.Thread(
-        target=vms_debug.connect_to_server,
+        target=client_vms.connect_to_server,
         args=(host, username, ssh_password, admin_password),
         daemon=True
     )
@@ -1036,12 +1099,14 @@ def handle_ssh_connect(data):
 @socketio.on('ssh_disconnect')
 def handle_ssh_disconnect():
     """Handle SSH disconnection request"""
-    vms_debug.disconnect_from_server()
+    client_vms = get_client_instance()
+    client_vms.disconnect_from_server()
 
 @socketio.on('run_kubectl')
 def handle_run_kubectl():
     """Handle kubectl commands execution"""
-    if not vms_debug.connected:
+    client_vms = get_client_instance()
+    if not client_vms.connected:
         emit('log_output', {
             'message': 'Error: Not connected to server',
             'tag': 'error',
@@ -1050,13 +1115,14 @@ def handle_run_kubectl():
         return
     
     # Run kubectl commands in separate thread
-    thread = threading.Thread(target=vms_debug.run_kubectl_commands, daemon=True)
+    thread = threading.Thread(target=client_vms.run_kubectl_commands, daemon=True)
     thread.start()
 
 @socketio.on('build_tenant_data')
 def handle_build_tenant_data():
     """Handle tenant data building"""
-    if not vms_debug.connected:
+    client_vms = get_client_instance()
+    if not client_vms.connected:
         emit('log_output', {
             'message': 'Error: Not connected to server',
             'tag': 'error',
@@ -1065,7 +1131,7 @@ def handle_build_tenant_data():
         return
     
     # Run tenant data building in separate thread
-    thread = threading.Thread(target=vms_debug.build_tenant_data, daemon=True)
+    thread = threading.Thread(target=client_vms.build_tenant_data, daemon=True)
     thread.start()
 
 @socketio.on('clear_output')
@@ -1076,15 +1142,17 @@ def handle_clear_output():
 @socketio.on('get_tenant_list')
 def handle_get_tenant_list():
     """Handle request for tenant list"""
-    tenants = list(vms_debug.tenant_database.keys()) if vms_debug.tenant_database else []
+    client_vms = get_client_instance()
+    tenants = list(client_vms.tenant_database.keys()) if client_vms.tenant_database else []
     emit('tenant_list_response', {'tenants': tenants})
 
 @socketio.on('select_tenant')
 def handle_select_tenant(data):
     """Handle tenant selection"""
+    client_vms = get_client_instance()
     tenant_name = data.get('tenant', '')
-    if tenant_name in vms_debug.tenant_database:
-        tenant_info = vms_debug.tenant_database[tenant_name]
+    if tenant_name in client_vms.tenant_database:
+        tenant_info = client_vms.tenant_database[tenant_name]
         emit('tenant_info_response', {'tenant': tenant_name, 'info': tenant_info})
     else:
         emit('tenant_info_response', {'tenant': tenant_name, 'info': None, 'error': 'Tenant not found'})
@@ -1092,24 +1160,26 @@ def handle_select_tenant(data):
 @socketio.on('show_tenant_database')
 def handle_show_tenant_database():
     """Handle request to show complete tenant database"""
-    emit('show_database_response', {'database': vms_debug.tenant_database})
+    client_vms = get_client_instance()
+    emit('show_database_response', {'database': client_vms.tenant_database})
 
 @socketio.on('get_redis_keys')
 def handle_get_redis_keys(data):
     """Handle request to get Redis keys for a tenant"""
+    client_vms = get_client_instance()
     tenant_name = data.get('tenant', '')
     if not tenant_name:
         emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'No tenant specified'})
         return
     
-    if not vms_debug.connected:
+    if not client_vms.connected:
         emit('redis_keys_response', {'tenant': tenant_name, 'keys': [], 'error': 'Not connected to server'})
         return
     
     # Run Redis key extraction in separate thread
     def extract_keys():
-        keys = vms_debug.extract_redis_keys_for_tenant(tenant_name)
-        socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys})
+        keys = client_vms.extract_redis_keys_for_tenant(tenant_name)
+        socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys}, room=request.sid)
     
     thread = threading.Thread(target=extract_keys, daemon=True)
     thread.start()
@@ -1117,14 +1187,15 @@ def handle_get_redis_keys(data):
 @socketio.on('get_redis_key_value')
 def handle_get_redis_key_value(data):
     """Handle request to get Redis key value"""
+    client_vms = get_client_instance()
     tenant_name = data.get('tenant', '')
     key_name = data.get('key', '')
     
     # Add debug logging
-    print(f"DEBUG: Received get_redis_key_value request - tenant: '{tenant_name}', key: '{key_name}'")
+    print(f"DEBUG: Session {request.sid} - Received get_redis_key_value request - tenant: '{tenant_name}', key: '{key_name}'")
     
     if not tenant_name or not key_name:
-        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', key: '{key_name}'")
+        print(f"DEBUG: Session {request.sid} - Missing parameters - tenant: '{tenant_name}', key: '{key_name}'")
         emit('redis_key_value_response', {
             'tenant': tenant_name, 
             'key': key_name, 
@@ -1133,8 +1204,8 @@ def handle_get_redis_key_value(data):
         })
         return
     
-    if not vms_debug.connected:
-        print(f"DEBUG: Not connected to server")
+    if not client_vms.connected:
+        print(f"DEBUG: Session {request.sid} - Not connected to server")
         emit('redis_key_value_response', {
             'tenant': tenant_name, 
             'key': key_name, 
@@ -1143,19 +1214,19 @@ def handle_get_redis_key_value(data):
         })
         return
     
-    print(f"DEBUG: Starting thread to get Redis key value")
+    print(f"DEBUG: Session {request.sid} - Starting thread to get Redis key value")
     
     # Run Redis key value extraction in separate thread
     def get_key_value():
-        print(f"DEBUG: In thread - calling get_redis_key_value for tenant '{tenant_name}', key '{key_name}'")
-        key_value = vms_debug.get_redis_key_value(tenant_name, key_name)
-        print(f"DEBUG: Got key value result: {type(key_value)} - {key_value}")
+        print(f"DEBUG: Session {request.sid} - In thread - calling get_redis_key_value for tenant '{tenant_name}', key '{key_name}'")
+        key_value = client_vms.get_redis_key_value(tenant_name, key_name)
+        print(f"DEBUG: Session {request.sid} - Got key value result: {type(key_value)} - {key_value}")
         socketio.emit('redis_key_value_response', {
             'tenant': tenant_name,
             'key': key_name, 
             'value': key_value
-        })
-        print(f"DEBUG: Emitted redis_key_value_response")
+        }, room=request.sid)
+        print(f"DEBUG: Session {request.sid} - Emitted redis_key_value_response")
     
     thread = threading.Thread(target=get_key_value, daemon=True)
     thread.start()
@@ -1163,12 +1234,13 @@ def handle_get_redis_key_value(data):
 @socketio.on('get_configmaps')
 def handle_get_configmaps(data):
     """Handle request to get ConfigMaps for a tenant"""
+    client_vms = get_client_instance()
     tenant_name = data.get('tenant', '')
     
-    print(f"DEBUG: Received get_configmaps request - tenant: '{tenant_name}'")
+    print(f"DEBUG: Session {request.sid} - Received get_configmaps request - tenant: '{tenant_name}'")
     
     if not tenant_name:
-        print(f"DEBUG: Missing tenant parameter")
+        print(f"DEBUG: Session {request.sid} - Missing tenant parameter")
         emit('configmaps_response', {
             'tenant': tenant_name, 
             'configmaps': [], 
@@ -1176,8 +1248,8 @@ def handle_get_configmaps(data):
         })
         return
     
-    if not vms_debug.connected:
-        print(f"DEBUG: Not connected to server")
+    if not client_vms.connected:
+        print(f"DEBUG: Session {request.sid} - Not connected to server")
         emit('configmaps_response', {
             'tenant': tenant_name, 
             'configmaps': [], 
@@ -1185,18 +1257,18 @@ def handle_get_configmaps(data):
         })
         return
     
-    print(f"DEBUG: Starting thread to get ConfigMaps")
+    print(f"DEBUG: Session {request.sid} - Starting thread to get ConfigMaps")
     
     # Run ConfigMaps extraction in separate thread
     def get_configmaps():
-        print(f"DEBUG: In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
-        configmaps = vms_debug.get_all_configmaps_for_tenant(tenant_name)
-        print(f"DEBUG: Got ConfigMaps result: {len(configmaps)} configmaps")
+        print(f"DEBUG: Session {request.sid} - In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
+        configmaps = client_vms.get_all_configmaps_for_tenant(tenant_name)
+        print(f"DEBUG: Session {request.sid} - Got ConfigMaps result: {len(configmaps)} configmaps")
         socketio.emit('configmaps_response', {
             'tenant': tenant_name,
             'configmaps': configmaps
-        })
-        print(f"DEBUG: Emitted configmaps_response")
+        }, room=request.sid)
+        print(f"DEBUG: Session {request.sid} - Emitted configmaps_response")
     
     thread = threading.Thread(target=get_configmaps, daemon=True)
     thread.start()
@@ -1204,13 +1276,14 @@ def handle_get_configmaps(data):
 @socketio.on('get_configmap_json_details')
 def handle_get_configmap_json_details(data):
     """Handle request to get ConfigMap JSON details using the kubectl + jq command"""
+    client_vms = get_client_instance()
     tenant_name = data.get('tenant', '')
     configmap_name = data.get('configmap', '')
     
-    print(f"DEBUG: Received get_configmap_json_details request - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+    print(f"DEBUG: Session {request.sid} - Received get_configmap_json_details request - tenant: '{tenant_name}', configmap: '{configmap_name}'")
     
     if not tenant_name or not configmap_name:
-        print(f"DEBUG: Missing parameters - tenant: '{tenant_name}', configmap: '{configmap_name}'")
+        print(f"DEBUG: Session {request.sid} - Missing parameters - tenant: '{tenant_name}', configmap: '{configmap_name}'")
         emit('configmap_json_details_response', {
             'tenant': tenant_name, 
             'configmap': configmap_name, 
@@ -1219,8 +1292,8 @@ def handle_get_configmap_json_details(data):
         })
         return
     
-    if not vms_debug.connected:
-        print(f"DEBUG: Not connected to server")
+    if not client_vms.connected:
+        print(f"DEBUG: Session {request.sid} - Not connected to server")
         emit('configmap_json_details_response', {
             'tenant': tenant_name, 
             'configmap': configmap_name, 
@@ -1229,19 +1302,19 @@ def handle_get_configmap_json_details(data):
         })
         return
     
-    print(f"DEBUG: Starting thread to get ConfigMap JSON details")
+    print(f"DEBUG: Session {request.sid} - Starting thread to get ConfigMap JSON details")
     
     # Run ConfigMap JSON details extraction in separate thread
     def get_configmap_json_details():
-        print(f"DEBUG: In thread - calling get_configmap_json_details for tenant '{tenant_name}', configmap '{configmap_name}'")
-        details = vms_debug.get_configmap_json_details(tenant_name, configmap_name)
-        print(f"DEBUG: Got ConfigMap JSON details result: {type(details)}")
+        print(f"DEBUG: Session {request.sid} - In thread - calling get_configmap_json_details for tenant '{tenant_name}', configmap '{configmap_name}'")
+        details = client_vms.get_configmap_json_details(tenant_name, configmap_name)
+        print(f"DEBUG: Session {request.sid} - Got ConfigMap JSON details result: {type(details)}")
         socketio.emit('configmap_json_details_response', {
             'tenant': tenant_name,
             'configmap': configmap_name,
             'details': details
-        })
-        print(f"DEBUG: Emitted configmap_json_details_response")
+        }, room=request.sid)
+        print(f"DEBUG: Session {request.sid} - Emitted configmap_json_details_response")
     
     thread = threading.Thread(target=get_configmap_json_details, daemon=True)
     thread.start()
@@ -1249,24 +1322,25 @@ def handle_get_configmap_json_details(data):
 @socketio.on('scan_log_files')
 def handle_scan_log_files():
     """Handle request to scan for log files in /var/log/versa/vms/apps"""
-    if not vms_debug.connected:
+    client_vms = get_client_instance()
+    if not client_vms.connected:
         emit('log_files_response', {
             'log_files': {}, 
             'error': 'Not connected to server'
         })
         return
     
-    print(f"DEBUG: Starting thread to scan log files")
+    print(f"DEBUG: Session {request.sid} - Starting thread to scan log files")
     
     # Run log files scanning in separate thread
     def scan_log_files():
-        print(f"DEBUG: In thread - calling scan_log_files")
-        log_files = vms_debug.scan_log_files()
-        print(f"DEBUG: Got log files result: {len(log_files)} directories")
+        print(f"DEBUG: Session {request.sid} - In thread - calling scan_log_files")
+        log_files = client_vms.scan_log_files()
+        print(f"DEBUG: Session {request.sid} - Got log files result: {len(log_files)} directories")
         socketio.emit('log_files_response', {
             'log_files': log_files
-        })
-        print(f"DEBUG: Emitted log_files_response")
+        }, room=request.sid)
+        print(f"DEBUG: Session {request.sid} - Emitted log_files_response")
     
     thread = threading.Thread(target=scan_log_files, daemon=True)
     thread.start()
@@ -1274,14 +1348,15 @@ def handle_scan_log_files():
 @socketio.on('get_log_file_content')
 def handle_get_log_file_content(data):
     """Handle request to get log file content with filtering options"""
+    client_vms = get_client_instance()
     log_file_path = data.get('path', '')
     lines = data.get('lines', 250)  # Default to 250 lines
     log_filter = data.get('filter', 'all')  # Default to 'all'
     
-    print(f"DEBUG: Received get_log_file_content request - path: '{log_file_path}', lines: {lines}, filter: {log_filter}")
+    print(f"DEBUG: Session {request.sid} - Received get_log_file_content request - path: '{log_file_path}', lines: {lines}, filter: {log_filter}")
     
     if not log_file_path:
-        print(f"DEBUG: Missing log file path")
+        print(f"DEBUG: Session {request.sid} - Missing log file path")
         emit('log_file_content_response', {
             'path': log_file_path, 
             'content': {}, 
@@ -1289,8 +1364,8 @@ def handle_get_log_file_content(data):
         })
         return
     
-    if not vms_debug.connected:
-        print(f"DEBUG: Not connected to server")
+    if not client_vms.connected:
+        print(f"DEBUG: Session {request.sid} - Not connected to server")
         emit('log_file_content_response', {
             'path': log_file_path, 
             'content': {}, 
@@ -1298,20 +1373,20 @@ def handle_get_log_file_content(data):
         })
         return
     
-    print(f"DEBUG: Starting thread to get log file content")
+    print(f"DEBUG: Session {request.sid} - Starting thread to get log file content")
     
     # Run log file content extraction in separate thread
     def get_log_file_content():
-        print(f"DEBUG: In thread - calling get_log_file_tail for path '{log_file_path}' with {lines} lines, filter: {log_filter}")
-        content = vms_debug.get_log_file_tail(log_file_path, lines, log_filter)
-        print(f"DEBUG: Got log file content result: {type(content)}")
+        print(f"DEBUG: Session {request.sid} - In thread - calling get_log_file_tail for path '{log_file_path}' with {lines} lines, filter: {log_filter}")
+        content = client_vms.get_log_file_tail(log_file_path, lines, log_filter)
+        print(f"DEBUG: Session {request.sid} - Got log file content result: {type(content)}")
         socketio.emit('log_file_content_response', {
             'path': log_file_path,
             'content': content,
             'lines': lines,
             'filter': log_filter
-        })
-        print(f"DEBUG: Emitted log_file_content_response")
+        }, room=request.sid)
+        print(f"DEBUG: Session {request.sid} - Emitted log_file_content_response")
     
     thread = threading.Thread(target=get_log_file_content, daemon=True)
     thread.start()
@@ -1869,7 +1944,7 @@ if __name__ == '__main__':
                 <button id="refresh-tenants-btn" class="btn-secondary" onclick="refreshTenantList()">Refresh List</button>
             </div>
             
-            <div class="section" id="redis-keys-section" style="display:none;">
+            <div class="section" id="redis-section" style="display:none;">
                 <h3>Redis Keys</h3>
                 <div class="form-group">
                     <label for="redis-keys-select">Select Redis Key:</label>
@@ -1972,8 +2047,10 @@ if __name__ == '__main__':
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
                 
-                // Do NOT show any sections until tenant data is built
-                // Keep all sections hidden for now
+                // Show operations section immediately after connection
+                document.getElementById('operations-section').style.display = 'block';
+                
+                // Keep tenant section and logs section hidden until tenant data is built
                 
                 // Keep all buttons disabled until tenant data is built automatically
                 kubectlBtn.disabled = true;
@@ -2005,7 +2082,7 @@ if __name__ == '__main__':
                 document.getElementById('operations-section').style.display = 'none';
                 document.getElementById('logs-section').style.display = 'none';
                 document.getElementById('tenant-section').style.display = 'none';
-                document.getElementById('redis-keys-section').style.display = 'none';
+                document.getElementById('redis-section').style.display = 'none';
                 document.getElementById('configmaps-section').style.display = 'none';
                 
                 // Disable all operation buttons on disconnect
@@ -2021,6 +2098,9 @@ if __name__ == '__main__':
                 document.getElementById('redis-keys-select').innerHTML = '<option value="">-- Select a Redis key --</option>';
                 document.getElementById('configmaps-select').innerHTML = '<option value="">-- Select a ConfigMap --</option>';
                 document.getElementById('logs-select').innerHTML = '<option value="">-- Select a Log file --</option>';
+                
+                // Hide tenant options
+                document.getElementById('tenant-options').style.display = 'none';
                 
                 // Clear output and switch to output view
                 document.getElementById('output').innerHTML = '';
@@ -2051,15 +2131,15 @@ if __name__ == '__main__':
         socket.on('tenant_database_updated', function(data) {
             updateTenantDropdown(data.tenants);
             
-            // Show ALL sections only after tenant data is available
-            document.getElementById('operations-section').style.display = 'block';
-            document.getElementById('logs-section').style.display = 'block';
+            // Show tenant and logs sections only after tenant data is available
             document.getElementById('tenant-section').style.display = 'block';
+            document.getElementById('logs-section').style.display = 'block';
             
             // Enable all operations buttons only after tenant data is built
             document.getElementById('kubectl-btn').disabled = false;
             document.getElementById('show-db-btn').disabled = false;
-            // Log files are automatically scanned during tenant data building
+            // Enable log files since they are automatically scanned during tenant data building
+            document.getElementById('view-log-btn').disabled = false;
             
             // Add success message to indicate tenant data building is complete
             const output = document.getElementById('output');
@@ -2472,8 +2552,11 @@ if __name__ == '__main__':
                 
                 socket.emit('select_tenant', { tenant: selectedTenant });
                 
-                // Show Redis keys section and load keys for selected tenant
-                document.getElementById('redis-keys-section').style.display = 'block';
+                // Show Redis and ConfigMaps sections
+                document.getElementById('redis-section').style.display = 'block';
+                document.getElementById('configmaps-section').style.display = 'block';
+                
+                // Load Redis keys for selected tenant
                 socket.emit('get_redis_keys', { tenant: selectedTenant });
                 
                 // Reset Redis keys dropdown and disable buttons
@@ -2482,8 +2565,7 @@ if __name__ == '__main__':
                 document.getElementById('refresh-keys-btn').disabled = false;
                 document.getElementById('view-key-btn').disabled = true;
                 
-                // Show ConfigMaps section and load ConfigMaps for selected tenant
-                document.getElementById('configmaps-section').style.display = 'block';
+                // Load ConfigMaps for selected tenant
                 socket.emit('get_configmaps', { tenant: selectedTenant });
                 
                 // Reset ConfigMaps dropdown and disable buttons
@@ -2492,9 +2574,8 @@ if __name__ == '__main__':
                 document.getElementById('refresh-configmaps-btn').disabled = false;
                 document.getElementById('show-configmap-json-btn').disabled = true;
             } else {
-                // Hide Redis keys section if no tenant selected
-                document.getElementById('redis-keys-section').style.display = 'none';
-                // Hide ConfigMaps section if no tenant selected
+                // Hide Redis and ConfigMaps sections if no tenant selected
+                document.getElementById('redis-section').style.display = 'none';
                 document.getElementById('configmaps-section').style.display = 'none';
             }
         }
@@ -3347,4 +3428,4 @@ if __name__ == '__main__':
     print("Press Ctrl+C to stop the server")
     print("=" * 60)
     
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)

@@ -1,0 +1,1001 @@
+2025-10-12 06:04:15,677 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:04:44,752 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:04:44,752 - __main__ - INFO - Flask application starting...
+2025-10-12 06:04:44,773 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:04:44,773 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:04:50,903 - __main__ - ERROR - Error loading index page: index.html
+2025-10-12 06:04:50,905 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:04:50] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-10-12 06:04:51,862 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:04:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-12 06:05:06,916 - __main__ - ERROR - Error loading index page: index.html
+2025-10-12 06:05:06,917 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:05:06] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-10-12 06:05:07,882 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:05:07] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-12 06:05:33,475 - __main__ - ERROR - Error loading index page: index.html
+2025-10-12 06:05:33,476 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:05:33] "[35m[1mGET /?id=c115c77b-b204-4b2b-be5f-9abe6c5e395d&vscodeBrowserReqId=1760249133308 HTTP/1.1[0m" 500 -
+2025-10-12 06:05:42,175 - __main__ - ERROR - Error loading index page: index.html
+2025-10-12 06:05:42,178 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:05:42] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-10-12 06:06:04,779 - __main__ - ERROR - Error loading index page: index.html
+2025-10-12 06:06:04,781 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:06:04] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-10-12 06:07:25,132 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:07:25,133 - __main__ - INFO - Flask application starting...
+2025-10-12 06:07:25,151 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:07:25,151 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:07:31,812 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:31] "GET / HTTP/1.1" 200 -
+2025-10-12 06:07:31,883 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:31] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-12 06:07:31,887 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:31] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 06:07:32,316 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:32] "GET /socket.io/?EIO=4&transport=polling&t=PdN20bS HTTP/1.1" 200 -
+2025-10-12 06:07:32,323 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:32] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:07:32,366 - __main__ - INFO - Client connected: a9BJIcb6zrijV8uVAAAB
+2025-10-12 06:07:32,367 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:32] "POST /socket.io/?EIO=4&transport=polling&t=PdN20c6&sid=3STQqImCU1-81A5OAAAA HTTP/1.1" 200 -
+2025-10-12 06:07:32,370 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:07:32] "GET /socket.io/?EIO=4&transport=polling&t=PdN20c8&sid=3STQqImCU1-81A5OAAAA HTTP/1.1" 200 -
+2025-10-12 06:07:39,112 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "GET /?id=c115c77b-b204-4b2b-be5f-9abe6c5e395d&vscodeBrowserReqId=1760249258937 HTTP/1.1" 200 -
+2025-10-12 06:07:39,237 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-12 06:07:39,255 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 06:07:39,500 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "GET /socket.io/?EIO=4&transport=polling&t=PdN22L1 HTTP/1.1" 200 -
+2025-10-12 06:07:39,512 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:07:39,595 - __main__ - INFO - Client connected: 66zMX4lb-yX6Pw3BAAAD
+2025-10-12 06:07:39,596 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "POST /socket.io/?EIO=4&transport=polling&t=PdN22MG&sid=xtTGR7xJyyIitxx1AAAC HTTP/1.1" 200 -
+2025-10-12 06:07:39,615 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "GET /socket.io/?EIO=4&transport=polling&t=PdN22MI&sid=xtTGR7xJyyIitxx1AAAC HTTP/1.1" 200 -
+2025-10-12 06:07:39,798 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:07:39] "GET /socket.io/?EIO=4&transport=polling&t=PdN22OI&sid=xtTGR7xJyyIitxx1AAAC HTTP/1.1" 200 -
+2025-10-12 06:08:23,829 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:08:23] "[31m[1mPOST /api/ssh/connect HTTP/1.1[0m" 400 -
+2025-10-12 06:08:47,286 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:47] "GET / HTTP/1.1" 200 -
+2025-10-12 06:08:47,328 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:47] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-12 06:08:47,424 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:47] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 06:08:48,416 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:48] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:08:48,428 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:48] "GET /socket.io/?EIO=4&transport=polling&t=PdN2J9a HTTP/1.1" 200 -
+2025-10-12 06:08:48,550 - __main__ - INFO - Client connected: Vv6eCKY37TcBlHQ3AAAF
+2025-10-12 06:08:48,552 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:48] "POST /socket.io/?EIO=4&transport=polling&t=PdN2JBg&sid=Rj-5rCvk09PgWiAPAAAE HTTP/1.1" 200 -
+2025-10-12 06:08:48,561 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:48] "GET /socket.io/?EIO=4&transport=polling&t=PdN2JBh&sid=Rj-5rCvk09PgWiAPAAAE HTTP/1.1" 200 -
+2025-10-12 06:08:48,735 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:48] "GET /socket.io/?EIO=4&transport=polling&t=PdN2JDJ&sid=Rj-5rCvk09PgWiAPAAAE HTTP/1.1" 200 -
+2025-10-12 06:08:52,098 - __main__ - INFO - Client disconnected: Vv6eCKY37TcBlHQ3AAAF
+2025-10-12 06:08:52,099 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:52] "GET /socket.io/?EIO=4&transport=websocket&sid=Rj-5rCvk09PgWiAPAAAE HTTP/1.1" 200 -
+2025-10-12 06:08:52,131 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:52] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:08:52,195 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:08:52,272 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:52] "GET /static/js/tenant-management.js HTTP/1.1" 200 -
+2025-10-12 06:08:52,521 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:52] "[33mGET /api/tenant/list HTTP/1.1[0m" 404 -
+2025-10-12 06:08:54,187 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:08:54,266 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:08:54,356 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:08:54,613 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:08:54,624 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "GET /socket.io/?EIO=4&transport=polling&t=PdN2Kg1 HTTP/1.1" 200 -
+2025-10-12 06:08:54,693 - __main__ - INFO - Client connected: EYNvxv3Kl2MSGpOpAAAH
+2025-10-12 06:08:54,694 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "POST /socket.io/?EIO=4&transport=polling&t=PdN2Khz&sid=i14u0CEJGoKMi8DYAAAG HTTP/1.1" 200 -
+2025-10-12 06:08:54,708 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "GET /socket.io/?EIO=4&transport=polling&t=PdN2Kh-&sid=i14u0CEJGoKMi8DYAAAG HTTP/1.1" 200 -
+2025-10-12 06:08:54,817 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:08:54] "GET /socket.io/?EIO=4&transport=polling&t=PdN2KjL&sid=i14u0CEJGoKMi8DYAAAG HTTP/1.1" 200 -
+2025-10-12 06:09:56,944 - __main__ - INFO - Client disconnected: EYNvxv3Kl2MSGpOpAAAH
+2025-10-12 06:09:56,945 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:56] "GET /socket.io/?EIO=4&transport=websocket&sid=i14u0CEJGoKMi8DYAAAG HTTP/1.1" 200 -
+2025-10-12 06:09:56,962 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:56] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:09:57,190 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:09:57,208 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:09:57,566 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "GET /socket.io/?EIO=4&transport=polling&t=PdN2a2A HTTP/1.1" 200 -
+2025-10-12 06:09:57,582 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:09:57,646 - __main__ - INFO - Client connected: dvC9CslbEl_hp4dIAAAJ
+2025-10-12 06:09:57,648 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "POST /socket.io/?EIO=4&transport=polling&t=PdN2a3W&sid=Bo06Wxh66LYv5X-oAAAI HTTP/1.1" 200 -
+2025-10-12 06:09:57,660 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "GET /socket.io/?EIO=4&transport=polling&t=PdN2a3X&sid=Bo06Wxh66LYv5X-oAAAI HTTP/1.1" 200 -
+2025-10-12 06:09:57,757 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:57] "GET /socket.io/?EIO=4&transport=polling&t=PdN2a55&sid=Bo06Wxh66LYv5X-oAAAI HTTP/1.1" 200 -
+2025-10-12 06:09:58,751 - __main__ - INFO - Client disconnected: dvC9CslbEl_hp4dIAAAJ
+2025-10-12 06:09:58,752 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:58] "GET /socket.io/?EIO=4&transport=websocket&sid=Bo06Wxh66LYv5X-oAAAI HTTP/1.1" 200 -
+2025-10-12 06:09:58,762 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:58] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:09:58,828 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:58] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:09:58,863 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:58] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:09:59,107 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:59] "GET /socket.io/?EIO=4&transport=polling&t=PdN2aQL HTTP/1.1" 200 -
+2025-10-12 06:09:59,119 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:59] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:09:59,191 - __main__ - INFO - Client connected: e6JqQAtWvyo9ugaPAAAL
+2025-10-12 06:09:59,192 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:59] "POST /socket.io/?EIO=4&transport=polling&t=PdN2aRd&sid=YqtCuuHOlw8QOdnwAAAK HTTP/1.1" 200 -
+2025-10-12 06:09:59,197 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:59] "GET /socket.io/?EIO=4&transport=polling&t=PdN2aRe&sid=YqtCuuHOlw8QOdnwAAAK HTTP/1.1" 200 -
+2025-10-12 06:09:59,310 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:09:59] "GET /socket.io/?EIO=4&transport=polling&t=PdN2aT2&sid=YqtCuuHOlw8QOdnwAAAK HTTP/1.1" 200 -
+2025-10-12 06:10:30,690 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:10:30] "[31m[1mPOST /api/ssh/connect HTTP/1.1[0m" 400 -
+2025-10-12 06:21:17,369 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:21:17,370 - __main__ - INFO - ============================================================
+2025-10-12 06:21:17,370 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:21:17,370 - __main__ - INFO - ============================================================
+2025-10-12 06:21:17,370 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:21:17,370 - __main__ - INFO - Username: admin
+2025-10-12 06:21:17,370 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:21:17,371 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:21:17,371 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:21:17,462 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:21:17,555 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:21:17,555 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:21:17,556 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:21:17,556 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:21:17,701 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:21:17,703 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:21:17,703 - __main__ - INFO - ============================================================
+2025-10-12 06:21:17,704 - __main__ - INFO - ============================================================
+2025-10-12 06:21:17,704 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:21:17,704 - __main__ - INFO - Flask application starting...
+2025-10-12 06:21:17,727 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:21:17,727 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:21:21,776 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:21] "GET / HTTP/1.1" 200 -
+2025-10-12 06:21:21,829 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:21] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:21:21,926 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:21] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 06:21:22,882 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:22] "GET /socket.io/?EIO=4&transport=polling&t=PdN5BM8 HTTP/1.1" 200 -
+2025-10-12 06:21:22,905 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:21:22,911 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:22] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:21:22,987 - __main__ - INFO - Client connected: mRPoVf1mK1ictI0gAAAB
+2025-10-12 06:21:22,988 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:22] "POST /socket.io/?EIO=4&transport=polling&t=PdN5BNi&sid=AFSmwIKKwpfbDyAlAAAA HTTP/1.1" 200 -
+2025-10-12 06:21:22,990 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:21:22,993 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:22] "GET /socket.io/?EIO=4&transport=polling&t=PdN5BNj&sid=AFSmwIKKwpfbDyAlAAAA HTTP/1.1" 200 -
+2025-10-12 06:21:23,075 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:21:23,075 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:21:23,140 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:23] "GET /socket.io/?EIO=4&transport=polling&t=PdN5BPw&sid=AFSmwIKKwpfbDyAlAAAA HTTP/1.1" 200 -
+2025-10-12 06:21:24,215 - services.ssh_service - INFO - SSH connection established: 6d711804-b522-49e0-a777-6f3cf2b1b1de to 10.70.188.171
+2025-10-12 06:21:24,218 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:24] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:21:24,379 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:24] "[33mGET /api/vms/system-overview/6d711804-b522-49e0-a777-6f3cf2b1b1de HTTP/1.1[0m" 404 -
+2025-10-12 06:21:43,866 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:43] "[33mPOST /api/vms/collect-tenant-data/6d711804-b522-49e0-a777-6f3cf2b1b1de HTTP/1.1[0m" 404 -
+2025-10-12 06:21:52,941 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:52] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:21:52,954 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:21:52] "[33mGET /api/vms/system-overview/6d711804-b522-49e0-a777-6f3cf2b1b1de HTTP/1.1[0m" 404 -
+2025-10-12 06:22:23,147 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:22:23] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:22:23,157 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:22:23] "[33mGET /api/vms/system-overview/6d711804-b522-49e0-a777-6f3cf2b1b1de HTTP/1.1[0m" 404 -
+2025-10-12 06:22:53,128 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:22:53] "[33mGET /api/vms/system-overview/6d711804-b522-49e0-a777-6f3cf2b1b1de HTTP/1.1[0m" 404 -
+2025-10-12 06:22:53,140 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:22:53] "[33mGET /api/tenant/stats HTTP/1.1[0m" 404 -
+2025-10-12 06:24:11,356 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:24:11,357 - __main__ - INFO - ============================================================
+2025-10-12 06:24:11,357 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:24:11,357 - __main__ - INFO - ============================================================
+2025-10-12 06:24:11,357 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:24:11,358 - __main__ - INFO - Username: admin
+2025-10-12 06:24:11,358 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:24:11,358 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:24:11,359 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:24:11,439 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:24:11,527 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:24:11,528 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:24:11,529 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:24:11,529 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:24:11,637 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:24:11,639 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:24:11,639 - __main__ - INFO - ============================================================
+2025-10-12 06:24:11,639 - __main__ - INFO - ============================================================
+2025-10-12 06:24:11,639 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:24:11,640 - __main__ - INFO - Flask application starting...
+2025-10-12 06:24:11,667 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:24:11,667 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:24:19,329 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:19] "GET / HTTP/1.1" 200 -
+2025-10-12 06:24:19,440 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:19] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:24:19,445 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:19] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:24:20,364 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:20] "GET /socket.io/?EIO=4&transport=polling&t=PdN5shP HTTP/1.1" 200 -
+2025-10-12 06:24:20,376 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:24:20,455 - __main__ - INFO - Client connected: eT8V5zs8zpCjyyXsAAAB
+2025-10-12 06:24:20,456 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:20] "POST /socket.io/?EIO=4&transport=polling&t=PdN5siw&sid=93haReQtndZE05ebAAAA HTTP/1.1" 200 -
+2025-10-12 06:24:20,462 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:20] "GET /socket.io/?EIO=4&transport=polling&t=PdN5six&sid=93haReQtndZE05ebAAAA HTTP/1.1" 200 -
+2025-10-12 06:24:20,466 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:24:20,547 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:24:20,548 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:24:20,586 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:20] "GET /socket.io/?EIO=4&transport=polling&t=PdN5sko&sid=93haReQtndZE05ebAAAA HTTP/1.1" 200 -
+2025-10-12 06:24:21,654 - services.ssh_service - INFO - SSH connection established: cb385242-384a-4fea-b28e-80b4cc388868 to 10.70.188.171
+2025-10-12 06:24:21,657 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:21] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:24:21,725 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:21] "GET /api/vms/system-overview/cb385242-384a-4fea-b28e-80b4cc388868 HTTP/1.1" 200 -
+2025-10-12 06:24:41,972 - __main__ - INFO - Client disconnected: eT8V5zs8zpCjyyXsAAAB
+2025-10-12 06:24:41,973 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:41] "GET /socket.io/?EIO=4&transport=websocket&sid=93haReQtndZE05ebAAAA HTTP/1.1" 200 -
+2025-10-12 06:24:44,240 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:44] "GET / HTTP/1.1" 200 -
+2025-10-12 06:24:44,335 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:44] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:24:44,409 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:44] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 06:24:45,376 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN5yoz HTTP/1.1" 200 -
+2025-10-12 06:24:45,381 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:24:45,442 - __main__ - INFO - Client connected: yXzalS8d7w4cqtykAAAD
+2025-10-12 06:24:45,444 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:45] "POST /socket.io/?EIO=4&transport=polling&t=PdN5ypu&sid=xpg1-mofJL38Qky0AAAC HTTP/1.1" 200 -
+2025-10-12 06:24:45,449 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN5ypv&sid=xpg1-mofJL38Qky0AAAC HTTP/1.1" 200 -
+2025-10-12 06:24:45,465 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:24:45,504 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN5yqz&sid=xpg1-mofJL38Qky0AAAC HTTP/1.1" 200 -
+2025-10-12 06:24:45,548 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:24:45,549 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:24:46,658 - services.ssh_service - INFO - SSH connection established: ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 to 10.70.188.171
+2025-10-12 06:24:46,662 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:46] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:24:46,709 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:24:46] "GET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1" 200 -
+2025-10-12 06:24:50,529 - services.database_service - ERROR - Get all tenants error: mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 68eb498b6b7914ffc31a1102, topology_type: Unknown, servers: [<ServerDescription ('mongo', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:24:50,531 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:24:50] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:25:01,371 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:25:01] "POST /api/vms/collect-tenant-data/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1" 200 -
+2025-10-12 06:25:15,668 - services.database_service - ERROR - Get all tenants error: mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 68eb498b6b7914ffc31a1102, topology_type: Unknown, servers: [<ServerDescription ('mongo', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:25:15,670 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:25:15] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:25:16,062 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:25:16] "GET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1" 200 -
+2025-10-12 06:25:45,385 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:25:45] "GET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1" 200 -
+2025-10-12 06:25:46,343 - services.database_service - ERROR - Get all tenants error: mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 68eb498b6b7914ffc31a1102, topology_type: Unknown, servers: [<ServerDescription ('mongo', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:25:46,345 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:25:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:26:16,049 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:26:16] "GET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1" 200 -
+2025-10-12 06:26:16,503 - services.database_service - ERROR - Get all tenants error: mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 68eb498b6b7914ffc31a1102, topology_type: Unknown, servers: [<ServerDescription ('mongo', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:26:16,505 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:26:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:26:46,055 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:26:46] "GET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1" 200 -
+2025-10-12 06:26:46,666 - services.database_service - ERROR - Get all tenants error: mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 68eb498b6b7914ffc31a1102, topology_type: Unknown, servers: [<ServerDescription ('mongo', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('mongo:27017: [Errno -3] Temporary failure in name resolution (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:26:46,668 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:26:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:27:03,816 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4a32b4d9398d411606f9, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:27:03,817 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 06:27:03,840 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:27:03,840 - __main__ - INFO - ============================================================
+2025-10-12 06:27:03,841 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:27:03,841 - __main__ - INFO - ============================================================
+2025-10-12 06:27:03,842 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:27:03,842 - __main__ - INFO - Username: admin
+2025-10-12 06:27:03,842 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:27:03,843 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:27:03,843 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:27:03,924 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:27:04,012 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:27:04,012 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:27:04,013 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:27:04,013 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:27:04,139 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:27:04,139 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:27:04,140 - __main__ - INFO - ============================================================
+2025-10-12 06:27:04,140 - __main__ - INFO - ============================================================
+2025-10-12 06:27:04,140 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:27:04,140 - __main__ - INFO - Flask application starting...
+2025-10-12 06:27:04,169 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:27:04,170 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:27:04,337 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:04] "GET /socket.io/?EIO=4&transport=polling&t=PdN6UQ4 HTTP/1.1" 200 -
+2025-10-12 06:27:04,392 - __main__ - INFO - Client connected: e3SrzPJm2FL6bYX0AAAB
+2025-10-12 06:27:04,393 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:04] "POST /socket.io/?EIO=4&transport=polling&t=PdN6Uky&sid=dixz8e2iLBAU6KqDAAAA HTTP/1.1" 200 -
+2025-10-12 06:27:04,395 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:04] "GET /socket.io/?EIO=4&transport=polling&t=PdN6Ukz&sid=dixz8e2iLBAU6KqDAAAA HTTP/1.1" 200 -
+2025-10-12 06:27:07,218 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:07] "GET / HTTP/1.1" 200 -
+2025-10-12 06:27:07,297 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:07] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:27:07,363 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:07] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:27:08,158 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:27:08,162 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:08] "GET /socket.io/?EIO=4&transport=polling&t=PdN6Vfk HTTP/1.1" 200 -
+2025-10-12 06:27:08,172 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:08] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:27:08,243 - __main__ - INFO - Client connected: zfNq6VeKc_I0SNZRAAAD
+2025-10-12 06:27:08,244 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:08] "POST /socket.io/?EIO=4&transport=polling&t=PdN6Vh9&sid=Oxj6O0T0kcezyN0tAAAC HTTP/1.1" 200 -
+2025-10-12 06:27:08,245 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:08] "GET /socket.io/?EIO=4&transport=polling&t=PdN6VhA&sid=Oxj6O0T0kcezyN0tAAAC HTTP/1.1" 200 -
+2025-10-12 06:27:08,249 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:27:08,336 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:27:08,336 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:27:09,443 - services.ssh_service - INFO - SSH connection established: c030efdf-1890-44fb-bde5-656f25f69f9b to 10.70.188.171
+2025-10-12 06:27:09,446 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:09] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:27:09,489 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:09] "GET /api/vms/system-overview/c030efdf-1890-44fb-bde5-656f25f69f9b HTTP/1.1" 200 -
+2025-10-12 06:27:12,610 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:12] "POST /api/vms/collect-tenant-data/c030efdf-1890-44fb-bde5-656f25f69f9b HTTP/1.1" 200 -
+2025-10-12 06:27:16,048 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:27:16,052 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:27:25,509 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:25] "POST /api/vms/status-check/c030efdf-1890-44fb-bde5-656f25f69f9b HTTP/1.1" 200 -
+2025-10-12 06:27:31,814 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:31] "POST /api/vms/export-configmaps/c030efdf-1890-44fb-bde5-656f25f69f9b HTTP/1.1" 200 -
+2025-10-12 06:27:38,166 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:38] "GET /api/vms/system-overview/c030efdf-1890-44fb-bde5-656f25f69f9b HTTP/1.1" 200 -
+2025-10-12 06:27:38,168 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:38] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:27:46,043 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:46] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:27:46,046 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:27:48,736 - __main__ - INFO - Client disconnected: zfNq6VeKc_I0SNZRAAAD
+2025-10-12 06:27:48,737 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:48] "GET /socket.io/?EIO=4&transport=websocket&sid=Oxj6O0T0kcezyN0tAAAC HTTP/1.1" 200 -
+2025-10-12 06:27:48,764 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:48] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:27:48,832 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:27:48,846 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:48] "GET /static/js/tenant-management.js HTTP/1.1" 200 -
+2025-10-12 06:27:49,138 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:27:49] "[33mGET /api/tenant/list HTTP/1.1[0m" 404 -
+2025-10-12 06:28:11,141 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:11] "GET / HTTP/1.1" 200 -
+2025-10-12 06:28:11,217 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:11] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:28:11,308 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:11] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:28:12,199 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:12] "GET /socket.io/?EIO=4&transport=polling&t=PdN6lHr HTTP/1.1" 200 -
+2025-10-12 06:28:12,212 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:12] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:28:12,216 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:28:12,284 - __main__ - INFO - Client connected: Vz4eZh0Tagw3XoNRAAAF
+2025-10-12 06:28:12,285 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:12] "POST /socket.io/?EIO=4&transport=polling&t=PdN6lJF&sid=qqJ7R-8GlQ1vsaTxAAAE HTTP/1.1" 200 -
+2025-10-12 06:28:12,294 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:12] "GET /socket.io/?EIO=4&transport=polling&t=PdN6lJF.0&sid=qqJ7R-8GlQ1vsaTxAAAE HTTP/1.1" 200 -
+2025-10-12 06:28:12,300 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:28:12,384 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:28:12,384 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:28:12,402 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:12] "GET /socket.io/?EIO=4&transport=polling&t=PdN6lKc&sid=qqJ7R-8GlQ1vsaTxAAAE HTTP/1.1" 200 -
+2025-10-12 06:28:13,487 - services.ssh_service - INFO - SSH connection established: a2567f55-e0e6-4cbe-bbbd-8c84f5305044 to 10.70.188.171
+2025-10-12 06:28:13,491 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:13] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:28:13,568 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:13] "GET /api/vms/system-overview/a2567f55-e0e6-4cbe-bbbd-8c84f5305044 HTTP/1.1" 200 -
+2025-10-12 06:28:16,057 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:28:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:28:16,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:28:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:28:29,163 - __main__ - INFO - Client disconnected: Vz4eZh0Tagw3XoNRAAAF
+2025-10-12 06:28:29,164 - werkzeug - INFO - 127.0.0.1 - - [12/Oct/2025 06:28:29] "GET /socket.io/?EIO=4&transport=websocket&sid=qqJ7R-8GlQ1vsaTxAAAE HTTP/1.1" 200 -
+2025-10-12 06:29:31,135 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4ac6d1067e0d229dc022, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:29:31,136 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 06:29:31,161 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:29:31,162 - __main__ - INFO - ============================================================
+2025-10-12 06:29:31,162 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:29:31,162 - __main__ - INFO - ============================================================
+2025-10-12 06:29:31,162 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:29:31,162 - __main__ - INFO - Username: admin
+2025-10-12 06:29:31,162 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:29:31,163 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:29:31,163 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:29:31,243 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:29:31,328 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:29:31,329 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:29:31,329 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:29:31,330 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:29:31,442 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:29:31,444 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:29:31,445 - __main__ - INFO - ============================================================
+2025-10-12 06:29:31,445 - __main__ - INFO - ============================================================
+2025-10-12 06:29:31,445 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:29:31,446 - __main__ - INFO - Flask application starting...
+2025-10-12 06:29:31,481 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:29:31,481 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:29:31,618 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:31] "GET /socket.io/?EIO=4&transport=polling&t=PdN72Iy HTTP/1.1" 200 -
+2025-10-12 06:29:31,668 - __main__ - INFO - Client connected: _4Be_JLIe73xfkxhAAAB
+2025-10-12 06:29:31,669 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:31] "POST /socket.io/?EIO=4&transport=polling&t=PdN72i9&sid=6GQNXys7AacBe820AAAA HTTP/1.1" 200 -
+2025-10-12 06:29:31,672 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:31] "GET /socket.io/?EIO=4&transport=polling&t=PdN72iC&sid=6GQNXys7AacBe820AAAA HTTP/1.1" 200 -
+2025-10-12 06:29:32,936 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:32] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:29:32,997 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:32] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:29:33,006 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:33] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:29:33,234 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:33] "[33mGET /api/tenant/list HTTP/1.1[0m" 404 -
+2025-10-12 06:29:44,841 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:44] "GET / HTTP/1.1" 200 -
+2025-10-12 06:29:44,912 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:44] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:29:44,978 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:44] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 06:29:45,766 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN768R HTTP/1.1" 200 -
+2025-10-12 06:29:45,769 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:29:45,775 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:45] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:29:45,831 - __main__ - INFO - Client connected: -cONPDSz1rUMAmxzAAAD
+2025-10-12 06:29:45,834 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:45] "POST /socket.io/?EIO=4&transport=polling&t=PdN769V&sid=hgwmdIEUYMV2zUO5AAAC HTTP/1.1" 200 -
+2025-10-12 06:29:45,838 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN769W&sid=hgwmdIEUYMV2zUO5AAAC HTTP/1.1" 200 -
+2025-10-12 06:29:45,849 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:29:45,936 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:29:45,937 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:29:46,044 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:46] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:29:46,048 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:29:47,052 - services.ssh_service - INFO - SSH connection established: 8fbc0f04-eebc-4b33-aa98-93f78c5f31ff to 10.70.188.171
+2025-10-12 06:29:47,055 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:47] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:29:47,097 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:47] "GET /api/vms/system-overview/8fbc0f04-eebc-4b33-aa98-93f78c5f31ff HTTP/1.1" 200 -
+2025-10-12 06:29:53,049 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:53] "POST /api/vms/collect-tenant-data/8fbc0f04-eebc-4b33-aa98-93f78c5f31ff HTTP/1.1" 200 -
+2025-10-12 06:29:56,577 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:29:56] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:30:01,036 - __main__ - INFO - Client disconnected: -cONPDSz1rUMAmxzAAAD
+2025-10-12 06:30:01,037 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:01] "GET /socket.io/?EIO=4&transport=websocket&sid=hgwmdIEUYMV2zUO5AAAC HTTP/1.1" 200 -
+2025-10-12 06:30:01,052 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:01] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:30:01,118 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:01] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:30:01,127 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:01] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:30:01,337 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:01] "[33mGET /api/tenant/list HTTP/1.1[0m" 404 -
+2025-10-12 06:30:16,046 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:30:16,049 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:30:18,215 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:30:18,254 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:30:18,284 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:30:18,507 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "GET /socket.io/?EIO=4&transport=polling&t=PdN7E88 HTTP/1.1" 200 -
+2025-10-12 06:30:18,510 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:30:18,513 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:30:18,571 - __main__ - INFO - Client connected: IVnPM7Hth5EKHq_IAAAF
+2025-10-12 06:30:18,572 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "POST /socket.io/?EIO=4&transport=polling&t=PdN7E8_&sid=qcuJC_BOjLA1al2SAAAE HTTP/1.1" 200 -
+2025-10-12 06:30:18,578 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:18] "GET /socket.io/?EIO=4&transport=polling&t=PdN7E90&sid=qcuJC_BOjLA1al2SAAAE HTTP/1.1" 200 -
+2025-10-12 06:30:18,607 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:30:18,692 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:30:18,693 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:30:19,802 - services.ssh_service - INFO - SSH connection established: 1e988add-fbcd-42f8-b71c-78f37f8560ca to 10.70.188.171
+2025-10-12 06:30:19,804 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:19] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:30:19,848 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:19] "GET /api/vms/system-overview/1e988add-fbcd-42f8-b71c-78f37f8560ca HTTP/1.1" 200 -
+2025-10-12 06:30:28,026 - __main__ - INFO - Client disconnected: IVnPM7Hth5EKHq_IAAAF
+2025-10-12 06:30:28,027 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:28] "GET /socket.io/?EIO=4&transport=websocket&sid=qcuJC_BOjLA1al2SAAAE HTTP/1.1" 200 -
+2025-10-12 06:30:28,041 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:28] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:30:28,084 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:30:28,109 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:28] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:30:28,340 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:28] "[33mGET /api/tenant/list HTTP/1.1[0m" 404 -
+2025-10-12 06:30:46,056 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:46] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:30:46,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:30:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:31:03,340 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:03] "[33mGET /api/tenant/list HTTP/1.1[0m" 404 -
+2025-10-12 06:31:05,320 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:31:05,375 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:31:05,392 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:31:05,617 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "GET /socket.io/?EIO=4&transport=polling&t=PdN7PeC HTTP/1.1" 200 -
+2025-10-12 06:31:05,622 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:31:05,625 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:31:05,681 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "GET /socket.io/?EIO=4&transport=polling&t=PdN7Pf8.0&sid=ZVLXiCXJiYQWCM6JAAAG HTTP/1.1" 200 -
+2025-10-12 06:31:05,685 - __main__ - INFO - Client connected: cFgY97vJoVGL6yrFAAAH
+2025-10-12 06:31:05,686 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:05] "POST /socket.io/?EIO=4&transport=polling&t=PdN7Pf8&sid=ZVLXiCXJiYQWCM6JAAAG HTTP/1.1" 200 -
+2025-10-12 06:31:05,707 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:31:05,792 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:31:05,793 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:31:06,901 - services.ssh_service - INFO - SSH connection established: 50fdf3de-02fc-40da-b040-c614b05b95d0 to 10.70.188.171
+2025-10-12 06:31:06,904 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:06] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:31:06,950 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:06] "GET /api/vms/system-overview/50fdf3de-02fc-40da-b040-c614b05b95d0 HTTP/1.1" 200 -
+2025-10-12 06:31:16,077 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:31:16,080 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:31:36,052 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:36] "GET /api/vms/system-overview/50fdf3de-02fc-40da-b040-c614b05b95d0 HTTP/1.1" 200 -
+2025-10-12 06:31:36,055 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:36] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:31:46,048 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:46] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:31:46,051 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:31:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:32:06,056 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:32:06] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:32:06,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:32:06] "GET /api/vms/system-overview/50fdf3de-02fc-40da-b040-c614b05b95d0 HTTP/1.1" 200 -
+2025-10-12 06:32:16,050 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:32:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:32:16,053 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:32:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:33:35,639 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4bba94cfcc4aa728cfbd, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:33:35,640 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 06:33:35,666 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:33:35,666 - __main__ - INFO - ============================================================
+2025-10-12 06:33:35,666 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:33:35,666 - __main__ - INFO - ============================================================
+2025-10-12 06:33:35,666 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:33:35,666 - __main__ - INFO - Username: admin
+2025-10-12 06:33:35,666 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:33:35,667 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:33:35,668 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:33:35,751 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:33:35,844 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:33:35,845 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:33:35,845 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:33:35,846 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:33:35,963 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:33:35,964 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:33:35,964 - __main__ - INFO - ============================================================
+2025-10-12 06:33:35,964 - __main__ - INFO - ============================================================
+2025-10-12 06:33:35,964 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:33:35,965 - __main__ - INFO - Flask application starting...
+2025-10-12 06:33:35,990 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:33:35,990 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:33:36,054 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:33:36,057 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:33:36,079 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /socket.io/?EIO=4&transport=polling&t=PdN7-Mj HTTP/1.1" 200 -
+2025-10-12 06:33:36,091 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "[33mGET /api/vms/system-overview/50fdf3de-02fc-40da-b040-c614b05b95d0 HTTP/1.1[0m" 404 -
+2025-10-12 06:33:36,095 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:33:36,099 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /socket.io/?EIO=4&transport=polling&t=PdN7-Mj HTTP/1.1" 200 -
+2025-10-12 06:33:36,135 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /socket.io/?EIO=4&transport=polling&t=PdN7-N_&sid=L2dHwp0t7i9tEhAEAAAA HTTP/1.1" 200 -
+2025-10-12 06:33:36,139 - __main__ - INFO - Client connected: GEu3Gf1SQ-QQYr5DAAAC
+2025-10-12 06:33:36,140 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "POST /socket.io/?EIO=4&transport=polling&t=PdN7-Nz&sid=L2dHwp0t7i9tEhAEAAAA HTTP/1.1" 200 -
+2025-10-12 06:33:36,146 - __main__ - INFO - Client connected: hsDS0KmgczFHTGZFAAAD
+2025-10-12 06:33:36,147 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "POST /socket.io/?EIO=4&transport=polling&t=PdN7-OC&sid=1PMCXigSLQQ4woOIAAAB HTTP/1.1" 200 -
+2025-10-12 06:33:36,148 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /socket.io/?EIO=4&transport=polling&t=PdN7-OC.0&sid=1PMCXigSLQQ4woOIAAAB HTTP/1.1" 200 -
+2025-10-12 06:33:36,184 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:36] "GET /socket.io/?EIO=4&transport=polling&t=PdN7-Os&sid=1PMCXigSLQQ4woOIAAAB HTTP/1.1" 200 -
+2025-10-12 06:33:42,145 - __main__ - INFO - Client disconnected: hsDS0KmgczFHTGZFAAAD
+2025-10-12 06:33:42,147 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:42] "GET /socket.io/?EIO=4&transport=websocket&sid=1PMCXigSLQQ4woOIAAAB HTTP/1.1" 200 -
+2025-10-12 06:33:44,469 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:44] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:33:44,550 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:44] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:33:44,618 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:44] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:33:45,480 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN80fy HTTP/1.1" 200 -
+2025-10-12 06:33:45,487 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:33:45,491 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:45] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:33:45,547 - __main__ - INFO - Client connected: uvJMmJMCqHSyzO9JAAAF
+2025-10-12 06:33:45,548 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:45] "POST /socket.io/?EIO=4&transport=polling&t=PdN80gy&sid=ggBmODeVLPcJV0-ZAAAE HTTP/1.1" 200 -
+2025-10-12 06:33:45,549 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN80gz&sid=ggBmODeVLPcJV0-ZAAAE HTTP/1.1" 200 -
+2025-10-12 06:33:45,568 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:33:45,587 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:45] "GET /socket.io/?EIO=4&transport=polling&t=PdN80hm&sid=ggBmODeVLPcJV0-ZAAAE HTTP/1.1" 200 -
+2025-10-12 06:33:45,660 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:33:45,661 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:33:46,056 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:46] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:33:46,058 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:33:46,774 - services.ssh_service - INFO - SSH connection established: a23bbd7f-72a7-4dea-9bcf-69b508788dd0 to 10.70.188.171
+2025-10-12 06:33:46,777 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:46] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:33:46,819 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:46] "[33mGET /api/vms/system-overview/a23bbd7f-72a7-4dea-9bcf-69b508788dd0 HTTP/1.1[0m" 404 -
+2025-10-12 06:33:50,628 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:50] "POST /api/vms/collect-tenant-data/a23bbd7f-72a7-4dea-9bcf-69b508788dd0 HTTP/1.1" 200 -
+2025-10-12 06:33:54,156 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:54] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:33:59,327 - __main__ - INFO - Client disconnected: uvJMmJMCqHSyzO9JAAAF
+2025-10-12 06:33:59,327 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:59] "GET /socket.io/?EIO=4&transport=websocket&sid=ggBmODeVLPcJV0-ZAAAE HTTP/1.1" 200 -
+2025-10-12 06:33:59,357 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:59] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:33:59,415 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:59] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:33:59,432 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:59] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:33:59,642 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:33:59] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:34:09,244 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:34:09,401 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:34:09,411 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:34:09,666 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "GET /socket.io/?EIO=4&transport=polling&t=PdN86Zh HTTP/1.1" 200 -
+2025-10-12 06:34:09,668 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:34:09,678 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:34:09,746 - __main__ - INFO - Client connected: Rc67TsWc1nowFSj9AAAH
+2025-10-12 06:34:09,748 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "POST /socket.io/?EIO=4&transport=polling&t=PdN86ax&sid=98rPQqBLQTZcKOunAAAG HTTP/1.1" 200 -
+2025-10-12 06:34:09,748 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:09] "GET /socket.io/?EIO=4&transport=polling&t=PdN86ax.0&sid=98rPQqBLQTZcKOunAAAG HTTP/1.1" 200 -
+2025-10-12 06:34:09,749 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:34:09,831 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:34:09,832 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:34:10,937 - services.ssh_service - INFO - SSH connection established: 9149f09a-cdfd-47b3-ad32-cbb510ee9fa1 to 10.70.188.171
+2025-10-12 06:34:10,940 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:10] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:34:10,982 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:10] "[33mGET /api/vms/system-overview/9149f09a-cdfd-47b3-ad32-cbb510ee9fa1 HTTP/1.1[0m" 404 -
+2025-10-12 06:34:16,051 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:34:16,054 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:34:40,049 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:40] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:34:40,053 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:40] "[33mGET /api/vms/system-overview/9149f09a-cdfd-47b3-ad32-cbb510ee9fa1 HTTP/1.1[0m" 404 -
+2025-10-12 06:34:46,062 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:46] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:34:46,066 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:34:46] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:35:10,053 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:35:10] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:35:10,057 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:35:10] "[33mGET /api/vms/system-overview/9149f09a-cdfd-47b3-ad32-cbb510ee9fa1 HTTP/1.1[0m" 404 -
+2025-10-12 06:35:16,057 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:35:16] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:35:16,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:35:16] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:35:40,054 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:35:40] "[33mGET /api/vms/system-overview/9149f09a-cdfd-47b3-ad32-cbb510ee9fa1 HTTP/1.1[0m" 404 -
+2025-10-12 06:35:40,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:35:40] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:39:16,451 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4d0f74bd2f0fc9b4295c, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:39:16,452 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 06:39:16,478 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:39:16,478 - __main__ - INFO - ============================================================
+2025-10-12 06:39:16,479 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:39:16,479 - __main__ - INFO - ============================================================
+2025-10-12 06:39:16,479 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:39:16,479 - __main__ - INFO - Username: admin
+2025-10-12 06:39:16,479 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:39:16,480 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:39:16,480 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:39:16,561 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:39:16,651 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:39:16,652 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:39:16,652 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:39:16,652 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:39:16,769 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:39:16,769 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:39:16,770 - __main__ - INFO - ============================================================
+2025-10-12 06:39:16,770 - __main__ - INFO - ============================================================
+2025-10-12 06:39:16,770 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:39:16,771 - __main__ - INFO - Flask application starting...
+2025-10-12 06:39:16,799 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:39:16,799 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:39:17,059 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Hcw HTTP/1.1" 200 -
+2025-10-12 06:39:17,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Hcv HTTP/1.1" 200 -
+2025-10-12 06:39:17,111 - __main__ - INFO - Client connected: HZjkBqAOfhxnCctfAAAC
+2025-10-12 06:39:17,117 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "POST /socket.io/?EIO=4&transport=polling&t=PdN9Hdj&sid=tugzpE7PFe9kUWSkAAAB HTTP/1.1" 200 -
+2025-10-12 06:39:17,120 - __main__ - INFO - Client connected: hcvXKd_8jcNvaAbTAAAD
+2025-10-12 06:39:17,125 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "POST /socket.io/?EIO=4&transport=polling&t=PdN9Hdl&sid=W_NLw8LeABQcRVhqAAAA HTTP/1.1" 200 -
+2025-10-12 06:39:17,127 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Hdl&sid=tugzpE7PFe9kUWSkAAAB HTTP/1.1" 200 -
+2025-10-12 06:39:17,130 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Hdn&sid=W_NLw8LeABQcRVhqAAAA HTTP/1.1" 200 -
+2025-10-12 06:39:17,171 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:17] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Hej&sid=W_NLw8LeABQcRVhqAAAA HTTP/1.1" 200 -
+2025-10-12 06:39:24,192 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:24] "[33mGET /api/vms/system-overview/9149f09a-cdfd-47b3-ad32-cbb510ee9fa1 HTTP/1.1[0m" 404 -
+2025-10-12 06:39:24,196 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:24] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:39:24,200 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:24] "[33mGET /api/vms/system-overview/ce2d0f3e-d5e0-4e99-83b5-de7c643ee632 HTTP/1.1[0m" 404 -
+2025-10-12 06:39:24,219 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:24] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:39:32,742 - __main__ - INFO - Client disconnected: HZjkBqAOfhxnCctfAAAC
+2025-10-12 06:39:32,743 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:32] "GET /socket.io/?EIO=4&transport=websocket&sid=tugzpE7PFe9kUWSkAAAB HTTP/1.1" 200 -
+2025-10-12 06:39:37,083 - __main__ - INFO - Client disconnected: hcvXKd_8jcNvaAbTAAAD
+2025-10-12 06:39:37,084 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:37] "GET /socket.io/?EIO=4&transport=websocket&sid=W_NLw8LeABQcRVhqAAAA HTTP/1.1" 200 -
+2025-10-12 06:39:37,119 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:37] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:39:37,171 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:37] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:39:37,245 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:37] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:39:37,996 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:39:38,002 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:38] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:39:38,004 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:38] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Mk7 HTTP/1.1" 200 -
+2025-10-12 06:39:38,059 - __main__ - INFO - Client connected: ofRy1YAAf87JgyhcAAAF
+2025-10-12 06:39:38,060 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:38] "POST /socket.io/?EIO=4&transport=polling&t=PdN9Ml0&sid=OX_Ww92Rm4eJgm5EAAAE HTTP/1.1" 200 -
+2025-10-12 06:39:38,062 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:38] "GET /socket.io/?EIO=4&transport=polling&t=PdN9Ml1&sid=OX_Ww92Rm4eJgm5EAAAE HTTP/1.1" 200 -
+2025-10-12 06:39:38,089 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:39:38,175 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:39:38,176 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:39:39,282 - services.ssh_service - INFO - SSH connection established: 2c7209f3-0984-4faf-a3e7-818544ad3bd8 to 10.70.188.171
+2025-10-12 06:39:39,285 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:39] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:39:39,329 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:39] "[33mGET /api/vms/system-overview/2c7209f3-0984-4faf-a3e7-818544ad3bd8 HTTP/1.1[0m" 404 -
+2025-10-12 06:39:46,625 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:46] "POST /api/vms/collect-tenant-data/2c7209f3-0984-4faf-a3e7-818544ad3bd8 HTTP/1.1" 200 -
+2025-10-12 06:39:46,826 - __main__ - INFO - Found 3 tenant namespaces: ["kubectl get namespaces --no-headers | awk '{print $1}' | \r grep -v -E '^(kube-|default|versa-|system|cattle-|ingress-|metallb-|local-path-)\r)'", 'error: error loading config file "/home/admin/.kube/config": open /home/admin/.kube/config: permission denied', '[admin@vms1-tb163: ~] $']
+2025-10-12 06:39:48,035 - __main__ - WARNING - Could not save to database: 'TenantService' object has no attribute 'save_tenant'
+2025-10-12 06:39:48,125 - __main__ - INFO - Calculated stats from collected data: {'total': 3, 'active': 3, 'inactive': 0, 'total_services': 14, 'total_pods': 0, 'total_redis_keys': 0}
+2025-10-12 06:39:48,127 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:48] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:39:56,331 - __main__ - INFO - Client disconnected: ofRy1YAAf87JgyhcAAAF
+2025-10-12 06:39:56,332 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:56] "GET /socket.io/?EIO=4&transport=websocket&sid=OX_Ww92Rm4eJgm5EAAAE HTTP/1.1" 200 -
+2025-10-12 06:39:56,360 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:56] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:39:56,405 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:56] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:39:56,422 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:56] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:39:56,646 - __main__ - INFO - Using collected tenant data: 3 tenants
+2025-10-12 06:39:56,648 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:39:56] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:43:22,209 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4e059475ebbe4c7dd70b, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:43:22,209 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 06:43:22,236 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 06:43:22,236 - __main__ - INFO - ============================================================
+2025-10-12 06:43:22,237 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 06:43:22,237 - __main__ - INFO - ============================================================
+2025-10-12 06:43:22,237 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 06:43:22,237 - __main__ - INFO - Username: admin
+2025-10-12 06:43:22,237 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 06:43:22,238 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 06:43:22,238 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 06:43:22,321 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:43:22,411 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:43:22,412 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:43:22,413 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 06:43:22,414 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 06:43:22,526 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 06:43:22,527 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 06:43:22,527 - __main__ - INFO - ============================================================
+2025-10-12 06:43:22,527 - __main__ - INFO - ============================================================
+2025-10-12 06:43:22,528 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 06:43:22,528 - __main__ - INFO - Flask application starting...
+2025-10-12 06:43:22,554 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 06:43:22,555 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 06:43:27,460 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:27] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:43:27,548 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:27] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:27,553 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:27] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:43:28,580 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:28] "GET /socket.io/?EIO=4&transport=polling&t=PdNAF0v HTTP/1.1" 200 -
+2025-10-12 06:43:28,585 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:43:28,589 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:28] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:43:28,657 - __main__ - INFO - Client connected: G9lWeVe2hQv8VVOJAAAB
+2025-10-12 06:43:28,658 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:28] "POST /socket.io/?EIO=4&transport=polling&t=PdNAF1t&sid=1-ozAmt3UYtq9HBvAAAA HTTP/1.1" 200 -
+2025-10-12 06:43:28,660 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:28] "GET /socket.io/?EIO=4&transport=polling&t=PdNAF1u&sid=1-ozAmt3UYtq9HBvAAAA HTTP/1.1" 200 -
+2025-10-12 06:43:28,670 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:43:28,759 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:43:28,759 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:43:29,865 - services.ssh_service - INFO - SSH connection established: 989c57fa-14e5-4a79-b027-0ea66dbdf8d9 to 10.70.188.171
+2025-10-12 06:43:29,868 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:29] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:43:29,912 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:29] "[33mGET /api/vms/system-overview/989c57fa-14e5-4a79-b027-0ea66dbdf8d9 HTTP/1.1[0m" 404 -
+2025-10-12 06:43:32,301 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:32] "POST /api/vms/collect-tenant-data/989c57fa-14e5-4a79-b027-0ea66dbdf8d9 HTTP/1.1" 200 -
+2025-10-12 06:43:32,708 - __main__ - INFO - Comprehensive tenant data collection completed:
+2025-10-12 06:43:32,709 - __main__ - INFO -   - Total Tenants: 1
+2025-10-12 06:43:32,709 - __main__ - INFO -   - Active Tenants: 1
+2025-10-12 06:43:32,710 - __main__ - INFO -   - Total Services: 1
+2025-10-12 06:43:32,710 - __main__ - INFO -   - Total Pods: 2
+2025-10-12 06:43:32,710 - __main__ - INFO -   - Total Redis Keys: 0
+2025-10-12 06:43:32,839 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 06:43:32,841 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:32] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:43:39,025 - __main__ - INFO - Client disconnected: G9lWeVe2hQv8VVOJAAAB
+2025-10-12 06:43:39,026 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:39] "GET /socket.io/?EIO=4&transport=websocket&sid=1-ozAmt3UYtq9HBvAAAA HTTP/1.1" 200 -
+2025-10-12 06:43:39,053 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:39] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:43:39,106 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:39] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:39,125 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:39] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:43:39,441 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 06:43:39,443 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:39] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:43:47,561 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:43:47,603 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:47,633 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:43:47,846 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "GET /socket.io/?EIO=4&transport=polling&t=PdNAJjz HTTP/1.1" 200 -
+2025-10-12 06:43:47,849 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 06:43:47,852 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:43:47,854 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:43:47,943 - __main__ - INFO - Client connected: Hbp1LQ2l6rG6SZiqAAAD
+2025-10-12 06:43:47,944 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "POST /socket.io/?EIO=4&transport=polling&t=PdNAJlN&sid=9CnZI-tDkmYnYTOeAAAC HTTP/1.1" 200 -
+2025-10-12 06:43:47,948 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:47] "GET /socket.io/?EIO=4&transport=polling&t=PdNAJlO&sid=9CnZI-tDkmYnYTOeAAAC HTTP/1.1" 200 -
+2025-10-12 06:43:47,950 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:43:48,031 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:43:48,031 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:43:49,139 - services.ssh_service - INFO - SSH connection established: e24e5832-81e2-4ecc-99ad-dc6a14fc2b95 to 10.70.188.171
+2025-10-12 06:43:49,141 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:49] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:43:49,185 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:49] "[33mGET /api/vms/system-overview/e24e5832-81e2-4ecc-99ad-dc6a14fc2b95 HTTP/1.1[0m" 404 -
+2025-10-12 06:43:49,759 - __main__ - INFO - Client disconnected: Hbp1LQ2l6rG6SZiqAAAD
+2025-10-12 06:43:49,760 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:49] "GET /socket.io/?EIO=4&transport=websocket&sid=9CnZI-tDkmYnYTOeAAAC HTTP/1.1" 200 -
+2025-10-12 06:43:49,770 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:49] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:43:49,815 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:49] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:49,841 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:49] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:43:50,048 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 06:43:50,050 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:50] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:43:50,996 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 06:43:50,997 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:50] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:43:53,849 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 06:43:53,850 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:53] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:43:54,961 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:54] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 06:43:55,001 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:55] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:55,025 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:55] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 06:43:55,227 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 06:43:55,228 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:55] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 06:43:56,294 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:56] "GET /redis-explorer HTTP/1.1" 200 -
+2025-10-12 06:43:56,336 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:56] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:56,372 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:56] "GET /static/js/redis-explorer.js HTTP/1.1" 200 -
+2025-10-12 06:43:56,675 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:56] "[33mGET /api/redis/keys HTTP/1.1[0m" 404 -
+2025-10-12 06:43:56,967 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:56] "GET /system-logs HTTP/1.1" 200 -
+2025-10-12 06:43:57,008 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:43:57,040 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:43:57] "GET /static/js/system-logs.js HTTP/1.1" 200 -
+2025-10-12 06:44:02,315 - services.database_service - ERROR - Get system logs error: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4e059475ebbe4c7dd70b, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:44:02,316 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:02] "GET /api/logs/system HTTP/1.1" 200 -
+2025-10-12 06:44:04,962 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:04] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 06:44:05,022 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 06:44:05,038 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 06:44:05,248 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "GET /socket.io/?EIO=4&transport=polling&t=PdNANzn HTTP/1.1" 200 -
+2025-10-12 06:44:05,250 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 06:44:05,253 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 06:44:05,254 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 06:44:05,335 - __main__ - INFO - Client connected: _hOsa7oeLXdbeQYiAAAF
+2025-10-12 06:44:05,336 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 06:44:05,337 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "POST /socket.io/?EIO=4&transport=polling&t=PdNAN--&sid=qV3sgAPxDJrx9I40AAAE HTTP/1.1" 200 -
+2025-10-12 06:44:05,371 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "GET /socket.io/?EIO=4&transport=polling&t=PdNAN--.0&sid=qV3sgAPxDJrx9I40AAAE HTTP/1.1" 200 -
+2025-10-12 06:44:05,420 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 06:44:05,421 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 06:44:05,439 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:05] "GET /socket.io/?EIO=4&transport=polling&t=PdNAO0d&sid=qV3sgAPxDJrx9I40AAAE HTTP/1.1" 200 -
+2025-10-12 06:44:06,527 - services.ssh_service - INFO - SSH connection established: 388fcbba-0dac-48ed-81fe-91ff14f43b2e to 10.70.188.171
+2025-10-12 06:44:06,530 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:06] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 06:44:06,590 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:06] "[33mGET /api/vms/system-overview/388fcbba-0dac-48ed-81fe-91ff14f43b2e HTTP/1.1[0m" 404 -
+2025-10-12 06:44:07,841 - services.database_service - ERROR - Get system logs error: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68eb4e059475ebbe4c7dd70b, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 06:44:07,844 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:07] "GET /api/logs/system HTTP/1.1" 200 -
+2025-10-12 06:44:10,635 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:10] "POST /api/vms/collect-tenant-data/388fcbba-0dac-48ed-81fe-91ff14f43b2e HTTP/1.1" 200 -
+2025-10-12 06:44:11,038 - __main__ - INFO - Comprehensive tenant data collection completed:
+2025-10-12 06:44:11,039 - __main__ - INFO -   - Total Tenants: 1
+2025-10-12 06:44:11,039 - __main__ - INFO -   - Active Tenants: 1
+2025-10-12 06:44:11,040 - __main__ - INFO -   - Total Services: 1
+2025-10-12 06:44:11,040 - __main__ - INFO -   - Total Pods: 2
+2025-10-12 06:44:11,040 - __main__ - INFO -   - Total Redis Keys: 0
+2025-10-12 06:44:11,134 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 06:44:11,136 - werkzeug - INFO - 172.30.57.69 - - [12/Oct/2025 06:44:11] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:35:51,564 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68ec1f32c709c19c4d9aee7c, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 21:35:51,565 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 21:35:51,595 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 21:35:51,596 - __main__ - INFO - ============================================================
+2025-10-12 21:35:51,596 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 21:35:51,596 - __main__ - INFO - ============================================================
+2025-10-12 21:35:51,596 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 21:35:51,596 - __main__ - INFO - Username: admin
+2025-10-12 21:35:51,596 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 21:35:51,597 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 21:35:51,597 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 21:35:51,685 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 21:35:51,771 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 21:35:51,772 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 21:35:51,773 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 21:35:51,773 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 21:35:51,897 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 21:35:51,897 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 21:35:51,898 - __main__ - INFO - ============================================================
+2025-10-12 21:35:51,898 - __main__ - INFO - ============================================================
+2025-10-12 21:35:51,898 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 21:35:51,898 - __main__ - INFO - Flask application starting...
+2025-10-12 21:35:51,927 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 21:35:51,927 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 21:36:30,472 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:30] "GET / HTTP/1.1" 200 -
+2025-10-12 21:36:30,572 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:30] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-12 21:36:30,634 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:30] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 21:36:31,892 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:31] "GET /socket.io/?EIO=4&transport=polling&t=PdQMeiN HTTP/1.1" 200 -
+2025-10-12 21:36:31,899 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:31] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:36:31,902 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 21:36:31,953 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:31] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-10-12 21:36:31,985 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 21:36:32,027 - __main__ - INFO - Client connected: M3Yy2I0FSBohbSyQAAAB
+2025-10-12 21:36:32,032 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:32] "POST /socket.io/?EIO=4&transport=polling&t=PdQMekC&sid=qlux_WL9lVOkPMufAAAA HTTP/1.1" 200 -
+2025-10-12 21:36:32,033 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:32] "GET /socket.io/?EIO=4&transport=polling&t=PdQMekG&sid=qlux_WL9lVOkPMufAAAA HTTP/1.1" 200 -
+2025-10-12 21:36:32,071 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 21:36:32,072 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 21:36:32,188 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:32] "GET /socket.io/?EIO=4&transport=polling&t=PdQMemx&sid=qlux_WL9lVOkPMufAAAA HTTP/1.1" 200 -
+2025-10-12 21:36:33,182 - services.ssh_service - INFO - SSH connection established: f72b77ba-5f31-4083-90ac-7b66385d191a to 10.70.188.171
+2025-10-12 21:36:33,185 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:33] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 21:36:33,355 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:36:33] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:37:02,658 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:37:02] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:37:02,660 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:37:02] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:37:08,679 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:37:08] "POST /api/vms/collect-tenant-data/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1" 200 -
+2025-10-12 21:37:09,083 - __main__ - INFO - Comprehensive tenant data collection completed:
+2025-10-12 21:37:09,084 - __main__ - INFO -   - Total Tenants: 1
+2025-10-12 21:37:09,085 - __main__ - INFO -   - Active Tenants: 1
+2025-10-12 21:37:09,085 - __main__ - INFO -   - Total Services: 1
+2025-10-12 21:37:09,086 - __main__ - INFO -   - Total Pods: 2
+2025-10-12 21:37:09,087 - __main__ - INFO -   - Total Redis Keys: 0
+2025-10-12 21:37:09,271 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:37:09,272 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:37:09] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:37:32,657 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:37:32] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:37:32,659 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:37:32,661 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:37:32] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:38:02,665 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:38:02] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:38:02,669 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:38:02,671 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:38:02] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:38:32,663 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:38:32,663 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:38:32] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:38:32,665 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:38:32] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:39:02,665 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:39:02,666 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:39:02] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:39:02,670 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:39:02] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:39:32,683 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:39:32] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:39:32,685 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:39:32,688 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:39:32] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:40:22,655 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:40:22,658 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:40:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:40:22,660 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:40:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:41:22,694 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:41:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:41:22,696 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:41:22,698 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:41:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:42:22,687 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:42:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:42:22,689 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:42:22,691 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:42:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:43:22,679 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:43:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:43:22,693 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:43:22,694 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:43:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:44:22,673 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:44:22,675 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:44:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:44:22,679 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:44:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:45:22,681 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:45:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:45:22,684 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:45:22,687 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:45:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:45:32,698 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:45:32] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:45:32,700 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:45:32,701 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:45:32] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:46:02,679 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:46:02] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:46:02,682 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:46:02,684 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:46:02] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:46:32,691 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:46:32] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:46:32,694 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:46:32,695 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:46:32] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:47:22,671 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:47:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:47:22,687 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:47:22,688 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:47:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:48:22,762 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:48:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:48:22,781 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:48:22,782 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:48:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:49:22,688 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:22] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:49:22,690 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:49:22,692 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:22] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:49:40,734 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68ec226fdf1e6a7acb36b18b, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 21:49:40,735 - services.database_service - INFO - Application will continue without database functionality
+2025-10-12 21:49:40,762 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-12 21:49:40,762 - __main__ - INFO - ============================================================
+2025-10-12 21:49:40,762 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-12 21:49:40,762 - __main__ - INFO - ============================================================
+2025-10-12 21:49:40,762 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-12 21:49:40,763 - __main__ - INFO - Username: admin
+2025-10-12 21:49:40,763 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-12 21:49:40,764 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-12 21:49:40,764 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-12 21:49:40,844 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 21:49:40,934 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 21:49:40,935 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 21:49:40,935 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-12 21:49:40,936 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-12 21:49:41,044 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-12 21:49:41,045 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-12 21:49:41,046 - __main__ - INFO - ============================================================
+2025-10-12 21:49:41,046 - __main__ - INFO - ============================================================
+2025-10-12 21:49:41,046 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-12 21:49:41,046 - __main__ - INFO - Flask application starting...
+2025-10-12 21:49:41,073 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-12 21:49:41,073 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-12 21:49:41,219 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:41] "[33mGET /api/vms/system-overview/f72b77ba-5f31-4083-90ac-7b66385d191a HTTP/1.1[0m" 404 -
+2025-10-12 21:49:41,482 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:41] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:49:42,871 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:42] "GET / HTTP/1.1" 200 -
+2025-10-12 21:49:42,998 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:42] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 21:49:43,163 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:43] "GET /static/js/dashboard.js HTTP/1.1" 200 -
+2025-10-12 21:49:44,632 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:44] "GET /socket.io/?EIO=4&transport=polling&t=PdQPgDo HTTP/1.1" 200 -
+2025-10-12 21:49:44,681 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 21:49:44,692 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:44] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:49:44,761 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 21:49:44,769 - __main__ - INFO - Client connected: MPo32Woe2W9-uokIAAAB
+2025-10-12 21:49:44,771 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:44] "POST /socket.io/?EIO=4&transport=polling&t=PdQPgGZ&sid=dKtW2EAr3x_SxikAAAAA HTTP/1.1" 200 -
+2025-10-12 21:49:44,782 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:44] "GET /socket.io/?EIO=4&transport=polling&t=PdQPgGb&sid=dKtW2EAr3x_SxikAAAAA HTTP/1.1" 200 -
+2025-10-12 21:49:44,851 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 21:49:44,852 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 21:49:44,923 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:44] "GET /socket.io/?EIO=4&transport=polling&t=PdQPgIu&sid=dKtW2EAr3x_SxikAAAAA HTTP/1.1" 200 -
+2025-10-12 21:49:45,959 - services.ssh_service - INFO - SSH connection established: d6748473-53ba-4ffc-84b7-a0ab849a9fa8 to 10.70.188.171
+2025-10-12 21:49:45,962 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:45] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 21:49:46,083 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:46] "[33mGET /api/vms/system-overview/d6748473-53ba-4ffc-84b7-a0ab849a9fa8 HTTP/1.1[0m" 404 -
+2025-10-12 21:49:50,841 - __main__ - INFO - Starting tenant data collection for connection: d6748473-53ba-4ffc-84b7-a0ab849a9fa8
+2025-10-12 21:49:50,841 - __main__ - INFO - Include Redis keys: True
+2025-10-12 21:49:50,842 - __main__ - INFO - SSH connection verified successfully
+2025-10-12 21:49:50,843 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:50] "POST /api/vms/collect-tenant-data/d6748473-53ba-4ffc-84b7-a0ab849a9fa8 HTTP/1.1" 200 -
+2025-10-12 21:49:50,844 - __main__ - INFO - Executing kubectl get svc -A command...
+2025-10-12 21:49:51,048 - __main__ - INFO - kubectl command completed. Output length: 133 characters
+2025-10-12 21:49:51,048 - __main__ - INFO - Processing kubectl output...
+2025-10-12 21:49:51,049 - __main__ - INFO - Cleaned output length: 133 characters
+2025-10-12 21:49:51,050 - __main__ - INFO - Found 1 tenant namespaces after parsing: ['error:']
+2025-10-12 21:49:51,051 - __main__ - INFO - Processing tenant 1/1: error:
+2025-10-12 21:49:51,051 - __main__ - INFO - Getting pod count for namespace: error:
+2025-10-12 21:49:51,253 - __main__ - INFO - Found 2 pods in namespace: error:
+2025-10-12 21:49:51,253 - __main__ - INFO - No Redis service found for namespace: error:
+2025-10-12 21:49:51,253 - __main__ - INFO - Completed processing tenant error:: 1 services, 2 pods, 0 Redis keys
+2025-10-12 21:49:51,254 - __main__ - INFO - Finalizing data collection. Total tenants collected: 1
+2025-10-12 21:49:51,255 - __main__ - INFO - Comprehensive tenant data collection completed:
+2025-10-12 21:49:51,255 - __main__ - INFO -   - Total Tenants: 1
+2025-10-12 21:49:51,256 - __main__ - INFO -   - Active Tenants: 1
+2025-10-12 21:49:51,256 - __main__ - INFO -   - Total Services: 1
+2025-10-12 21:49:51,256 - __main__ - INFO -   - Total Pods: 2
+2025-10-12 21:49:51,256 - __main__ - INFO -   - Total Redis Keys: 0
+2025-10-12 21:49:51,257 - __main__ - INFO - COMPLETION: Successfully collected comprehensive data for 1 tenants
+2025-10-12 21:49:51,257 - __main__ - INFO - STATS: 1 total, 1 active, 1 services, 2 pods, 0 Redis keys
+2025-10-12 21:49:51,257 - __main__ - INFO - Emitting operation_complete event with data: {'success': True, 'message': 'Successfully collected comprehensive data for 1 tenants', 'data': {'tenant_count': 1, 'active_tenants': 1, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0, 'tenant_names': ['error:']}}
+2025-10-12 21:49:51,422 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:49:51,423 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:49:51] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:50:01,022 - __main__ - INFO - Client disconnected: MPo32Woe2W9-uokIAAAB
+2025-10-12 21:50:01,023 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:01] "GET /socket.io/?EIO=4&transport=websocket&sid=dKtW2EAr3x_SxikAAAAA HTTP/1.1" 200 -
+2025-10-12 21:50:01,109 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:01] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 21:50:01,235 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:01] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 21:50:01,335 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:01] "GET /static/js/tenant-management.js HTTP/1.1" 200 -
+2025-10-12 21:50:01,715 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 21:50:01,716 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:01] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 21:50:08,500 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:08] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 21:50:08,642 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:08] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 21:50:08,678 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:08] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 21:50:09,057 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 21:50:09,060 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:50:09,062 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:09] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:50:09,067 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:09] "GET /socket.io/?EIO=4&transport=polling&t=PdQPmBg HTTP/1.1" 200 -
+2025-10-12 21:50:09,144 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 21:50:09,193 - __main__ - INFO - Client connected: km0d1YJAuqdexjb0AAAD
+2025-10-12 21:50:09,195 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:09] "POST /socket.io/?EIO=4&transport=polling&t=PdQPmEN&sid=ngCspeuQuZl9LBYsAAAC HTTP/1.1" 200 -
+2025-10-12 21:50:09,196 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:09] "GET /socket.io/?EIO=4&transport=polling&t=PdQPmEO&sid=ngCspeuQuZl9LBYsAAAC HTTP/1.1" 200 -
+2025-10-12 21:50:09,231 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 21:50:09,232 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 21:50:09,319 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:09] "GET /socket.io/?EIO=4&transport=polling&t=PdQPmGM&sid=ngCspeuQuZl9LBYsAAAC HTTP/1.1" 200 -
+2025-10-12 21:50:10,343 - services.ssh_service - INFO - SSH connection established: 747ba54f-4c96-43c0-8a3d-8936980464a2 to 10.70.188.171
+2025-10-12 21:50:10,346 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:10] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 21:50:10,716 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:10] "[33mGET /api/vms/system-overview/747ba54f-4c96-43c0-8a3d-8936980464a2 HTTP/1.1[0m" 404 -
+2025-10-12 21:50:39,605 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:39] "[33mGET /api/vms/system-overview/747ba54f-4c96-43c0-8a3d-8936980464a2 HTTP/1.1[0m" 404 -
+2025-10-12 21:50:39,625 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:50:39,627 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:39] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:50:43,630 - __main__ - INFO - Client disconnected: km0d1YJAuqdexjb0AAAD
+2025-10-12 21:50:43,633 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:43] "GET /socket.io/?EIO=4&transport=websocket&sid=ngCspeuQuZl9LBYsAAAC HTTP/1.1" 200 -
+2025-10-12 21:50:43,645 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:43] "GET /system-logs HTTP/1.1" 200 -
+2025-10-12 21:50:43,810 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:43] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 21:50:43,868 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:43] "GET /static/js/system-logs.js HTTP/1.1" 200 -
+2025-10-12 21:50:49,361 - services.database_service - ERROR - Get system logs error: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68ec226fdf1e6a7acb36b18b, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-12 21:50:49,363 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:49] "GET /api/logs/system HTTP/1.1" 200 -
+2025-10-12 21:50:52,610 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:52] "GET /tenant-management HTTP/1.1" 200 -
+2025-10-12 21:50:52,747 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 21:50:52,825 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:52] "[36mGET /static/js/tenant-management.js HTTP/1.1[0m" 304 -
+2025-10-12 21:50:53,217 - __main__ - INFO - Using collected tenant data: 1 tenants
+2025-10-12 21:50:53,218 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:53] "GET /api/tenant/list HTTP/1.1" 200 -
+2025-10-12 21:50:54,152 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "GET /dashboard HTTP/1.1" 200 -
+2025-10-12 21:50:54,267 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-12 21:50:54,346 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-12 21:50:54,816 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "GET /socket.io/?EIO=4&transport=polling&t=PdQPxMN HTTP/1.1" 200 -
+2025-10-12 21:50:54,819 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-12 21:50:54,823 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:50:54,825 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:50:54,906 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-12 21:50:54,955 - __main__ - INFO - Client connected: 6UZC99eIw2Q11-orAAAF
+2025-10-12 21:50:54,957 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "POST /socket.io/?EIO=4&transport=polling&t=PdQPxPE&sid=0UhI1kZZqPahkxcHAAAE HTTP/1.1" 200 -
+2025-10-12 21:50:54,957 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:54] "GET /socket.io/?EIO=4&transport=polling&t=PdQPxPG&sid=0UhI1kZZqPahkxcHAAAE HTTP/1.1" 200 -
+2025-10-12 21:50:54,991 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-12 21:50:54,992 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-12 21:50:55,063 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:55] "GET /socket.io/?EIO=4&transport=polling&t=PdQPxRL&sid=0UhI1kZZqPahkxcHAAAE HTTP/1.1" 200 -
+2025-10-12 21:50:56,098 - services.ssh_service - INFO - SSH connection established: 05d39357-3b29-42f3-a512-73da6441b75e to 10.70.188.171
+2025-10-12 21:50:56,101 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:56] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-12 21:50:56,462 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:50:56] "[33mGET /api/vms/system-overview/05d39357-3b29-42f3-a512-73da6441b75e HTTP/1.1[0m" 404 -
+2025-10-12 21:51:13,685 - __main__ - INFO - Starting tenant data collection for connection: 05d39357-3b29-42f3-a512-73da6441b75e
+2025-10-12 21:51:13,686 - __main__ - INFO - Include Redis keys: True
+2025-10-12 21:51:13,686 - __main__ - INFO - SSH connection verified successfully
+2025-10-12 21:51:13,688 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:51:13] "POST /api/vms/collect-tenant-data/05d39357-3b29-42f3-a512-73da6441b75e HTTP/1.1" 200 -
+2025-10-12 21:51:13,688 - __main__ - INFO - Executing kubectl get svc -A command...
+2025-10-12 21:51:13,891 - __main__ - INFO - kubectl command completed. Output length: 133 characters
+2025-10-12 21:51:13,892 - __main__ - INFO - Processing kubectl output...
+2025-10-12 21:51:13,892 - __main__ - INFO - Cleaned output length: 133 characters
+2025-10-12 21:51:13,893 - __main__ - INFO - Found 1 tenant namespaces after parsing: ['error:']
+2025-10-12 21:51:13,894 - __main__ - INFO - Processing tenant 1/1: error:
+2025-10-12 21:51:13,895 - __main__ - INFO - Getting pod count for namespace: error:
+2025-10-12 21:51:14,097 - __main__ - INFO - Found 2 pods in namespace: error:
+2025-10-12 21:51:14,098 - __main__ - INFO - No Redis service found for namespace: error:
+2025-10-12 21:51:14,099 - __main__ - INFO - Completed processing tenant error:: 1 services, 2 pods, 0 Redis keys
+2025-10-12 21:51:14,100 - __main__ - INFO - Finalizing data collection. Total tenants collected: 1
+2025-10-12 21:51:14,101 - __main__ - INFO - Comprehensive tenant data collection completed:
+2025-10-12 21:51:14,101 - __main__ - INFO -   - Total Tenants: 1
+2025-10-12 21:51:14,102 - __main__ - INFO -   - Active Tenants: 1
+2025-10-12 21:51:14,102 - __main__ - INFO -   - Total Services: 1
+2025-10-12 21:51:14,103 - __main__ - INFO -   - Total Pods: 2
+2025-10-12 21:51:14,103 - __main__ - INFO -   - Total Redis Keys: 0
+2025-10-12 21:51:14,104 - __main__ - INFO - COMPLETION: Successfully collected comprehensive data for 1 tenants
+2025-10-12 21:51:14,105 - __main__ - INFO - STATS: 1 total, 1 active, 1 services, 2 pods, 0 Redis keys
+2025-10-12 21:51:14,106 - __main__ - INFO - Emitting operation_complete event with data: {'success': True, 'message': 'Successfully collected comprehensive data for 1 tenants', 'data': {'tenant_count': 1, 'active_tenants': 1, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0, 'tenant_names': ['error:']}}
+2025-10-12 21:51:14,354 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:51:14,356 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:51:14] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-12 21:51:25,661 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:51:25] "[33mGET /api/vms/system-overview/05d39357-3b29-42f3-a512-73da6441b75e HTTP/1.1[0m" 404 -
+2025-10-12 21:51:25,664 - __main__ - INFO - Calculated stats from collected data: {'total': 1, 'active': 1, 'inactive': 0, 'total_services': 1, 'total_pods': 2, 'total_redis_keys': 0}
+2025-10-12 21:51:25,665 - werkzeug - INFO - 172.30.57.128 - - [12/Oct/2025 21:51:25] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-15 14:23:14,343 - services.database_service - WARNING - MongoDB connection failed: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 68efae4d3aa9cd087ba5906e, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+2025-10-15 14:23:14,344 - services.database_service - INFO - Application will continue without database functionality
+2025-10-15 14:23:14,372 - __main__ - INFO - Starting VMS Web Debug Tool...
+2025-10-15 14:23:14,372 - __main__ - INFO - ============================================================
+2025-10-15 14:23:14,372 - __main__ - INFO - Pre-startup VMS SSH Connection Test
+2025-10-15 14:23:14,372 - __main__ - INFO - ============================================================
+2025-10-15 14:23:14,372 - __main__ - INFO - Testing connection to: 10.70.188.171:22
+2025-10-15 14:23:14,372 - __main__ - INFO - Username: admin
+2025-10-15 14:23:14,372 - __main__ - INFO - Step 1: Testing network connectivity...
+2025-10-15 14:23:14,373 - __main__ - INFO - ✅ Network connectivity successful
+2025-10-15 14:23:14,374 - __main__ - INFO - Step 2: Testing SSH authentication...
+2025-10-15 14:23:14,466 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-15 14:23:14,559 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-15 14:23:14,560 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-15 14:23:14,561 - __main__ - INFO - ✅ SSH authentication successful
+2025-10-15 14:23:14,562 - __main__ - INFO - Step 3: Testing command execution...
+2025-10-15 14:23:14,679 - __main__ - INFO - ✅ Command execution successful - Logged in as: admin
+2025-10-15 14:23:14,681 - __main__ - INFO - ✅ SSH connection test completed successfully!
+2025-10-15 14:23:14,681 - __main__ - INFO - ============================================================
+2025-10-15 14:23:14,681 - __main__ - INFO - ============================================================
+2025-10-15 14:23:14,682 - __main__ - INFO - SSH connection test passed - VMS server is ready!
+2025-10-15 14:23:14,682 - __main__ - INFO - Flask application starting...
+2025-10-15 14:23:14,710 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+2025-10-15 14:23:14,711 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-15 14:23:26,058 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "GET / HTTP/1.1" 200 -
+2025-10-15 14:23:26,127 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-15 14:23:26,177 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "[36mGET /static/js/dashboard.js HTTP/1.1[0m" 304 -
+2025-10-15 14:23:26,608 - __main__ - INFO - Auto SSH connection attempt - Host: 10.70.188.171, Username: admin
+2025-10-15 14:23:26,623 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "GET /api/tenant/stats HTTP/1.1" 200 -
+2025-10-15 14:23:26,626 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "GET /socket.io/?EIO=4&transport=polling&t=PdeGHwt HTTP/1.1" 200 -
+2025-10-15 14:23:26,684 - __main__ - INFO - Client connected: E-MjgsbgI9KpxnPwAAAB
+2025-10-15 14:23:26,686 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "POST /socket.io/?EIO=4&transport=polling&t=PdeGHy6&sid=1dVv8N0eP0A-EUFbAAAA HTTP/1.1" 200 -
+2025-10-15 14:23:26,686 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:26] "GET /socket.io/?EIO=4&transport=polling&t=PdeGHy7&sid=1dVv8N0eP0A-EUFbAAAA HTTP/1.1" 200 -
+2025-10-15 14:23:26,692 - paramiko.transport - INFO - Connected (version 2.0, client OpenSSH_7.9p1)
+2025-10-15 14:23:26,783 - paramiko.transport - INFO - Auth banner: b'===============================================================================\nWARNING!\nThis is a Proprietary System\nYou have accessed a Proprietary System\n\nIf you are not authorized to use this computer system, you MUST log off now.\nUnauthorized use of this computer system, including unauthorized attempts or\nacts to deny service on, upload information to, download information from,\nchange information on, or access a non-public site from, this computer system,\nare strictly prohibited and may be punishable under federal and state criminal\nand civil laws. All data contained on this computer systems may be monitored,\nintercepted, recorded, read, copied, or captured in any manner by authorized\nSystem personnel. System personnel may use or transfer this data as required or\npermitted under applicable law. Without limiting the previous sentence, system\npersonnel may give to law enforcement officials any potential evidence of crime\nfound on this computer system. Use of this system by any user, authorized or\nunauthorized, constitutes EXPRESS CONSENT to this monitoring, interception,\nrecording, reading, copying, or capturing, and use and transfer. Please verify\nif this is the current version of the banner when deploying to the system.\n===============================================================================\n\n'
+2025-10-15 14:23:26,784 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-15 14:23:27,887 - services.ssh_service - INFO - SSH connection established: 40423218-7e12-4bef-a18e-9f736d66ee53 to 10.70.188.171
+2025-10-15 14:23:27,890 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:27] "POST /api/ssh/auto-connect HTTP/1.1" 200 -
+2025-10-15 14:23:27,952 - werkzeug - INFO - 172.30.57.187 - - [15/Oct/2025 14:23:27] "[33mGET /api/vms/system-overview/40423218-7e12-4bef-a18e-9f736d66ee53 HTTP/1.1[0m" 404 -

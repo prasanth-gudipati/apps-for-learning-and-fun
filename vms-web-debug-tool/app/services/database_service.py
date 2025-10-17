@@ -10,23 +10,43 @@ logger = logging.getLogger(__name__)
 
 class DatabaseService:
     def __init__(self, mongodb_url):
-        self.client = MongoClient(mongodb_url)
-        self.db = self.client.vms_debug
+        self.mongodb_url = mongodb_url
+        self.client = None
+        self.db = None
+        self.connected = False
         
-        # Collections
-        self.tenants = self.db.tenants
-        self.redis_keys = self.db.redis_keys
-        self.system_logs = self.db.system_logs
-        self.ssh_connections = self.db.ssh_connections
-        self.vms_status_logs = self.db.vms_status_logs
+        try:
+            self.client = MongoClient(mongodb_url, serverSelectionTimeoutMS=5000)
+            self.db = self.client.vms_debug
+            
+            # Collections
+            self.tenants = self.db.tenants
+            self.redis_keys = self.db.redis_keys
+            self.system_logs = self.db.system_logs
+            self.ssh_connections = self.db.ssh_connections
+            self.vms_status_logs = self.db.vms_status_logs
+            
+            # Test connection
+            self.client.admin.command('ping')
+            self.connected = True
+            logger.info("MongoDB connection established successfully")
+            
+        except Exception as e:
+            logger.warning(f"MongoDB connection failed: {str(e)}")
+            logger.info("Application will continue without database functionality")
+            self.connected = False
     
     def test_connection(self):
         """Test MongoDB connection"""
+        if not self.connected:
+            return False
+            
         try:
             self.client.admin.command('ping')
             return True
         except Exception as e:
             logger.error(f"MongoDB connection test failed: {str(e)}")
+            self.connected = False
             return False
     
     # Tenant operations
@@ -56,10 +76,15 @@ class DatabaseService:
     
     def get_all_tenants(self):
         """Get all tenants"""
+        if not self.connected:
+            logger.debug("Database not connected, returning empty tenant list")
+            return []
+            
         try:
             return list(self.tenants.find().sort('name', 1))
         except Exception as e:
             logger.error(f"Get all tenants error: {str(e)}")
+            self.connected = False
             return []
     
     def delete_tenant(self, name):

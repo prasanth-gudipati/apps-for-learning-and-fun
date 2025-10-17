@@ -1,0 +1,32 @@
+ldap-app4/
+├── README.md
+├── docker-compose.yml
+├── .env.example
+├── ldap-service/
+│   ├── Dockerfile
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── requirements.txt
+│   │   └── config.py
+│   └── README.md
+├── user-management-service/
+│   ├── Dockerfile
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── requirements.txt
+│   │   └── config.py
+│   └── README.md
+├── api-gateway/
+│   ├── Dockerfile
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── requirements.txt
+│   │   └── config.py
+│   └── README.md
+├── mongo-db/
+│   └── README.md
+├── mongo-express/
+│   └── README.md
+└── docs/
+    ├── architecture.md
+    └── setup-guide.md

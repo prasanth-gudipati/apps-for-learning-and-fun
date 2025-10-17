@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  # Frontend Web Service
+  web-frontend:
+    build:
+      context: ./web-frontend
+      dockerfile: Dockerfile
+    container_name: vms-web-frontend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SSH_SERVICE_URL=http://ssh-service:8001
+      - KUBECTL_SERVICE_URL=http://kubectl-service:8002
+      - REDIS_SERVICE_URL=http://redis-service:8003
+      - LOGS_SERVICE_URL=http://logs-service:8004
+      - SESSION_REDIS_URL=redis://session-redis:6379
+    depends_on:
+      - ssh-service
+      - kubectl-service
+      - redis-service
+      - logs-service
+      - session-redis
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - shared-logs:/app/shared-logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SSH Connection Service
+  ssh-service:
+    build:
+      context: ./ssh-service
+      dockerfile: Dockerfile
+    container_name: vms-ssh-service
+    ports:
+      - "8001:8001"
+    environment:
+      - SERVICE_PORT=8001
+      - SESSION_REDIS_URL=redis://session-redis:6379
+    depends_on:
+      - session-redis
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - shared-logs:/app/shared-logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kubectl Operations Service
+  kubectl-service:
+    build:
+      context: ./kubectl-service
+      dockerfile: Dockerfile
+    container_name: vms-kubectl-service
+    ports:
+      - "8002:8002"
+    environment:
+      - SERVICE_PORT=8002
+      - SESSION_REDIS_URL=redis://session-redis:6379
+    depends_on:
+      - session-redis
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - shared-logs:/app/shared-logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Operations Service
+  redis-service:
+    build:
+      context: ./redis-service
+      dockerfile: Dockerfile
+    container_name: vms-redis-service
+    ports:
+      - "8003:8003"
+    environment:
+      - SERVICE_PORT=8003
+      - SESSION_REDIS_URL=redis://session-redis:6379
+    depends_on:
+      - session-redis
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - shared-logs:/app/shared-logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Logs Operations Service
+  logs-service:
+    build:
+      context: ./logs-service
+      dockerfile: Dockerfile
+    container_name: vms-logs-service
+    ports:
+      - "8004:8004"
+    environment:
+      - SERVICE_PORT=8004
+      - SESSION_REDIS_URL=redis://session-redis:6379
+    depends_on:
+      - session-redis
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - shared-logs:/app/shared-logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Session Management Redis
+  session-redis:
+    image: redis:7-alpine
+    container_name: vms-session-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NGINX Load Balancer (Optional - for production scaling)
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: vms-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web-frontend
+    networks:
+      - vms-network
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  vms-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis-data:
+    driver: local
+  shared-logs:
+    driver: local

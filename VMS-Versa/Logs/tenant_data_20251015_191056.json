@@ -1,0 +1,268 @@
+{
+  "ingress-nginx": {
+    "services": [
+      "ingress-nginx-controller",
+      "ingress-nginx-controller-admission"
+    ],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "ingress-nginx-controller",
+          "data_count": "0",
+          "age": "43h"
+        },
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "43h"
+        },
+        {
+          "name": "tcp-services",
+          "data_count": "8",
+          "age": "39h"
+        }
+      ],
+      "total_configmaps": 3
+    }
+  },
+  "message-server": {
+    "services": [
+      "message-server"
+    ],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "165d"
+        },
+        {
+          "name": "message-server-configmap",
+          "data_count": "1",
+          "age": "165d"
+        }
+      ],
+      "total_configmaps": 2
+    }
+  },
+  "metallb-system": {
+    "services": [
+      "metallb-webhook-service",
+      "webhook-service"
+    ],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "53d"
+        },
+        {
+          "name": "metallb-excludel2",
+          "data_count": "1",
+          "age": "53d"
+        }
+      ],
+      "total_configmaps": 2
+    }
+  },
+  "provider-org": {
+    "services": [
+      "asc-services",
+      "redis",
+      "third-party-authentication"
+    ],
+    "redis_info": {
+      "service_name": "redis",
+      "service_type": "ClusterIP",
+      "cluster_ip": "10.100.57.109",
+      "external_ip": "<none>",
+      "ports": "6379/TCP",
+      "age": "20d"
+    },
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "asc-services-configmap-provider-org",
+          "data_count": "1",
+          "age": "20d"
+        },
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "20d"
+        },
+        {
+          "name": "provider-org-66471297-7e32-4e91-aea6-1f0304a943d2",
+          "data_count": "1",
+          "age": "6d20h"
+        },
+        {
+          "name": "provider-org-784a8be7-2381-41ac-bdee-f5d76cb58acc",
+          "data_count": "1",
+          "age": "20d"
+        },
+        {
+          "name": "redis-configmap-provider-org",
+          "data_count": "1",
+          "age": "20d"
+        },
+        {
+          "name": "third-party-auth-configmap-provider-org",
+          "data_count": "1",
+          "age": "20d"
+        }
+      ],
+      "total_configmaps": 6
+    }
+  },
+  "v-kafka-consumer": {
+    "services": [
+      "v-kafka-consumer"
+    ],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "7d"
+        },
+        {
+          "name": "v-kafka-consumer-66471297-7e32-4e91-aea6-1f0304a943d2",
+          "data_count": "1",
+          "age": "6d20h"
+        },
+        {
+          "name": "v-kafka-consumer-configmap-v-kafka-consumer",
+          "data_count": "1",
+          "age": "7d"
+        }
+      ],
+      "total_configmaps": 3
+    }
+  },
+  "van-connector": {
+    "services": [
+      "van-connector"
+    ],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "162d"
+        },
+        {
+          "name": "van-connector-configmap",
+          "data_count": "1",
+          "age": "162d"
+        }
+      ],
+      "total_configmaps": 2
+    }
+  },
+  "vms-kafka--00": {
+    "services": [
+      "vms-cluster-24sep2025-kafka-bootstrap",
+      "vms-cluster-24sep2025-kafka-broker-pool-mm2-0",
+      "vms-cluster-24sep2025-kafka-broker-pool-sasltls-0",
+      "vms-cluster-24sep2025-kafka-brokers",
+      "vms-cluster-24sep2025-kafka-dual-role-pool-mm2-2",
+      "vms-cluster-24sep2025-kafka-dual-role-pool-mm2-3",
+      "vms-cluster-24sep2025-kafka-dual-role-pool-sasltls-2",
+      "vms-cluster-24sep2025-kafka-dual-role-pool-sasltls-3",
+      "vms-cluster-24sep2025-kafka-mm2-bootstrap",
+      "vms-cluster-24sep2025-kafka-sasltls-bootstrap"
+    ],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "47d"
+        },
+        {
+          "name": "strimzi-cluster-operator",
+          "data_count": "1",
+          "age": "47d"
+        },
+        {
+          "name": "vms-cluster-24sep2025-entity-topic-operator-config",
+          "data_count": "1",
+          "age": "13h"
+        },
+        {
+          "name": "vms-cluster-24sep2025-entity-user-operator-config",
+          "data_count": "1",
+          "age": "13h"
+        },
+        {
+          "name": "vms-cluster-24sep2025-kafka-broker-pool-0",
+          "data_count": "5",
+          "age": "20d"
+        },
+        {
+          "name": "vms-cluster-24sep2025-kafka-controller-pool-1",
+          "data_count": "5",
+          "age": "20d"
+        },
+        {
+          "name": "vms-cluster-24sep2025-kafka-dual-role-pool-2",
+          "data_count": "5",
+          "age": "20d"
+        },
+        {
+          "name": "vms-cluster-24sep2025-kafka-dual-role-pool-3",
+          "data_count": "5",
+          "age": "20d"
+        }
+      ],
+      "total_configmaps": 8
+    }
+  },
+  "[root@vms3-scl1:": {
+    "services": [
+      "admin]"
+    ],
+    "redis_info": null
+  },
+  "kube-flannel": {
+    "services": [],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-flannel-cfg",
+          "data_count": "2",
+          "age": "165d"
+        },
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "165d"
+        }
+      ],
+      "total_configmaps": 2
+    }
+  },
+  "v-kafka-producer": {
+    "services": [],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "kube-root-ca.crt",
+          "data_count": "1",
+          "age": "20d"
+        }
+      ],
+      "total_configmaps": 1
+    }
+  }
+}

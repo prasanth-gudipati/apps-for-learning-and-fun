@@ -1,0 +1,90 @@
+{
+  "ingress-nginx": {
+    "services": [
+      "ingress-nginx-controller",
+      "ingress-nginx-controller-admission"
+    ],
+    "redis_info": null
+  },
+  "message-server": {
+    "services": [
+      "message-server"
+    ],
+    "redis_info": null
+  },
+  "meta163": {
+    "services": [
+      "redis",
+      "third-party-authentication",
+      "ueba"
+    ],
+    "redis_info": {
+      "service_name": "redis-configmap-meta163",
+      "service_type": "1",
+      "cluster_ip": "19d",
+      "external_ip": "N/A",
+      "ports": "N/A",
+      "age": "N/A"
+    }
+  },
+  "metallb-system": {
+    "services": [
+      "webhook-service"
+    ],
+    "redis_info": null
+  },
+  "provider-org": {
+    "services": [
+      "asc-services",
+      "redis",
+      "scim-connector",
+      "ueba"
+    ],
+    "redis_info": {
+      "service_name": "redis-configmap-provider-org",
+      "service_type": "1",
+      "cluster_ip": "184d",
+      "external_ip": "N/A",
+      "ports": "N/A",
+      "age": "N/A"
+    }
+  },
+  "v-kafka-consumer": {
+    "services": [
+      "v-kafka-consumer"
+    ],
+    "redis_info": null
+  },
+  "v-kafka-producer": {
+    "services": [
+      "v-kafka-producer"
+    ],
+    "redis_info": null
+  },
+  "van-connector": {
+    "services": [
+      "van-connector"
+    ],
+    "redis_info": null
+  },
+  "[root@vms1-tb163:": {
+    "services": [
+      "admin]"
+    ],
+    "redis_info": null
+  },
+  "find": {
+    "services": [],
+    "redis_info": null,
+    "configmaps_info": {
+      "configmaps": [
+        {
+          "name": "/var/log/versa/vms/apps",
+          "data_count": "-type",
+          "age": "f"
+        }
+      ],
+      "total_configmaps": 1
+    }
+  }
+}

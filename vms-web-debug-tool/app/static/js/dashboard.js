@@ -24,6 +24,9 @@ class VMSDebugTool {
         this.loadSystemOverview();
         this.loadQuickStats();
 
+        // Attempt auto-connection
+        this.attemptAutoConnection();
+
         // Set up periodic updates
         setInterval(() => {
             if (this.isConnected) {
@@ -43,19 +46,51 @@ class VMSDebugTool {
         });
 
         this.socket.on('progress_update', (data) => {
-            this.updateProgress(data.message, data.progress || 0);
+            console.log('Progress update:', data);
+            this.updateProgress(data);
         });
 
         this.socket.on('operation_complete', (data) => {
+            console.log('Received operation_complete event:', data);
             this.operationComplete(data);
         });
 
         this.socket.on('operation_error', (data) => {
+            console.log('Received operation_error event:', data);
             this.operationError(data);
         });
     }
 
     // Connection Management
+    async attemptAutoConnection() {
+        try {
+            this.addActivityLog('info', 'Attempting auto-connection to VMS server...');
+
+            const response = await fetch('/api/ssh/auto-connect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.connectionId = result.connection_id;
+                this.isConnected = true;
+                this.updateConnectionStatus(true, '10.70.188.171');
+                this.addActivityLog('success', 'Auto-connected to VMS server (10.70.188.171)');
+                this.loadSystemOverview();
+            } else {
+                this.addActivityLog('warning', 'Auto-connection failed: ' + result.error);
+                this.addActivityLog('info', 'You can manually connect using the connection button');
+            }
+        } catch (error) {
+            this.addActivityLog('warning', 'Auto-connection error: ' + error.message);
+            this.addActivityLog('info', 'You can manually connect using the connection button');
+        }
+    }
+
     showConnectionModal() {
         this.connectionModal.show();
     }
@@ -160,18 +195,36 @@ class VMSDebugTool {
     // Quick Stats
     async loadQuickStats() {
         try {
+            console.log('Loading quick stats from /api/tenant/stats...');
             const response = await fetch('/api/tenant/stats');
             const data = await response.json();
 
-            if (data.success) {
-                document.getElementById('tenant-total').textContent = data.data.tenant_count;
-                document.getElementById('redis-keys-total').textContent = data.data.redis_keys_count;
+            console.log('Quick stats response:', data);
 
-                if (data.data.last_scan) {
-                    const lastScan = new Date(data.data.last_scan).toLocaleString();
-                    document.getElementById('last-scan').textContent = lastScan;
-                }
+            // Update stats display - data is returned directly, not nested
+            document.getElementById('tenant-total').textContent = data.total || 0;
+            document.getElementById('redis-keys-total').textContent = data.total_redis_keys || 0;
+
+            // Update additional stats if elements exist
+            if (document.getElementById('active-tenants')) {
+                document.getElementById('active-tenants').textContent = data.active || 0;
             }
+            if (document.getElementById('total-services')) {
+                document.getElementById('total-services').textContent = data.total_services || 0;
+            }
+            if (document.getElementById('total-pods')) {
+                document.getElementById('total-pods').textContent = data.total_pods || 0;
+            }
+
+            if (data.last_scan) {
+                const lastScan = new Date(data.last_scan).toLocaleString();
+                document.getElementById('last-scan').textContent = lastScan;
+            } else {
+                // Update last scan to current time
+                document.getElementById('last-scan').textContent = new Date().toLocaleString();
+            }
+
+            console.log('Quick stats updated successfully');
         } catch (error) {
             console.error('Load quick stats error:', error);
         }
@@ -231,8 +284,8 @@ class VMSDebugTool {
             const result = await response.json();
 
             if (result.success) {
-                this.addActivityLog('success', `Tenant data collection completed. Found ${result.data.tenant_count} tenants`);
-                this.loadQuickStats();
+                this.addActivityLog('success', 'Tenant data collection started successfully');
+                // Note: Final results will be reported via WebSocket events
             } else {
                 this.addActivityLog('error', 'Tenant data collection failed: ' + result.error);
             }
@@ -298,9 +351,20 @@ class VMSDebugTool {
     }
 
     operationComplete(data) {
+        console.log('Operation completed, refreshing stats...', data);
+
         document.getElementById('progress-bar').style.width = '100%';
         document.getElementById('progress-message').textContent = 'Operation completed successfully';
         document.getElementById('progress-close-btn').style.display = 'block';
+
+        // Add completion message to activity log
+        if (data.message) {
+            this.addActivityLog('success', data.message);
+        }
+
+        // Refresh stats after operation completion
+        console.log('Calling loadQuickStats...');
+        this.loadQuickStats();
 
         setTimeout(() => {
             this.progressModal.hide();

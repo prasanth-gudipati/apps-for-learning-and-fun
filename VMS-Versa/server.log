@@ -1,0 +1,123 @@
+nohup: ignoring input
+/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/paramiko/pkey.py:100: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  "cipher": algorithms.TripleDES,
+/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/paramiko/transport.py:259: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  "class": algorithms.TripleDES,
+Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+============================================================
+VMS Debug Tool - Web Interface
+============================================================
+A comprehensive web-based tool for VMS server management
+
+Features:
+  • SSH connection with automatic sudo elevation
+  • Real-time kubectl command execution
+  • Tenant data collection and visualization
+  • Interactive Redis key viewing per tenant
+  • ConfigMap raw output display per tenant
+  • Automatic UI reset on disconnect
+
+Server starting...
+Open your web browser and go to: http://localhost:5000
+Press Ctrl+C to stop the server
+============================================================
+ * Serving Flask app 'VMS-Debug-Tool-Web'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.70.188.169:5000
+[33mPress CTRL+C to quit[0m
+10.70.230.2 - - [16/Oct/2025 18:22:28] "GET /socket.io/?EIO=4&transport=polling&t=PdkGbPB HTTP/1.1" 200 -
+10.70.230.2 - - [16/Oct/2025 18:22:28] "POST /socket.io/?EIO=4&transport=polling&t=PdkGbPW&sid=Be2f4KDCB8sGbydbAAAA HTTP/1.1" 200 -
+10.70.230.2 - - [16/Oct/2025 18:22:28] "GET /socket.io/?EIO=4&transport=polling&t=PdkGbPc&sid=Be2f4KDCB8sGbydbAAAA HTTP/1.1" 200 -
+172.30.57.116 - - [16/Oct/2025 18:22:53] "GET / HTTP/1.1" 200 -
+172.30.57.116 - - [16/Oct/2025 18:22:53] "GET /socket.io/?EIO=4&transport=polling&t=PdkGgdX HTTP/1.1" 200 -
+172.30.57.116 - - [16/Oct/2025 18:22:54] "POST /socket.io/?EIO=4&transport=polling&t=PdkGglB&sid=phrAJvBuP_XZrhr0AAAC HTTP/1.1" 200 -
+172.30.57.116 - - [16/Oct/2025 18:22:54] "GET /socket.io/?EIO=4&transport=polling&t=PdkGglD&sid=phrAJvBuP_XZrhr0AAAC HTTP/1.1" 200 -
+172.30.57.116 - - [16/Oct/2025 18:22:54] "GET /socket.io/?EIO=4&transport=polling&t=PdkGgmA&sid=phrAJvBuP_XZrhr0AAAC HTTP/1.1" 200 -
+Exception in thread Thread-31 (get_configmaps):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/VMS-Versa/VMS-Debug-Tool-Web.py", line 1264, in get_configmaps
+    print(f"DEBUG: Session {request.sid} - In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 311, in __get__
+    obj = instance._get_current_object()
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 508, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.
+Exception in thread Thread-29 (extract_keys):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/VMS-Versa/VMS-Debug-Tool-Web.py", line 1182, in extract_keys
+    socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys}, room=request.sid)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 311, in __get__
+    obj = instance._get_current_object()
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 508, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.
+Exception in thread Thread-39 (get_configmaps):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/VMS-Versa/VMS-Debug-Tool-Web.py", line 1264, in get_configmaps
+    print(f"DEBUG: Session {request.sid} - In thread - calling get_all_configmaps_for_tenant for tenant '{tenant_name}'")
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 311, in __get__
+    obj = instance._get_current_object()
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 508, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.
+Exception in thread Thread-37 (extract_keys):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/VMS-Versa/VMS-Debug-Tool-Web.py", line 1182, in extract_keys
+    socketio.emit('redis_keys_response', {'tenant': tenant_name, 'keys': keys}, room=request.sid)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 311, in __get__
+    obj = instance._get_current_object()
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 508, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.
+Exception in thread Thread-45 (get_log_file_content):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/VMS-Versa/VMS-Debug-Tool-Web.py", line 1380, in get_log_file_content
+    print(f"DEBUG: Session {request.sid} - In thread - calling get_log_file_tail for path '{log_file_path}' with {lines} lines, filter: {log_filter}")
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 311, in __get__
+    obj = instance._get_current_object()
+  File "/home/versa/pgudipati/SAMBA-70-188-169/apps-for-learning-and-fun/venv/lib/python3.10/site-packages/werkzeug/local.py", line 508, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.

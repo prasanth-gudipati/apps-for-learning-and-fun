@@ -5,6 +5,16 @@ import time
 from jsonpath_ng import parse
 import re
 import argparse
+
+# JSONPath compatibility class
+class JSONPath:
+    def __init__(self, path):
+        self.path = path
+        self.expr = parse(path)
+    
+    def parse(self, data):
+        matches = self.expr.find(data)
+        return [match.value for match in matches]
 import pdb
 import json
 import appliance_payloads
@@ -594,7 +604,7 @@ if __name__ == '__main__':
     parser.add_argument('--global-id',
                         help='Global ID for tenant creation (overrides JSON file value)',
                         type=int,
-                        default=47)
+                        default=49)
     parser.add_argument('--tenant-name',
                         help='Tenant name (overrides JSON file value)',
                         type=str,
@@ -602,7 +612,7 @@ if __name__ == '__main__':
     parser.add_argument('--description',
                         help='Tenant description (overrides JSON file value)',
                         type=str,
-                        default=None)
+                        default="Tenant Created by REST API Script")
     parser.add_argument('--bandwidth',
                         help='SASE bandwidth value (overrides JSON file value)',
                         type=int,

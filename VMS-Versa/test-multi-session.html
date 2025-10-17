@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Session Test for VMS Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .description {
+            background-color: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: #0c5460;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+        }
+
+        .test-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .instructions {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .instructions ol {
+            margin-bottom: 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-running {
+            background-color: #28a745;
+        }
+
+        .status-stopped {
+            background-color: #dc3545;
+        }
+
+        .status-unknown {
+            background-color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>VMS Debug Tool - Multi-Session Test</h1>
+
+        <div class="description">
+            <strong>Purpose:</strong> This test page helps you verify that the VMS Debug Tool Web application
+            now supports multiple simultaneous sessions without conflicts. Each browser window/tab will
+            maintain its own independent SSH connection and session state.
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test 1: Basic Multi-Window Test</h3>
+            <div class="instructions">
+                <strong>Instructions:</strong>
+                <ol>
+                    <li>Click "Open Session 1" and "Open Session 2" to open two separate browser windows</li>
+                    <li>In each window, connect to a VMS server using different credentials (if available) or the same
+                        server</li>
+                    <li>Verify that each window maintains its own connection status and data</li>
+                    <li>Test operations like building tenant data in one window while using the other</li>
+                </ol>
+            </div>
+            <button onclick="openSession('Session 1')">Open Session 1</button>
+            <button onclick="openSession('Session 2')">Open Session 2</button>
+            <button onclick="openSession('Session 3')">Open Session 3</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Test 2: Concurrent Operations Test</h3>
+            <div class="instructions">
+                <strong>Instructions:</strong>
+                <ol>
+                    <li>Open multiple sessions using the buttons above</li>
+                    <li>Connect to the same VMS server from different sessions</li>
+                    <li>Simultaneously run operations like "Build Tenant Data" in multiple windows</li>
+                    <li>Verify that each session shows its own output and doesn't interfere with others</li>
+                </ol>
+            </div>
+            <button onclick="openMultipleSessions(3)">Open 3 Sessions at Once</button>
+            <button onclick="openMultipleSessions(5)">Open 5 Sessions at Once</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Test 3: Session Isolation Test</h3>
+            <div class="instructions">
+                <strong>Instructions:</strong>
+                <ol>
+                    <li>Open two sessions</li>
+                    <li>In Session 1: Connect to server and build tenant data</li>
+                    <li>In Session 2: Verify it shows "Not Connected" and has no tenant data</li>
+                    <li>Connect Session 2 to the same or different server</li>
+                    <li>Verify both sessions maintain separate tenant databases and connection states</li>
+                </ol>
+            </div>
+            <button onclick="testSessionIsolation()">Run Session Isolation Test</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Server Status</h3>
+            <p><span id="server-status" class="status-indicator status-unknown"></span>VMS Debug Tool Server: <span
+                    id="server-text">Checking...</span></p>
+            <button onclick="checkServerStatus()">Check Server Status</button>
+            <button onclick="openMainApp()">Open Main Application</button>
+        </div>
+
+        <div class="warning">
+            <strong>Note:</strong> Make sure the VMS Debug Tool Web server is running on localhost:5000 before starting
+            tests.
+            You can start it by running: <code>python VMS-Debug-Tool-Web.py</code>
+        </div>
+    </div>
+
+    <script>
+        let sessionCounter = 0;
+        let openSessions = [];
+
+        function openSession(name) {
+            sessionCounter++;
+            const windowName = `vms_session_${sessionCounter}`;
+            const url = 'http://localhost:5000';
+
+            const newWindow = window.open(
+                url,
+                windowName,
+                'width=1400,height=900,scrollbars=yes,resizable=yes,location=yes,menubar=yes,toolbar=yes'
+            );
+
+            if (newWindow) {
+                openSessions.push({
+                    name: name || `Session ${sessionCounter}`,
+                    window: newWindow,
+                    id: sessionCounter
+                });
+                console.log(`Opened ${name || `Session ${sessionCounter}`} in window: ${windowName}`);
+            } else {
+                alert('Pop-up blocked! Please allow pop-ups for this site and try again.');
+            }
+
+            return newWindow;
+        }
+
+        function openMultipleSessions(count) {
+            console.log(`Opening ${count} sessions simultaneously...`);
+            for (let i = 1; i <= count; i++) {
+                setTimeout(() => {
+                    openSession(`Batch Session ${i}`);
+                }, i * 200); // Stagger the opening slightly
+            }
+        }
+
+        function testSessionIsolation() {
+            console.log('Running session isolation test...');
+
+            // Open two sessions for isolation testing
+            const session1 = openSession('Isolation Test - Session A');
+            setTimeout(() => {
+                const session2 = openSession('Isolation Test - Session B');
+            }, 500);
+
+            alert('Two sessions opened for isolation testing. Follow the instructions in Test 3 to verify session isolation.');
+        }
+
+        function checkServerStatus() {
+            const statusIndicator = document.getElementById('server-status');
+            const statusText = document.getElementById('server-text');
+
+            statusText.textContent = 'Checking...';
+            statusIndicator.className = 'status-indicator status-unknown';
+
+            fetch('http://localhost:5000/')
+                .then(response => {
+                    if (response.ok) {
+                        statusText.textContent = 'Running (Port 5000)';
+                        statusIndicator.className = 'status-indicator status-running';
+                    } else {
+                        statusText.textContent = 'Server Error';
+                        statusIndicator.className = 'status-indicator status-stopped';
+                    }
+                })
+                .catch(error => {
+                    statusText.textContent = 'Not Running or Not Accessible';
+                    statusIndicator.className = 'status-indicator status-stopped';
+                    console.error('Server check failed:', error);
+                });
+        }
+
+        function openMainApp() {
+            window.open('http://localhost:5000', '_blank');
+        }
+
+        // Check server status on page load
+        window.addEventListener('load', function () {
+            setTimeout(checkServerStatus, 1000);
+        });
+
+        // Keep track of open sessions
+        window.addEventListener('beforeunload', function () {
+            console.log(`Closing test page. ${openSessions.length} sessions were opened during this test.`);
+        });
+    </script>
+</body>
+
+</html>

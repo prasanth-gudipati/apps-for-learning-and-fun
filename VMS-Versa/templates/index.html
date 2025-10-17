@@ -545,7 +545,7 @@
                 <button id="refresh-tenants-btn" class="btn-secondary" onclick="refreshTenantList()">Refresh List</button>
             </div>
             
-            <div class="section" id="redis-keys-section" style="display:none;">
+            <div class="section" id="redis-section" style="display:none;">
                 <h3>Redis Keys</h3>
                 <div class="form-group">
                     <label for="redis-keys-select">Select Redis Key:</label>
@@ -648,8 +648,10 @@
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
                 
-                // Do NOT show any sections until tenant data is built
-                // Keep all sections hidden for now
+                // Show operations section immediately after connection
+                document.getElementById('operations-section').style.display = 'block';
+                
+                // Keep tenant section and logs section hidden until tenant data is built
                 
                 // Keep all buttons disabled until tenant data is built automatically
                 kubectlBtn.disabled = true;
@@ -681,7 +683,7 @@
                 document.getElementById('operations-section').style.display = 'none';
                 document.getElementById('logs-section').style.display = 'none';
                 document.getElementById('tenant-section').style.display = 'none';
-                document.getElementById('redis-keys-section').style.display = 'none';
+                document.getElementById('redis-section').style.display = 'none';
                 document.getElementById('configmaps-section').style.display = 'none';
                 
                 // Disable all operation buttons on disconnect
@@ -697,6 +699,9 @@
                 document.getElementById('redis-keys-select').innerHTML = '<option value="">-- Select a Redis key --</option>';
                 document.getElementById('configmaps-select').innerHTML = '<option value="">-- Select a ConfigMap --</option>';
                 document.getElementById('logs-select').innerHTML = '<option value="">-- Select a Log file --</option>';
+                
+                // Hide tenant options
+                document.getElementById('tenant-options').style.display = 'none';
                 
                 // Clear output and switch to output view
                 document.getElementById('output').innerHTML = '';
@@ -727,15 +732,15 @@
         socket.on('tenant_database_updated', function(data) {
             updateTenantDropdown(data.tenants);
             
-            // Show ALL sections only after tenant data is available
-            document.getElementById('operations-section').style.display = 'block';
-            document.getElementById('logs-section').style.display = 'block';
+            // Show tenant and logs sections only after tenant data is available
             document.getElementById('tenant-section').style.display = 'block';
+            document.getElementById('logs-section').style.display = 'block';
             
             // Enable all operations buttons only after tenant data is built
             document.getElementById('kubectl-btn').disabled = false;
             document.getElementById('show-db-btn').disabled = false;
-            // Log files are automatically scanned during tenant data building
+            // Enable log files since they are automatically scanned during tenant data building
+            document.getElementById('view-log-btn').disabled = false;
             
             // Add success message to indicate tenant data building is complete
             const output = document.getElementById('output');
@@ -1148,8 +1153,11 @@
                 
                 socket.emit('select_tenant', { tenant: selectedTenant });
                 
-                // Show Redis keys section and load keys for selected tenant
-                document.getElementById('redis-keys-section').style.display = 'block';
+                // Show Redis and ConfigMaps sections
+                document.getElementById('redis-section').style.display = 'block';
+                document.getElementById('configmaps-section').style.display = 'block';
+                
+                // Load Redis keys for selected tenant
                 socket.emit('get_redis_keys', { tenant: selectedTenant });
                 
                 // Reset Redis keys dropdown and disable buttons
@@ -1158,8 +1166,7 @@
                 document.getElementById('refresh-keys-btn').disabled = false;
                 document.getElementById('view-key-btn').disabled = true;
                 
-                // Show ConfigMaps section and load ConfigMaps for selected tenant
-                document.getElementById('configmaps-section').style.display = 'block';
+                // Load ConfigMaps for selected tenant
                 socket.emit('get_configmaps', { tenant: selectedTenant });
                 
                 // Reset ConfigMaps dropdown and disable buttons
@@ -1168,9 +1175,8 @@
                 document.getElementById('refresh-configmaps-btn').disabled = false;
                 document.getElementById('show-configmap-json-btn').disabled = true;
             } else {
-                // Hide Redis keys section if no tenant selected
-                document.getElementById('redis-keys-section').style.display = 'none';
-                // Hide ConfigMaps section if no tenant selected
+                // Hide Redis and ConfigMaps sections if no tenant selected
+                document.getElementById('redis-section').style.display = 'none';
                 document.getElementById('configmaps-section').style.display = 'none';
             }
         }
