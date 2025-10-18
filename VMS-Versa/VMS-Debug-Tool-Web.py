@@ -2140,6 +2140,23 @@ if __name__ == '__main__':
         let connected = false;
         let currentTenantRedisKeys = [];
 
+        // Utility function to safely access DOM elements and prevent null reference errors
+        function safeGetElement(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.warn(`Element with id '${id}' not found`);
+            }
+            return element;
+        }
+
+        // Utility function to safely set element display style
+        function safeSetDisplay(id, display) {
+            const element = safeGetElement(id);
+            if (element) {
+                element.style.display = display;
+            }
+        }
+
         // Socket event handlers
         socket.on('connect', function() {
             console.log('Connected to server');
@@ -2216,30 +2233,48 @@ if __name__ == '__main__':
                 document.getElementById('view-log-btn').disabled = true;
                 inputs.forEach(input => input.disabled = false);
                 
-                // Clear all dropdowns
-                document.getElementById('tenant-select').innerHTML = '<option value="">-- Select a tenant --</option>';
-                document.getElementById('redis-keys-select').innerHTML = '<option value="">-- Select a Redis key --</option>';
-                document.getElementById('configmaps-select').innerHTML = '<option value="">-- Select a ConfigMap --</option>';
-                document.getElementById('logs-select').innerHTML = '<option value="">-- Select a Log file --</option>';
+                // Clear all dropdowns safely
+                const tenantSelect = safeGetElement('tenant-select');
+                const redisKeysSelect = safeGetElement('redis-keys-select');
+                const configmapsSelect = safeGetElement('configmaps-select');
+                const logsSelect = safeGetElement('logs-select');
                 
-                // Hide tenant options
-                document.getElementById('tenant-options').style.display = 'none';
+                if (tenantSelect) tenantSelect.innerHTML = '<option value="">-- Select a tenant --</option>';
+                if (redisKeysSelect) redisKeysSelect.innerHTML = '<option value="">-- Select a Redis key --</option>';
+                if (configmapsSelect) configmapsSelect.innerHTML = '<option value="">-- Select a ConfigMap --</option>';
+                if (logsSelect) logsSelect.innerHTML = '<option value="">-- Select a Log file --</option>';
                 
-                // Clear output and switch to output view
-                document.getElementById('output').innerHTML = '';
-                document.getElementById('output').style.display = 'block';
-                document.getElementById('tenant-details').style.display = 'none';
-                document.getElementById('panel-title').textContent = 'Command Execution Output';
-                document.getElementById('tenant-info-content').innerHTML = '';
+                // Hide tenant sections safely
+                safeSetDisplay('tenant-details', 'none');
+                
+                // Clear output and switch to output view safely
+                const outputElement = safeGetElement('output');
+                if (outputElement) {
+                    outputElement.innerHTML = '';
+                    outputElement.style.display = 'block';
+                }
+                safeSetDisplay('tenant-details', 'none');
+                
+                // Update panel title and tenant info safely
+                const panelTitle = safeGetElement('panel-title');
+                const tenantInfoContent = safeGetElement('tenant-info-content');
+                
+                if (panelTitle) panelTitle.textContent = 'Command Execution Output';
+                if (tenantInfoContent) tenantInfoContent.innerHTML = '';
                 
                 // Clear stored Redis keys
                 currentTenantRedisKeys = [];
                 
-                // Disable all action buttons
-                document.getElementById('refresh-keys-btn').disabled = true;
-                document.getElementById('view-key-btn').disabled = true;
-                document.getElementById('refresh-configmaps-btn').disabled = true;
-                document.getElementById('show-configmap-json-btn').disabled = true;
+                // Disable all action buttons safely
+                const refreshKeysBtn = safeGetElement('refresh-keys-btn');
+                const viewKeyBtn = safeGetElement('view-key-btn');
+                const refreshConfigmapsBtn = safeGetElement('refresh-configmaps-btn');
+                const showConfigmapJsonBtn = safeGetElement('show-configmap-json-btn');
+                
+                if (refreshKeysBtn) refreshKeysBtn.disabled = true;
+                if (viewKeyBtn) viewKeyBtn.disabled = true;
+                if (refreshConfigmapsBtn) refreshConfigmapsBtn.disabled = true;
+                if (showConfigmapJsonBtn) showConfigmapJsonBtn.disabled = true;
             }
         });
 
