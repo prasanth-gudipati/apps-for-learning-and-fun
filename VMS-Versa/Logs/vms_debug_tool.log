@@ -545,3 +545,837 @@ Starting Operation: System Log Files Scanning
 ================================================================================
 SESSION ENDED - Disconnected from vms1-tb163.versa-test.net
 [2025-10-18 00:08:37] [INFO] Disconnected from server
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
+
+
+
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:11:25
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:11:25] [INFO] Attempting SSH connection...
+[2025-10-18 00:11:26] [SUCCESS] SSH connection successful to vms1-tb163.versa-test.net
+[2025-10-18 00:11:27] [SUCCESS] Shell session established
+[2025-10-18 00:11:27] [COMMAND] Executing 'sudo su' command...
+[2025-10-18 00:11:28] [SUCCESS] Sudo elevation successful
+[2025-10-18 00:11:28] [INFO] Setting kubectl alias...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 00:11:30
+------------------------------------------------------------
+Starting Operation: Tenant Data Building
+[2025-10-18 00:11:30] [INFO] Building comprehensive tenant data structure...
+[2025-10-18 00:11:30] [COMMAND] Step 1: Getting all services...
+[2025-10-18 00:11:32] [INFO] Debug: Parsing 19 lines of kubectl output
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: ingress-nginx
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: message-server
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: meta163
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: metallb-system
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: provider-org
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: v-kafka-consumer
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: v-kafka-producer
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: van-connector
+[2025-10-18 00:11:32] [INFO]   Found new tenant namespace: [root@vms1-tb163:
+[2025-10-18 00:11:32] [SUCCESS] -> Found 9 tenant namespaces
+[2025-10-18 00:11:32] [COMMAND] Step 2: Getting Redis information...
+[2025-10-18 00:11:34] [SUCCESS] -> Found 2 Redis services
+[2025-10-18 00:11:34] [INFO] Step 3: Integrating Redis information with tenant data...
+[2025-10-18 00:11:34] [INFO]   Updated Redis info for existing tenant: meta163
+[2025-10-18 00:11:34] [INFO]   Updated Redis info for existing tenant: provider-org
+[2025-10-18 00:11:34] [COMMAND] Step 4: Getting ConfigMaps information...
+[2025-10-18 00:11:34] [INFO] Extracting ConfigMaps for all tenants...
+[2025-10-18 00:11:38] [SUCCESS] -> Found 35 configmaps across 9 tenants
+[2025-10-18 00:11:38] [INFO]   ingress-nginx: 2 configmaps -> ingress-nginx-controller, kube-root-ca.crt
+[2025-10-18 00:11:38] [INFO]   kube-flannel: 2 configmaps -> kube-flannel-cfg, kube-root-ca.crt
+[2025-10-18 00:11:38] [INFO]   message-server: 2 configmaps -> kube-root-ca.crt, message-server-configmap
+[2025-10-18 00:11:38] [INFO]   meta163: 5 configmaps -> kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...
+[2025-10-18 00:11:38] [INFO]   metallb-system: 2 configmaps -> kube-root-ca.crt, metallb-excludel2
+[2025-10-18 00:11:38] [INFO]   provider-org: 8 configmaps -> asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...
+[2025-10-18 00:11:38] [INFO]   v-kafka-consumer: 7 configmaps -> kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...
+[2025-10-18 00:11:38] [INFO]   v-kafka-producer: 5 configmaps -> kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...
+[2025-10-18 00:11:38] [INFO]   van-connector: 2 configmaps -> kube-root-ca.crt, van-connector-configmap
+[2025-10-18 00:11:38] [INFO] Step 5: Integrating ConfigMaps information with tenant data...
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: ingress-nginx
+[2025-10-18 00:11:38] [INFO]   Added new tenant with ConfigMaps: kube-flannel
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: message-server
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: meta163
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: metallb-system
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: provider-org
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-consumer
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-producer
+[2025-10-18 00:11:38] [INFO]   Updated ConfigMaps info for existing tenant: van-connector
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [SUCCESS] === TENANT DATA SUMMARY ===
+[2025-10-18 00:11:38] [INFO] Tenant: ingress-nginx
+[2025-10-18 00:11:38] [NORMAL]   Services: ingress-nginx-controller, ingress-nginx-controller-admission
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 2 (ingress-nginx-controller, kube-root-ca.crt)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: message-server
+[2025-10-18 00:11:38] [NORMAL]   Services: message-server
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, message-server-configmap)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: meta163
+[2025-10-18 00:11:38] [NORMAL]   Services: redis, third-party-authentication, ueba
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: 10.105.223.166
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: metallb-system
+[2025-10-18 00:11:38] [NORMAL]   Services: webhook-service
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, metallb-excludel2)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: provider-org
+[2025-10-18 00:11:38] [NORMAL]   Services: asc-services, redis, scim-connector, ueba
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: 10.110.7.130
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 8 (asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: v-kafka-consumer
+[2025-10-18 00:11:38] [NORMAL]   Services: v-kafka-consumer
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 7 (kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: v-kafka-producer
+[2025-10-18 00:11:38] [NORMAL]   Services: v-kafka-producer
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: van-connector
+[2025-10-18 00:11:38] [NORMAL]   Services: van-connector
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, van-connector-configmap)
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: [root@vms1-tb163:
+[2025-10-18 00:11:38] [NORMAL]   Services: admin]
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 0 ()
+[2025-10-18 00:11:38] [NORMAL] 
+[2025-10-18 00:11:38] [INFO] Tenant: kube-flannel
+[2025-10-18 00:11:38] [NORMAL]   Services: 
+[2025-10-18 00:11:38] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:11:38] [NORMAL]   ConfigMaps: 2 (kube-flannel-cfg, kube-root-ca.crt)
+[2025-10-18 00:11:38] [NORMAL] 
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 00:11:38
+------------------------------------------------------------
+
+[2025-10-18 00:11:38] [SUCCESS] Tenant data updated in persistent file: Logs/tenant_data.json
+[2025-10-18 00:11:38] [INFO] Total tenants found: 10
+[2025-10-18 00:11:38] [SUCCESS] Tenant data updated in: Logs/tenant_data.json
+[2025-10-18 00:11:38] [SUCCESS] Tenant data building completed successfully!
+[2025-10-18 00:11:38] [COMMAND] Step 6: Scanning log files...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 00:11:38
+------------------------------------------------------------
+Starting Operation: System Log Files Scanning
+[2025-10-18 00:11:38] [INFO] Scanning for log files in /var/log/versa/vms/apps and vms-admin.log
+[2025-10-18 00:11:41] [INFO] Checking for vms-admin.log file...
+[2025-10-18 00:11:43] [SUCCESS] -> Found vms-admin.log file
+[2025-10-18 00:11:43] [SUCCESS] -> Found 17 log files across 11 directories (excluding .gz files)
+[2025-10-18 00:11:43] [INFO]   asc-services: 1 files -> asc-services.log
+[2025-10-18 00:11:43] [INFO]   message-server: 1 files -> message-server.log
+[2025-10-18 00:11:43] [INFO]   scim-connector: 1 files -> provider-org.log
+[2025-10-18 00:11:43] [INFO]   third-party-auth: 4 files -> META163.log, impex.log, meta163.log...
+[2025-10-18 00:11:43] [INFO]   ueba: 3 files -> META163.log, meta163.log, provider-org.log
+[2025-10-18 00:11:43] [INFO]   van-connector: 1 files -> van-connector.log
+[2025-10-18 00:11:43] [INFO]   v-kafka-consumers: 2 files -> v-kafka-consumer.log, v-kafka-consumer.log-bak
+[2025-10-18 00:11:43] [INFO]   v-kafka-producers: 1 files -> v-kafka-producer.log
+[2025-10-18 00:11:43] [INFO]   vos-services: 1 files -> vos-services.log
+[2025-10-18 00:11:43] [INFO]   vpmrc: 1 files -> vpmrc_accounting.log
+[2025-10-18 00:11:43] [INFO]   VMS Admin: 1 files -> vms-admin.log
+[2025-10-18 00:11:44] [INFO] Disconnecting from server...
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:11:45
+================================================================================
+SESSION ENDED - Disconnected from vms1-tb163.versa-test.net
+[2025-10-18 00:11:45] [INFO] Disconnected from server
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:54:57
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:54:57] [INFO] Attempting SSH connection...
+[2025-10-18 00:54:58] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:55:12
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:55:12] [INFO] Attempting SSH connection...
+[2025-10-18 00:55:12] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:55:38
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:55:38] [INFO] Attempting SSH connection...
+[2025-10-18 00:55:38] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:55:58
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:55:58] [INFO] Attempting SSH connection...
+[2025-10-18 00:55:58] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:56:54
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:56:54] [INFO] Attempting SSH connection...
+[2025-10-18 00:56:54] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 00:58:43
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 00:58:43] [INFO] Attempting SSH connection...
+[2025-10-18 00:58:43] [SUCCESS] SSH connection successful to 10.70.188.171
+[2025-10-18 00:58:44] [SUCCESS] Shell session established
+[2025-10-18 00:58:44] [COMMAND] Executing 'sudo su' command...
+[2025-10-18 00:58:46] [SUCCESS] Sudo elevation successful
+[2025-10-18 00:58:46] [INFO] Setting kubectl alias...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 00:58:48
+------------------------------------------------------------
+Starting Operation: Tenant Data Building
+[2025-10-18 00:58:48] [INFO] Building comprehensive tenant data structure...
+[2025-10-18 00:58:48] [COMMAND] Step 1: Getting all services...
+[2025-10-18 00:58:50] [INFO] Debug: Parsing 19 lines of kubectl output
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: ingress-nginx
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: message-server
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: meta163
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: metallb-system
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: provider-org
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: v-kafka-consumer
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: v-kafka-producer
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: van-connector
+[2025-10-18 00:58:50] [INFO]   Found new tenant namespace: [root@vms1-tb163:
+[2025-10-18 00:58:50] [SUCCESS] -> Found 9 tenant namespaces
+[2025-10-18 00:58:50] [COMMAND] Step 2: Getting Redis information...
+[2025-10-18 00:58:52] [SUCCESS] -> Found 2 Redis services
+[2025-10-18 00:58:52] [INFO] Step 3: Integrating Redis information with tenant data...
+[2025-10-18 00:58:52] [INFO]   Updated Redis info for existing tenant: meta163
+[2025-10-18 00:58:52] [INFO]   Updated Redis info for existing tenant: provider-org
+[2025-10-18 00:58:52] [COMMAND] Step 4: Getting ConfigMaps information...
+[2025-10-18 00:58:52] [INFO] Extracting ConfigMaps for all tenants...
+[2025-10-18 00:58:55] [SUCCESS] -> Found 35 configmaps across 9 tenants
+[2025-10-18 00:58:55] [INFO]   ingress-nginx: 2 configmaps -> ingress-nginx-controller, kube-root-ca.crt
+[2025-10-18 00:58:55] [INFO]   kube-flannel: 2 configmaps -> kube-flannel-cfg, kube-root-ca.crt
+[2025-10-18 00:58:55] [INFO]   message-server: 2 configmaps -> kube-root-ca.crt, message-server-configmap
+[2025-10-18 00:58:55] [INFO]   meta163: 5 configmaps -> kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...
+[2025-10-18 00:58:55] [INFO]   metallb-system: 2 configmaps -> kube-root-ca.crt, metallb-excludel2
+[2025-10-18 00:58:55] [INFO]   provider-org: 8 configmaps -> asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...
+[2025-10-18 00:58:55] [INFO]   v-kafka-consumer: 7 configmaps -> kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...
+[2025-10-18 00:58:55] [INFO]   v-kafka-producer: 5 configmaps -> kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...
+[2025-10-18 00:58:55] [INFO]   van-connector: 2 configmaps -> kube-root-ca.crt, van-connector-configmap
+[2025-10-18 00:58:55] [INFO] Step 5: Integrating ConfigMaps information with tenant data...
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: ingress-nginx
+[2025-10-18 00:58:55] [INFO]   Added new tenant with ConfigMaps: kube-flannel
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: message-server
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: meta163
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: metallb-system
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: provider-org
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-consumer
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-producer
+[2025-10-18 00:58:55] [INFO]   Updated ConfigMaps info for existing tenant: van-connector
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [SUCCESS] === TENANT DATA SUMMARY ===
+[2025-10-18 00:58:55] [INFO] Tenant: ingress-nginx
+[2025-10-18 00:58:55] [NORMAL]   Services: ingress-nginx-controller, ingress-nginx-controller-admission
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 2 (ingress-nginx-controller, kube-root-ca.crt)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: message-server
+[2025-10-18 00:58:55] [NORMAL]   Services: message-server
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, message-server-configmap)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: meta163
+[2025-10-18 00:58:55] [NORMAL]   Services: redis, third-party-authentication, ueba
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: 10.105.223.166
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: metallb-system
+[2025-10-18 00:58:55] [NORMAL]   Services: webhook-service
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, metallb-excludel2)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: provider-org
+[2025-10-18 00:58:55] [NORMAL]   Services: asc-services, redis, scim-connector, ueba
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: 10.110.7.130
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 8 (asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: v-kafka-consumer
+[2025-10-18 00:58:55] [NORMAL]   Services: v-kafka-consumer
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 7 (kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: v-kafka-producer
+[2025-10-18 00:58:55] [NORMAL]   Services: v-kafka-producer
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: van-connector
+[2025-10-18 00:58:55] [NORMAL]   Services: van-connector
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, van-connector-configmap)
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: [root@vms1-tb163:
+[2025-10-18 00:58:55] [NORMAL]   Services: admin]
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 0 ()
+[2025-10-18 00:58:55] [NORMAL] 
+[2025-10-18 00:58:55] [INFO] Tenant: kube-flannel
+[2025-10-18 00:58:55] [NORMAL]   Services: 
+[2025-10-18 00:58:55] [NORMAL]   Redis IP: N/A
+[2025-10-18 00:58:55] [NORMAL]   ConfigMaps: 2 (kube-flannel-cfg, kube-root-ca.crt)
+[2025-10-18 00:58:55] [NORMAL] 
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 00:58:55
+------------------------------------------------------------
+
+[2025-10-18 00:58:55] [SUCCESS] Tenant data updated in persistent file: Logs/tenant_data.json
+[2025-10-18 00:58:55] [INFO] Total tenants found: 10
+[2025-10-18 00:58:55] [SUCCESS] Tenant data updated in: Logs/tenant_data.json
+[2025-10-18 00:58:55] [SUCCESS] Tenant data building completed successfully!
+[2025-10-18 00:58:55] [COMMAND] Step 6: Scanning log files...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 00:58:55
+------------------------------------------------------------
+Starting Operation: System Log Files Scanning
+[2025-10-18 00:58:55] [INFO] Scanning for log files in /var/log/versa/vms/apps and vms-admin.log
+[2025-10-18 00:58:58] [INFO] Checking for vms-admin.log file...
+[2025-10-18 00:59:00] [SUCCESS] -> Found vms-admin.log file
+[2025-10-18 00:59:00] [SUCCESS] -> Found 17 log files across 11 directories (excluding .gz files)
+[2025-10-18 00:59:00] [INFO]   asc-services: 1 files -> asc-services.log
+[2025-10-18 00:59:00] [INFO]   message-server: 1 files -> message-server.log
+[2025-10-18 00:59:00] [INFO]   scim-connector: 1 files -> provider-org.log
+[2025-10-18 00:59:00] [INFO]   third-party-auth: 4 files -> META163.log, impex.log, meta163.log...
+[2025-10-18 00:59:00] [INFO]   ueba: 3 files -> META163.log, meta163.log, provider-org.log
+[2025-10-18 00:59:00] [INFO]   van-connector: 1 files -> van-connector.log
+[2025-10-18 00:59:00] [INFO]   v-kafka-consumers: 2 files -> v-kafka-consumer.log, v-kafka-consumer.log-bak
+[2025-10-18 00:59:00] [INFO]   v-kafka-producers: 1 files -> v-kafka-producer.log
+[2025-10-18 00:59:00] [INFO]   vos-services: 1 files -> vos-services.log
+[2025-10-18 00:59:00] [INFO]   vpmrc: 1 files -> vpmrc_accounting.log
+[2025-10-18 00:59:00] [INFO]   VMS Admin: 1 files -> vms-admin.log
+[2025-10-18 01:00:40] [INFO] Getting last 1500 lines from: /var/log/versa/vms/apps/asc-services/asc-services.log (filter: pretty)
+[2025-10-18 01:00:43] [SUCCESS] -> Successfully retrieved 318 lines from log file
+[2025-10-18 01:00:58] [INFO] Getting last 1500 lines from: /var/log/versa/vms/apps/asc-services/asc-services.log (filter: errors)
+[2025-10-18 01:01:00] [SUCCESS] -> Successfully retrieved 2 lines from log file
+[2025-10-18 01:01:14] [INFO] Getting last 1500 lines from: /var/log/versa/vms/apps/message-server/message-server.log (filter: all)
+[2025-10-18 01:01:23] [SUCCESS] -> Successfully retrieved 1500 lines from log file
+[2025-10-18 01:01:51] [INFO] Getting last 1500 lines from: /var/log/versa/vms/apps/message-server/message-server.log (filter: errors)
+[2025-10-18 01:01:53] [SUCCESS] -> Successfully retrieved 16 lines from log file
+[2025-10-18 01:02:01] [INFO] Getting last 1500 lines from: /var/log/versa/vms/apps/message-server/message-server.log (filter: pretty)
+[2025-10-18 01:02:10] [SUCCESS] -> Successfully retrieved 1516 lines from log file
+[2025-10-18 01:02:32] [INFO] Getting last 1500 lines from: /var/log/versa/vms/apps/message-server/message-server.log (filter: errors)
+[2025-10-18 01:02:34] [SUCCESS] -> Successfully retrieved 16 lines from log file
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 01:12:04
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 01:12:04] [INFO] Attempting SSH connection...
+[2025-10-18 01:12:04] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 01:12:18
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 01:12:18] [INFO] Attempting SSH connection...
+[2025-10-18 01:12:19] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 01:12:36
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 01:12:36] [INFO] Attempting SSH connection...
+[2025-10-18 01:12:39] [ERROR] Connection failed: Authentication failed.
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 01:12:54
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 01:12:54] [INFO] Attempting SSH connection...
+[2025-10-18 01:12:54] [SUCCESS] SSH connection successful to 10.70.188.171
+[2025-10-18 01:12:55] [SUCCESS] Shell session established
+[2025-10-18 01:12:55] [COMMAND] Executing 'sudo su' command...
+[2025-10-18 01:12:57] [SUCCESS] Sudo elevation successful
+[2025-10-18 01:12:57] [INFO] Setting kubectl alias...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 01:12:59
+------------------------------------------------------------
+Starting Operation: Tenant Data Building
+[2025-10-18 01:12:59] [INFO] Building comprehensive tenant data structure...
+[2025-10-18 01:12:59] [COMMAND] Step 1: Getting all services...
+[2025-10-18 01:13:01] [INFO] Debug: Parsing 19 lines of kubectl output
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: ingress-nginx
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: message-server
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: meta163
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: metallb-system
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: provider-org
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: v-kafka-consumer
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: v-kafka-producer
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: van-connector
+[2025-10-18 01:13:01] [INFO]   Found new tenant namespace: [root@vms1-tb163:
+[2025-10-18 01:13:01] [SUCCESS] -> Found 9 tenant namespaces
+[2025-10-18 01:13:01] [COMMAND] Step 2: Getting Redis information...
+[2025-10-18 01:13:03] [SUCCESS] -> Found 2 Redis services
+[2025-10-18 01:13:03] [INFO] Step 3: Integrating Redis information with tenant data...
+[2025-10-18 01:13:03] [INFO]   Updated Redis info for existing tenant: meta163
+[2025-10-18 01:13:03] [INFO]   Updated Redis info for existing tenant: provider-org
+[2025-10-18 01:13:03] [COMMAND] Step 4: Getting ConfigMaps information...
+[2025-10-18 01:13:03] [INFO] Extracting ConfigMaps for all tenants...
+[2025-10-18 01:13:06] [SUCCESS] -> Found 35 configmaps across 9 tenants
+[2025-10-18 01:13:06] [INFO]   ingress-nginx: 2 configmaps -> ingress-nginx-controller, kube-root-ca.crt
+[2025-10-18 01:13:06] [INFO]   kube-flannel: 2 configmaps -> kube-flannel-cfg, kube-root-ca.crt
+[2025-10-18 01:13:06] [INFO]   message-server: 2 configmaps -> kube-root-ca.crt, message-server-configmap
+[2025-10-18 01:13:06] [INFO]   meta163: 5 configmaps -> kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...
+[2025-10-18 01:13:06] [INFO]   metallb-system: 2 configmaps -> kube-root-ca.crt, metallb-excludel2
+[2025-10-18 01:13:06] [INFO]   provider-org: 8 configmaps -> asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...
+[2025-10-18 01:13:06] [INFO]   v-kafka-consumer: 7 configmaps -> kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...
+[2025-10-18 01:13:06] [INFO]   v-kafka-producer: 5 configmaps -> kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...
+[2025-10-18 01:13:06] [INFO]   van-connector: 2 configmaps -> kube-root-ca.crt, van-connector-configmap
+[2025-10-18 01:13:06] [INFO] Step 5: Integrating ConfigMaps information with tenant data...
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: ingress-nginx
+[2025-10-18 01:13:06] [INFO]   Added new tenant with ConfigMaps: kube-flannel
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: message-server
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: meta163
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: metallb-system
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: provider-org
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-consumer
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-producer
+[2025-10-18 01:13:06] [INFO]   Updated ConfigMaps info for existing tenant: van-connector
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [SUCCESS] === TENANT DATA SUMMARY ===
+[2025-10-18 01:13:06] [INFO] Tenant: ingress-nginx
+[2025-10-18 01:13:06] [NORMAL]   Services: ingress-nginx-controller, ingress-nginx-controller-admission
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 2 (ingress-nginx-controller, kube-root-ca.crt)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: message-server
+[2025-10-18 01:13:06] [NORMAL]   Services: message-server
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, message-server-configmap)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: meta163
+[2025-10-18 01:13:06] [NORMAL]   Services: redis, third-party-authentication, ueba
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: 10.105.223.166
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: metallb-system
+[2025-10-18 01:13:06] [NORMAL]   Services: webhook-service
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, metallb-excludel2)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: provider-org
+[2025-10-18 01:13:06] [NORMAL]   Services: asc-services, redis, scim-connector, ueba
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: 10.110.7.130
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 8 (asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: v-kafka-consumer
+[2025-10-18 01:13:06] [NORMAL]   Services: v-kafka-consumer
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 7 (kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: v-kafka-producer
+[2025-10-18 01:13:06] [NORMAL]   Services: v-kafka-producer
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: van-connector
+[2025-10-18 01:13:06] [NORMAL]   Services: van-connector
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, van-connector-configmap)
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: [root@vms1-tb163:
+[2025-10-18 01:13:06] [NORMAL]   Services: admin]
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 0 ()
+[2025-10-18 01:13:06] [NORMAL] 
+[2025-10-18 01:13:06] [INFO] Tenant: kube-flannel
+[2025-10-18 01:13:06] [NORMAL]   Services: 
+[2025-10-18 01:13:06] [NORMAL]   Redis IP: N/A
+[2025-10-18 01:13:06] [NORMAL]   ConfigMaps: 2 (kube-flannel-cfg, kube-root-ca.crt)
+[2025-10-18 01:13:06] [NORMAL] 
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 01:13:06
+------------------------------------------------------------
+
+[2025-10-18 01:13:06] [SUCCESS] Tenant data updated in persistent file: Logs/tenant_data.json
+[2025-10-18 01:13:06] [INFO] Total tenants found: 10
+[2025-10-18 01:13:06] [SUCCESS] Tenant data updated in: Logs/tenant_data.json
+[2025-10-18 01:13:06] [SUCCESS] Tenant data building completed successfully!
+[2025-10-18 01:13:06] [COMMAND] Step 6: Scanning log files...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 01:13:06
+------------------------------------------------------------
+Starting Operation: System Log Files Scanning
+[2025-10-18 01:13:06] [INFO] Scanning for log files in /var/log/versa/vms/apps and vms-admin.log
+[2025-10-18 01:13:09] [INFO] Checking for vms-admin.log file...
+[2025-10-18 01:13:11] [SUCCESS] -> Found vms-admin.log file
+[2025-10-18 01:13:11] [SUCCESS] -> Found 17 log files across 11 directories (excluding .gz files)
+[2025-10-18 01:13:11] [INFO]   asc-services: 1 files -> asc-services.log
+[2025-10-18 01:13:11] [INFO]   message-server: 1 files -> message-server.log
+[2025-10-18 01:13:11] [INFO]   scim-connector: 1 files -> provider-org.log
+[2025-10-18 01:13:11] [INFO]   third-party-auth: 4 files -> META163.log, impex.log, meta163.log...
+[2025-10-18 01:13:11] [INFO]   ueba: 3 files -> META163.log, meta163.log, provider-org.log
+[2025-10-18 01:13:11] [INFO]   van-connector: 1 files -> van-connector.log
+[2025-10-18 01:13:11] [INFO]   v-kafka-consumers: 2 files -> v-kafka-consumer.log, v-kafka-consumer.log-bak
+[2025-10-18 01:13:11] [INFO]   v-kafka-producers: 1 files -> v-kafka-producer.log
+[2025-10-18 01:13:11] [INFO]   vos-services: 1 files -> vos-services.log
+[2025-10-18 01:13:11] [INFO]   vpmrc: 1 files -> vpmrc_accounting.log
+[2025-10-18 01:13:11] [INFO]   VMS Admin: 1 files -> vms-admin.log
+[2025-10-18 01:36:43] [INFO] Disconnecting from server...
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 01:36:43
+================================================================================
+SESSION ENDED - Disconnected from 10.70.188.171
+[2025-10-18 01:36:43] [INFO] Disconnected from server
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 04:03:36
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 04:03:36] [INFO] Attempting SSH connection...
+[2025-10-18 04:03:36] [ERROR] Connection failed: [Errno -2] Name or service not known
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 04:04:19
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 04:04:19] [INFO] Attempting SSH connection...
+[2025-10-18 04:04:19] [SUCCESS] SSH connection successful to 10.70.188.171
+[2025-10-18 04:04:20] [SUCCESS] Shell session established
+[2025-10-18 04:04:20] [COMMAND] Executing 'sudo su' command...
+[2025-10-18 04:04:22] [SUCCESS] Sudo elevation successful
+[2025-10-18 04:04:22] [INFO] Setting kubectl alias...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:04:23
+------------------------------------------------------------
+Starting Operation: Tenant Data Building
+[2025-10-18 04:04:23] [INFO] Building comprehensive tenant data structure...
+[2025-10-18 04:04:23] [COMMAND] Step 1: Getting all services...
+[2025-10-18 04:04:25] [INFO] Debug: Parsing 19 lines of kubectl output
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: ingress-nginx
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: message-server
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: meta163
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: metallb-system
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: provider-org
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: v-kafka-consumer
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: v-kafka-producer
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: van-connector
+[2025-10-18 04:04:25] [INFO]   Found new tenant namespace: [root@vms1-tb163:
+[2025-10-18 04:04:25] [SUCCESS] -> Found 9 tenant namespaces
+[2025-10-18 04:04:25] [COMMAND] Step 2: Getting Redis information...
+[2025-10-18 04:04:27] [SUCCESS] -> Found 2 Redis services
+[2025-10-18 04:04:27] [INFO] Step 3: Integrating Redis information with tenant data...
+[2025-10-18 04:04:27] [INFO]   Updated Redis info for existing tenant: meta163
+[2025-10-18 04:04:27] [INFO]   Updated Redis info for existing tenant: provider-org
+[2025-10-18 04:04:27] [COMMAND] Step 4: Getting ConfigMaps information...
+[2025-10-18 04:04:27] [INFO] Extracting ConfigMaps for all tenants...
+[2025-10-18 04:04:30] [SUCCESS] -> Found 35 configmaps across 9 tenants
+[2025-10-18 04:04:30] [INFO]   ingress-nginx: 2 configmaps -> ingress-nginx-controller, kube-root-ca.crt
+[2025-10-18 04:04:30] [INFO]   kube-flannel: 2 configmaps -> kube-flannel-cfg, kube-root-ca.crt
+[2025-10-18 04:04:30] [INFO]   message-server: 2 configmaps -> kube-root-ca.crt, message-server-configmap
+[2025-10-18 04:04:30] [INFO]   meta163: 5 configmaps -> kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...
+[2025-10-18 04:04:30] [INFO]   metallb-system: 2 configmaps -> kube-root-ca.crt, metallb-excludel2
+[2025-10-18 04:04:30] [INFO]   provider-org: 8 configmaps -> asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...
+[2025-10-18 04:04:30] [INFO]   v-kafka-consumer: 7 configmaps -> kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...
+[2025-10-18 04:04:30] [INFO]   v-kafka-producer: 5 configmaps -> kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...
+[2025-10-18 04:04:30] [INFO]   van-connector: 2 configmaps -> kube-root-ca.crt, van-connector-configmap
+[2025-10-18 04:04:30] [INFO] Step 5: Integrating ConfigMaps information with tenant data...
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: ingress-nginx
+[2025-10-18 04:04:30] [INFO]   Added new tenant with ConfigMaps: kube-flannel
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: message-server
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: meta163
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: metallb-system
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: provider-org
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-consumer
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-producer
+[2025-10-18 04:04:30] [INFO]   Updated ConfigMaps info for existing tenant: van-connector
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [SUCCESS] === TENANT DATA SUMMARY ===
+[2025-10-18 04:04:30] [INFO] Tenant: ingress-nginx
+[2025-10-18 04:04:30] [NORMAL]   Services: ingress-nginx-controller, ingress-nginx-controller-admission
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 2 (ingress-nginx-controller, kube-root-ca.crt)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: message-server
+[2025-10-18 04:04:30] [NORMAL]   Services: message-server
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, message-server-configmap)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: meta163
+[2025-10-18 04:04:30] [NORMAL]   Services: redis, third-party-authentication, ueba
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: 10.105.223.166
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: metallb-system
+[2025-10-18 04:04:30] [NORMAL]   Services: webhook-service
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, metallb-excludel2)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: provider-org
+[2025-10-18 04:04:30] [NORMAL]   Services: asc-services, redis, scim-connector, ueba
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: 10.110.7.130
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 8 (asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: v-kafka-consumer
+[2025-10-18 04:04:30] [NORMAL]   Services: v-kafka-consumer
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 7 (kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: v-kafka-producer
+[2025-10-18 04:04:30] [NORMAL]   Services: v-kafka-producer
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: van-connector
+[2025-10-18 04:04:30] [NORMAL]   Services: van-connector
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, van-connector-configmap)
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: [root@vms1-tb163:
+[2025-10-18 04:04:30] [NORMAL]   Services: admin]
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 0 ()
+[2025-10-18 04:04:30] [NORMAL] 
+[2025-10-18 04:04:30] [INFO] Tenant: kube-flannel
+[2025-10-18 04:04:30] [NORMAL]   Services: 
+[2025-10-18 04:04:30] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:04:30] [NORMAL]   ConfigMaps: 2 (kube-flannel-cfg, kube-root-ca.crt)
+[2025-10-18 04:04:30] [NORMAL] 
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:04:30
+------------------------------------------------------------
+
+[2025-10-18 04:04:30] [SUCCESS] Tenant data updated in persistent file: Logs/tenant_data.json
+[2025-10-18 04:04:30] [INFO] Total tenants found: 10
+[2025-10-18 04:04:30] [SUCCESS] Tenant data updated in: Logs/tenant_data.json
+[2025-10-18 04:04:30] [SUCCESS] Tenant data building completed successfully!
+[2025-10-18 04:04:30] [COMMAND] Step 6: Scanning log files...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:04:30
+------------------------------------------------------------
+Starting Operation: System Log Files Scanning
+[2025-10-18 04:04:30] [INFO] Scanning for log files in /var/log/versa/vms/apps and vms-admin.log
+[2025-10-18 04:04:33] [INFO] Checking for vms-admin.log file...
+[2025-10-18 04:04:35] [SUCCESS] -> Found vms-admin.log file
+[2025-10-18 04:04:35] [SUCCESS] -> Found 17 log files across 11 directories (excluding .gz files)
+[2025-10-18 04:04:35] [INFO]   asc-services: 1 files -> asc-services.log
+[2025-10-18 04:04:35] [INFO]   message-server: 1 files -> message-server.log
+[2025-10-18 04:04:35] [INFO]   scim-connector: 1 files -> provider-org.log
+[2025-10-18 04:04:35] [INFO]   third-party-auth: 4 files -> META163.log, impex.log, meta163.log...
+[2025-10-18 04:04:35] [INFO]   ueba: 3 files -> META163.log, meta163.log, provider-org.log
+[2025-10-18 04:04:35] [INFO]   van-connector: 1 files -> van-connector.log
+[2025-10-18 04:04:35] [INFO]   v-kafka-consumers: 2 files -> v-kafka-consumer.log, v-kafka-consumer.log-bak
+[2025-10-18 04:04:35] [INFO]   v-kafka-producers: 1 files -> v-kafka-producer.log
+[2025-10-18 04:04:35] [INFO]   vos-services: 1 files -> vos-services.log
+[2025-10-18 04:04:35] [INFO]   vpmrc: 1 files -> vpmrc_accounting.log
+[2025-10-18 04:04:35] [INFO]   VMS Admin: 1 files -> vms-admin.log
+[2025-10-18 04:08:33] [INFO] Disconnecting from server...
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 04:08:33
+================================================================================
+SESSION ENDED - Disconnected from 10.70.188.171
+[2025-10-18 04:08:33] [INFO] Disconnected from server
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 04:08:38
+================================================================================
+VMS Debug Tool Session Started
+[2025-10-18 04:08:38] [INFO] Attempting SSH connection...
+[2025-10-18 04:08:39] [SUCCESS] SSH connection successful to vms1-tb163.versa-test.net
+[2025-10-18 04:08:40] [SUCCESS] Shell session established
+[2025-10-18 04:08:40] [COMMAND] Executing 'sudo su' command...
+[2025-10-18 04:08:41] [SUCCESS] Sudo elevation successful
+[2025-10-18 04:08:41] [INFO] Setting kubectl alias...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:08:43
+------------------------------------------------------------
+Starting Operation: Tenant Data Building
+[2025-10-18 04:08:43] [INFO] Building comprehensive tenant data structure...
+[2025-10-18 04:08:43] [COMMAND] Step 1: Getting all services...
+[2025-10-18 04:08:45] [INFO] Debug: Parsing 19 lines of kubectl output
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: ingress-nginx
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: message-server
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: meta163
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: metallb-system
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: provider-org
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: v-kafka-consumer
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: v-kafka-producer
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: van-connector
+[2025-10-18 04:08:45] [INFO]   Found new tenant namespace: [root@vms1-tb163:
+[2025-10-18 04:08:45] [SUCCESS] -> Found 9 tenant namespaces
+[2025-10-18 04:08:45] [COMMAND] Step 2: Getting Redis information...
+[2025-10-18 04:08:47] [SUCCESS] -> Found 2 Redis services
+[2025-10-18 04:08:47] [INFO] Step 3: Integrating Redis information with tenant data...
+[2025-10-18 04:08:47] [INFO]   Updated Redis info for existing tenant: meta163
+[2025-10-18 04:08:47] [INFO]   Updated Redis info for existing tenant: provider-org
+[2025-10-18 04:08:47] [COMMAND] Step 4: Getting ConfigMaps information...
+[2025-10-18 04:08:47] [INFO] Extracting ConfigMaps for all tenants...
+[2025-10-18 04:08:50] [SUCCESS] -> Found 35 configmaps across 9 tenants
+[2025-10-18 04:08:50] [INFO]   ingress-nginx: 2 configmaps -> ingress-nginx-controller, kube-root-ca.crt
+[2025-10-18 04:08:50] [INFO]   kube-flannel: 2 configmaps -> kube-flannel-cfg, kube-root-ca.crt
+[2025-10-18 04:08:50] [INFO]   message-server: 2 configmaps -> kube-root-ca.crt, message-server-configmap
+[2025-10-18 04:08:50] [INFO]   meta163: 5 configmaps -> kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...
+[2025-10-18 04:08:50] [INFO]   metallb-system: 2 configmaps -> kube-root-ca.crt, metallb-excludel2
+[2025-10-18 04:08:50] [INFO]   provider-org: 8 configmaps -> asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...
+[2025-10-18 04:08:50] [INFO]   v-kafka-consumer: 7 configmaps -> kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...
+[2025-10-18 04:08:50] [INFO]   v-kafka-producer: 5 configmaps -> kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...
+[2025-10-18 04:08:50] [INFO]   van-connector: 2 configmaps -> kube-root-ca.crt, van-connector-configmap
+[2025-10-18 04:08:50] [INFO] Step 5: Integrating ConfigMaps information with tenant data...
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: ingress-nginx
+[2025-10-18 04:08:50] [INFO]   Added new tenant with ConfigMaps: kube-flannel
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: message-server
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: meta163
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: metallb-system
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: provider-org
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-consumer
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: v-kafka-producer
+[2025-10-18 04:08:50] [INFO]   Updated ConfigMaps info for existing tenant: van-connector
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [SUCCESS] === TENANT DATA SUMMARY ===
+[2025-10-18 04:08:50] [INFO] Tenant: ingress-nginx
+[2025-10-18 04:08:50] [NORMAL]   Services: ingress-nginx-controller, ingress-nginx-controller-admission
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 2 (ingress-nginx-controller, kube-root-ca.crt)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: message-server
+[2025-10-18 04:08:50] [NORMAL]   Services: message-server
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, message-server-configmap)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: meta163
+[2025-10-18 04:08:50] [NORMAL]   Services: redis, third-party-authentication, ueba
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: 10.105.223.166
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, meta163-d47e854b-c5d5-47f1-8b9b-8bda8307da37, redis-configmap-meta163...)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: metallb-system
+[2025-10-18 04:08:50] [NORMAL]   Services: webhook-service
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, metallb-excludel2)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: provider-org
+[2025-10-18 04:08:50] [NORMAL]   Services: asc-services, redis, scim-connector, ueba
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: 10.110.7.130
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 8 (asc-services-configmap-provider-org, kube-root-ca.crt, provider-org-0d75790c-7017-40b2-a029-955afa7cc071...)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: v-kafka-consumer
+[2025-10-18 04:08:50] [NORMAL]   Services: v-kafka-consumer
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 7 (kube-root-ca.crt, v-kafka-consumer-0d75790c-7017-40b2-a029-955afa7cc071, v-kafka-consumer-16bb1e4d-5a8c-43b8-8431-d78a62431e80...)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: v-kafka-producer
+[2025-10-18 04:08:50] [NORMAL]   Services: v-kafka-producer
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 5 (kube-root-ca.crt, v-kafka-producer-37d6a346-e0ff-4dad-8cbe-c179ab307e14, v-kafka-producer-830c4c7c-2a85-4a15-a564-08accd550761...)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: van-connector
+[2025-10-18 04:08:50] [NORMAL]   Services: van-connector
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 2 (kube-root-ca.crt, van-connector-configmap)
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: [root@vms1-tb163:
+[2025-10-18 04:08:50] [NORMAL]   Services: admin]
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 0 ()
+[2025-10-18 04:08:50] [NORMAL] 
+[2025-10-18 04:08:50] [INFO] Tenant: kube-flannel
+[2025-10-18 04:08:50] [NORMAL]   Services: 
+[2025-10-18 04:08:50] [NORMAL]   Redis IP: N/A
+[2025-10-18 04:08:50] [NORMAL]   ConfigMaps: 2 (kube-flannel-cfg, kube-root-ca.crt)
+[2025-10-18 04:08:50] [NORMAL] 
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:08:50
+------------------------------------------------------------
+
+[2025-10-18 04:08:50] [SUCCESS] Tenant data updated in persistent file: Logs/tenant_data.json
+[2025-10-18 04:08:50] [INFO] Total tenants found: 10
+[2025-10-18 04:08:50] [SUCCESS] Tenant data updated in: Logs/tenant_data.json
+[2025-10-18 04:08:50] [SUCCESS] Tenant data building completed successfully!
+[2025-10-18 04:08:50] [COMMAND] Step 6: Scanning log files...
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:08:50
+------------------------------------------------------------
+Starting Operation: System Log Files Scanning
+[2025-10-18 04:08:50] [INFO] Scanning for log files in /var/log/versa/vms/apps and vms-admin.log
+[2025-10-18 04:08:53] [INFO] Checking for vms-admin.log file...
+[2025-10-18 04:08:55] [SUCCESS] -> Found vms-admin.log file
+[2025-10-18 04:08:55] [SUCCESS] -> Found 17 log files across 11 directories (excluding .gz files)
+[2025-10-18 04:08:55] [INFO]   asc-services: 1 files -> asc-services.log
+[2025-10-18 04:08:55] [INFO]   message-server: 1 files -> message-server.log
+[2025-10-18 04:08:55] [INFO]   scim-connector: 1 files -> provider-org.log
+[2025-10-18 04:08:55] [INFO]   third-party-auth: 4 files -> META163.log, impex.log, meta163.log...
+[2025-10-18 04:08:55] [INFO]   ueba: 3 files -> META163.log, meta163.log, provider-org.log
+[2025-10-18 04:08:55] [INFO]   van-connector: 1 files -> van-connector.log
+[2025-10-18 04:08:55] [INFO]   v-kafka-consumers: 2 files -> v-kafka-consumer.log, v-kafka-consumer.log-bak
+[2025-10-18 04:08:55] [INFO]   v-kafka-producers: 1 files -> v-kafka-producer.log
+[2025-10-18 04:08:55] [INFO]   vos-services: 1 files -> vos-services.log
+[2025-10-18 04:08:55] [INFO]   vpmrc: 1 files -> vpmrc_accounting.log
+[2025-10-18 04:08:55] [INFO]   VMS Admin: 1 files -> vms-admin.log
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:13:16
+------------------------------------------------------------
+Starting Operation: Redis Keys Extraction - Tenant: meta163
+[2025-10-18 04:13:16] [INFO] Extracting Redis keys from meta163 (IP: 10.105.223.166)
+[2025-10-18 04:13:19] [SUCCESS] Found 3 Redis keys for meta163
+[2025-10-18 04:14:04] [INFO] Getting Redis key value: META163:ueba-auth-redis:metadata from meta163
+
+------------------------------------------------------------
+⚡ NEW OPERATION - 2025-10-18 04:14:08
+------------------------------------------------------------
+Starting Operation: Redis Keys Extraction - Tenant: meta163
+[2025-10-18 04:14:08] [INFO] Extracting Redis keys from meta163 (IP: 10.105.223.166)
+[2025-10-18 04:14:11] [SUCCESS] Found 3 Redis keys for meta163
+[2025-10-18 04:14:21] [INFO] Getting Redis key value: META163:ueba-auth-redis:v1 from meta163
+[2025-10-18 04:14:46] [INFO] Getting ConfigMap details: kube-root-ca.crt in tenant meta163
+[2025-10-18 04:14:46] [COMMAND] Executing raw format command: kubectl describe configmap kube-root-ca.crt -n meta163
+[2025-10-18 04:14:49] [COMMAND] Executing pretty format command: kubectl get configmap kube-root-ca.crt -n meta163 -o json | jq ".data.config | fromjson"
+[2025-10-18 04:14:53] [SUCCESS] Successfully retrieved ConfigMap details for kube-root-ca.crt in both formats
+[2025-10-18 04:15:18] [INFO] Getting last 500 lines from: /var/log/versa/vms/apps/asc-services/asc-services.log (filter: all)
+[2025-10-18 04:15:21] [SUCCESS] -> Successfully retrieved 316 lines from log file
+[2025-10-18 04:15:28] [INFO] Getting last 500 lines from: /var/log/versa/vms/apps/asc-services/asc-services.log (filter: pretty)
+[2025-10-18 04:15:31] [SUCCESS] -> Successfully retrieved 318 lines from log file
+[2025-10-18 04:16:00] [INFO] Disconnecting from server...
+
+================================================================================
+🚀 NEW SESSION STARTED - 2025-10-18 04:16:00
+================================================================================
+SESSION ENDED - Disconnected from vms1-tb163.versa-test.net
+[2025-10-18 04:16:00] [INFO] Disconnected from server

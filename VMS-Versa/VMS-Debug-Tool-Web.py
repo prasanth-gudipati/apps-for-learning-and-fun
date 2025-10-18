@@ -192,6 +192,107 @@ Note: Each new session and operation is marked with decorative separators
         except Exception as e:
             print(f"Warning: Could not initialize log file: {str(e)}")
     
+    def _analyze_connection_error(self, error, host, username):
+        """Analyze connection error and provide user-friendly error details"""
+        error_str = str(error).lower()
+        error_type = type(error).__name__
+        
+        # DNS Resolution errors
+        if "name or service not known" in error_str or "nodename nor servname provided" in error_str:
+            return {
+                'type': 'DNS_ERROR',
+                'title': '🌐 DNS Resolution Failed',
+                'simple_message': f'Cannot resolve hostname: {host}',
+                'detailed_message': f'The hostname "{host}" could not be resolved to an IP address. Please check:\n• Hostname spelling\n• Network connectivity\n• DNS server configuration',
+                'suggestions': [
+                    f'Verify hostname spelling: {host}',
+                    'Check if you can access other websites',
+                    'Try using an IP address instead of hostname',
+                    'Contact your network administrator'
+                ],
+                'technical_error': str(error)
+            }
+        
+        # Network unreachable / Connection refused
+        elif "connection refused" in error_str or "no route to host" in error_str:
+            return {
+                'type': 'NETWORK_ERROR',
+                'title': '🔌 Network Connection Failed',
+                'simple_message': f'Cannot reach server: {host}',
+                'detailed_message': f'The server "{host}" is not reachable or refused the connection. Please check:\n• Server is running and accessible\n• Firewall settings\n• Network connectivity',
+                'suggestions': [
+                    'Verify the server is powered on and running',
+                    'Check firewall rules on both client and server',
+                    'Ensure SSH service is running on the server',
+                    'Test connectivity with ping or telnet'
+                ],
+                'technical_error': str(error)
+            }
+        
+        # Connection timeout
+        elif "timed out" in error_str or "timeout" in error_str:
+            return {
+                'type': 'TIMEOUT_ERROR',
+                'title': '⏱️ Connection Timeout',
+                'simple_message': f'Connection to {host} timed out',
+                'detailed_message': f'The connection to "{host}" timed out. The server may be slow to respond or unreachable.',
+                'suggestions': [
+                    'Check if the server is responding slowly',
+                    'Verify network connectivity',
+                    'Try increasing timeout settings',
+                    'Check if server is under heavy load'
+                ],
+                'technical_error': str(error)
+            }
+        
+        # Authentication errors
+        elif "authentication failed" in error_str or "permission denied" in error_str:
+            return {
+                'type': 'AUTH_ERROR',
+                'title': '🔐 Authentication Failed',
+                'simple_message': f'Invalid credentials for user: {username}',
+                'detailed_message': f'Authentication failed for user "{username}". Please check:\n• Username and password are correct\n• Account is not locked\n• SSH key permissions',
+                'suggestions': [
+                    'Verify username and password are correct',
+                    'Check if account is locked or disabled',
+                    'Ensure SSH service allows password authentication',
+                    'Contact your system administrator'
+                ],
+                'technical_error': str(error)
+            }
+        
+        # SSH Protocol errors
+        elif "protocol" in error_str or "ssh" in error_str:
+            return {
+                'type': 'SSH_ERROR',
+                'title': '🔧 SSH Protocol Error', 
+                'simple_message': f'SSH protocol error connecting to {host}',
+                'detailed_message': f'There was an SSH protocol error. This could indicate version incompatibility or configuration issues.',
+                'suggestions': [
+                    'Verify SSH service is running on the server',
+                    'Check SSH configuration on the server',
+                    'Ensure compatible SSH protocol versions',
+                    'Review SSH logs on the server'
+                ],
+                'technical_error': str(error)
+            }
+        
+        # Generic/Unknown errors
+        else:
+            return {
+                'type': 'UNKNOWN_ERROR',
+                'title': '❌ Connection Error',
+                'simple_message': f'Failed to connect to {host}',
+                'detailed_message': f'An unexpected error occurred while connecting to "{host}". Please review the technical details below.',
+                'suggestions': [
+                    'Check all connection parameters',
+                    'Verify server accessibility',
+                    'Review the technical error message',
+                    'Contact technical support if needed'
+                ],
+                'technical_error': str(error)
+            }
+    
     def connect_to_server(self, host, username, ssh_password, admin_password):
         """Connect to the SSH server in a separate thread"""
         self.host = host
@@ -267,13 +368,24 @@ Note: Each new session and operation is marked with decorative separators
                 socketio.emit('connection_status', {'connected': True, 'message': 'Connected successfully'})
             
         except Exception as e:
-            error_msg = f"Connection failed: {str(e)}"
-            self.log_output(error_msg, "error")
+            # Analyze the error and provide user-friendly feedback
+            error_details = self._analyze_connection_error(e, host, username)
+            
+            self.log_output(f"Connection failed: {str(e)}", "error")
             self.connected = False
+            
             if self.session_id:
-                socketio.emit('connection_status', {'connected': False, 'message': error_msg}, room=self.session_id)
+                socketio.emit('connection_status', {
+                    'connected': False, 
+                    'message': error_details['simple_message'],
+                    'error_details': error_details
+                }, room=self.session_id)
             else:
-                socketio.emit('connection_status', {'connected': False, 'message': error_msg})
+                socketio.emit('connection_status', {
+                    'connected': False, 
+                    'message': error_details['simple_message'],
+                    'error_details': error_details
+                })
     
     def disconnect_from_server(self):
         """Disconnect from SSH server"""
@@ -2019,6 +2131,193 @@ if __name__ == '__main__':
             transform: scale(1.05);
             transition: all 0.2s ease;
         }
+        
+        /* Error Popup Styles */
+        .error-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .error-popup {
+            background-color: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 3px solid #dc3545;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .error-popup-header {
+            background-color: #dc3545;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 9px 9px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .error-popup-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .error-popup-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .error-popup-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .error-popup-content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #721c24;
+        }
+        
+        .error-details {
+            margin-bottom: 20px;
+        }
+        
+        .error-details h4 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        
+        .error-details p {
+            color: #555;
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .error-suggestions {
+            margin-bottom: 20px;
+        }
+        
+        .error-suggestions h4 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        
+        .error-suggestions ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .error-suggestions li {
+            margin-bottom: 8px;
+        }
+        
+        .error-technical {
+            margin-bottom: 20px;
+        }
+        
+        .error-technical details {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .error-technical summary {
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            outline: none;
+        }
+        
+        .error-technical summary:hover {
+            color: #333;
+        }
+        
+        .technical-error {
+            margin-top: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .technical-error code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            color: #e83e8c;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .error-popup-footer {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 0 0 9px 9px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .error-popup-footer button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid;
+            width: auto;
+            margin: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -2217,6 +2516,11 @@ if __name__ == '__main__':
                 status.className = 'status disconnected';
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
+                
+                // Show detailed error popup if error details are provided
+                if (data.error_details) {
+                    showConnectionErrorPopup(data.error_details);
+                }
                 
                 // Hide all sections except Server Connection when disconnected
                 document.getElementById('operations-section').style.display = 'none';
@@ -2621,6 +2925,111 @@ if __name__ == '__main__':
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function showConnectionErrorPopup(errorDetails) {
+            // Remove any existing error popup
+            const existingPopup = document.getElementById('error-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+            }
+
+            // Create popup overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'error-popup-overlay';
+            overlay.className = 'error-popup-overlay';
+
+            // Create popup container
+            const popup = document.createElement('div');
+            popup.id = 'error-popup';
+            popup.className = 'error-popup';
+
+            // Create popup content
+            popup.innerHTML = `
+                <div class="error-popup-header">
+                    <h3>${errorDetails.title}</h3>
+                    <button class="error-popup-close" onclick="closeErrorPopup()">×</button>
+                </div>
+                <div class="error-popup-content">
+                    <div class="error-message">
+                        <strong>Error:</strong> ${errorDetails.simple_message}
+                    </div>
+                    
+                    <div class="error-details">
+                        <h4>📋 What happened:</h4>
+                        <p>${errorDetails.detailed_message.replace(/\\n/g, '<br>')}</p>
+                    </div>
+                    
+                    <div class="error-suggestions">
+                        <h4>💡 Suggestions to fix:</h4>
+                        <ul>
+                            ${errorDetails.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="error-technical">
+                        <details>
+                            <summary><strong>🔧 Technical Details (Click to expand)</strong></summary>
+                            <div class="technical-error">
+                                <code>${escapeHtml(errorDetails.technical_error)}</code>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                <div class="error-popup-footer">
+                    <button class="btn-primary" onclick="closeErrorPopup()">Got it</button>
+                    <button class="btn-secondary" onclick="copyErrorDetails()">Copy Error Details</button>
+                </div>
+            `;
+
+            // Add to document
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+
+            // Store error details for copying
+            window.currentErrorDetails = errorDetails;
+
+            // Click overlay to close
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closeErrorPopup();
+                }
+            });
+        }
+
+        function closeErrorPopup() {
+            const popup = document.getElementById('error-popup-overlay');
+            if (popup) {
+                popup.remove();
+            }
+        }
+
+        function copyErrorDetails() {
+            if (window.currentErrorDetails) {
+                const details = window.currentErrorDetails;
+                const text = `${details.title}
+Error: ${details.simple_message}
+
+Details: ${details.detailed_message}
+
+Suggestions:
+${details.suggestions.map(s => `• ${s}`).join('\\n')}
+
+Technical Error: ${details.technical_error}`;
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    // Show brief confirmation
+                    const btn = document.querySelector('.btn-secondary');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    alert('Please manually copy the error details from the popup');
+                });
+            }
         }
 
         function connect() {

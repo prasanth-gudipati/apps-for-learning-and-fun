@@ -497,6 +497,193 @@
             transform: scale(1.05);
             transition: all 0.2s ease;
         }
+        
+        /* Error Popup Styles */
+        .error-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .error-popup {
+            background-color: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 3px solid #dc3545;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .error-popup-header {
+            background-color: #dc3545;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 9px 9px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .error-popup-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .error-popup-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .error-popup-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .error-popup-content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #721c24;
+        }
+        
+        .error-details {
+            margin-bottom: 20px;
+        }
+        
+        .error-details h4 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        
+        .error-details p {
+            color: #555;
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .error-suggestions {
+            margin-bottom: 20px;
+        }
+        
+        .error-suggestions h4 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        
+        .error-suggestions ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .error-suggestions li {
+            margin-bottom: 8px;
+        }
+        
+        .error-technical {
+            margin-bottom: 20px;
+        }
+        
+        .error-technical details {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .error-technical summary {
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            outline: none;
+        }
+        
+        .error-technical summary:hover {
+            color: #333;
+        }
+        
+        .technical-error {
+            margin-top: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .technical-error code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            color: #e83e8c;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .error-popup-footer {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 0 0 9px 9px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .error-popup-footer button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid;
+            width: auto;
+            margin: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -695,6 +882,11 @@
                 status.className = 'status disconnected';
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
+                
+                // Show detailed error popup if error details are provided
+                if (data.error_details) {
+                    showConnectionErrorPopup(data.error_details);
+                }
                 
                 // Hide all sections except Server Connection when disconnected
                 document.getElementById('operations-section').style.display = 'none';
@@ -1099,6 +1291,111 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function showConnectionErrorPopup(errorDetails) {
+            // Remove any existing error popup
+            const existingPopup = document.getElementById('error-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+            }
+
+            // Create popup overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'error-popup-overlay';
+            overlay.className = 'error-popup-overlay';
+
+            // Create popup container
+            const popup = document.createElement('div');
+            popup.id = 'error-popup';
+            popup.className = 'error-popup';
+
+            // Create popup content
+            popup.innerHTML = `
+                <div class="error-popup-header">
+                    <h3>${errorDetails.title}</h3>
+                    <button class="error-popup-close" onclick="closeErrorPopup()">×</button>
+                </div>
+                <div class="error-popup-content">
+                    <div class="error-message">
+                        <strong>Error:</strong> ${errorDetails.simple_message}
+                    </div>
+                    
+                    <div class="error-details">
+                        <h4>📋 What happened:</h4>
+                        <p>${errorDetails.detailed_message.replace(/\n/g, '<br>')}</p>
+                    </div>
+                    
+                    <div class="error-suggestions">
+                        <h4>💡 Suggestions to fix:</h4>
+                        <ul>
+                            ${errorDetails.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="error-technical">
+                        <details>
+                            <summary><strong>🔧 Technical Details (Click to expand)</strong></summary>
+                            <div class="technical-error">
+                                <code>${escapeHtml(errorDetails.technical_error)}</code>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                <div class="error-popup-footer">
+                    <button class="btn-primary" onclick="closeErrorPopup()">Got it</button>
+                    <button class="btn-secondary" onclick="copyErrorDetails()">Copy Error Details</button>
+                </div>
+            `;
+
+            // Add to document
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+
+            // Store error details for copying
+            window.currentErrorDetails = errorDetails;
+
+            // Click overlay to close
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closeErrorPopup();
+                }
+            });
+        }
+
+        function closeErrorPopup() {
+            const popup = document.getElementById('error-popup-overlay');
+            if (popup) {
+                popup.remove();
+            }
+        }
+
+        function copyErrorDetails() {
+            if (window.currentErrorDetails) {
+                const details = window.currentErrorDetails;
+                const text = `${details.title}
+Error: ${details.simple_message}
+
+Details: ${details.detailed_message}
+
+Suggestions:
+${details.suggestions.map(s => `• ${s}`).join('\n')}
+
+Technical Error: ${details.technical_error}`;
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    // Show brief confirmation
+                    const btn = document.querySelector('.btn-secondary');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    alert('Please manually copy the error details from the popup');
+                });
+            }
         }
 
         function connect() {
