@@ -5,6 +5,9 @@ import time
 from jsonpath_ng import parse
 import re
 import argparse
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import copy
 
 # JSONPath compatibility class
 class JSONPath:
@@ -54,6 +57,57 @@ class CsvHandler(object):
 
         
 class RestApi(object):
+    def clean_and_delete_tenants_by_names(self, tenant_names):
+        """
+        Clean and delete tenants by a list of tenant names.
+        For each name, fetch the UUID and call the cleanup-delete API with password in the body.
+        """
+        results = []
+        for name in tenant_names:
+            try:
+                uuid = self.fetch_tenant_uuid(name)
+                if not uuid:
+                    self.logger.console_log(f"[CLEAN-DELETE] Tenant '{name}': UUID not found", "ERROR")
+                    results.append({'tenant': name, 'success': False, 'error': 'UUID not found'})
+                    continue
+                url = self.generate_url(f"/portalapi/v1/tenants/tenant/cleanup-delete/{uuid}")
+                payload = json.dumps({"password": self.password})
+                resp = self.api_call(method='DELETE', url=url, data=payload)
+                if resp:
+                    self.logger.console_log(f"[CLEAN-DELETE] Tenant '{name}' (UUID: {uuid}): Cleaned and deleted successfully")
+                    results.append({'tenant': name, 'uuid': uuid, 'success': True})
+                else:
+                    self.logger.console_log(f"[CLEAN-DELETE] Tenant '{name}' (UUID: {uuid}): Clean-delete failed", "ERROR")
+                    results.append({'tenant': name, 'uuid': uuid, 'success': False, 'error': 'Clean-delete failed'})
+            except Exception as e:
+                self.logger.console_log(f"[CLEAN-DELETE] Tenant '{name}': Exception: {e}", "ERROR")
+                results.append({'tenant': name, 'success': False, 'error': str(e)})
+        return results
+    def delete_tenants_by_names(self, tenant_names):
+        """
+        Delete tenants by a list of tenant names.
+        For each name, fetch the UUID and call the DELETE API.
+        """
+        results = []
+        for name in tenant_names:
+            try:
+                uuid = self.fetch_tenant_uuid(name)
+                if not uuid:
+                    self.logger.console_log(f"[DELETE] Tenant '{name}': UUID not found", "ERROR")
+                    results.append({'tenant': name, 'success': False, 'error': 'UUID not found'})
+                    continue
+                url = self.generate_url(f"/portalapi/v1/tenants/tenant/{uuid}")
+                resp = self.api_call(method='DELETE', url=url, data='')
+                if resp:
+                    self.logger.console_log(f"[DELETE] Tenant '{name}' (UUID: {uuid}): Deleted successfully")
+                    results.append({'tenant': name, 'uuid': uuid, 'success': True})
+                else:
+                    self.logger.console_log(f"[DELETE] Tenant '{name}' (UUID: {uuid}): Delete failed", "ERROR")
+                    results.append({'tenant': name, 'uuid': uuid, 'success': False, 'error': 'Delete failed'})
+            except Exception as e:
+                self.logger.console_log(f"[DELETE] Tenant '{name}': Exception: {e}", "ERROR")
+                results.append({'tenant': name, 'success': False, 'error': str(e)})
+        return results
     def __init__(self,ecp_ip,user,password):
         self.ecp_ip = ecp_ip
         self.user = user
@@ -488,7 +542,18 @@ class RestApi(object):
         if not resp:
             self.logger.error_log('Failed to publish device %s for tenant %s' % (appliance_name,tenant_name))
             sys.exit(1)
-        task_id = [ *json.loads(resp.text).values() ][0]
+        response_data = json.loads(resp.text)
+        task_id = [ *response_data.values() ][0]
+        
+        # Extract the actual UUID if task_id is a dictionary
+        if isinstance(task_id, dict):
+            if 'taskUUID' in task_id:
+                task_id = task_id['taskUUID']
+            elif 'uuid' in task_id:
+                task_id = task_id['uuid']
+            else:
+                # Take the first value if it's still a dict
+                task_id = list(task_id.values())[0]
         
         self.logger.info_log('Check publish appliance %s status on tenant %s' % (appliance_name,tenant_name))
         if not self.check_task_status(task_id):
@@ -503,7 +568,18 @@ class RestApi(object):
                 if not resp:
                     self.logger.error_log('Failed to publish device %s for tenant %s' % (deviceInfo['redundant_devicename'],tenant_name))
                     sys.exit(1)
-                task_id = [ *json.loads(resp.text).values() ][0]
+                response_data = json.loads(resp.text)
+                task_id = [ *response_data.values() ][0]
+                
+                # Extract the actual UUID if task_id is a dictionary
+                if isinstance(task_id, dict):
+                    if 'taskUUID' in task_id:
+                        task_id = task_id['taskUUID']
+                    elif 'uuid' in task_id:
+                        task_id = task_id['uuid']
+                    else:
+                        # Take the first value if it's still a dict
+                        task_id = list(task_id.values())[0]
                 
                 self.logger.info_log('Check publish appliance %s status on tenant %s' % (deviceInfo['redundant_devicename'],tenant_name))
                 if not self.check_task_status(task_id):
@@ -572,7 +648,18 @@ class RestApi(object):
         if not resp:
             self.logger.error_log('Failed to create tenant')
             sys.exit(1)
-        task_id = [ *json.loads(resp.text).values() ][0]
+        response_data = json.loads(resp.text)
+        task_id = [ *response_data.values() ][0]
+        
+        # Extract the actual UUID if task_id is a dictionary
+        if isinstance(task_id, dict):
+            if 'taskUUID' in task_id:
+                task_id = task_id['taskUUID']
+            elif 'uuid' in task_id:
+                task_id = task_id['uuid']
+            else:
+                # Take the first value if it's still a dict
+                task_id = list(task_id.values())[0]
         
         self.logger.console_log('Waiting 1 minute before checking tenant publish status...')
         self.logger.info_log('Adding 1 minute delay before checking publish status')
@@ -585,155 +672,348 @@ class RestApi(object):
         self.logger.info_log('Successfully published tenant')
         return True
 
-if __name__ == '__main__':
-    
-    parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument('-ip',
-                        help='ecp_ip',default='10.73.70.70')
-    parser.add_argument('-user',
-                        help='user',default='Script1')
-    parser.add_argument('-password',
-                        help='password',default='scr1@Versa123')
-    parser.add_argument('-payload',
-                        help='JSON payload file for tenant creation',
-                        default='TenantTemplate-Oct2025.json')
-    parser.add_argument('--action',
-                        help='Action to perform: fetch_uuid or create_tenant',
-                        choices=['fetch_uuid', 'create_tenant'],
-                        default='create_tenant')
-    parser.add_argument('--global-id',
-                        help='Global ID for tenant creation (overrides JSON file value)',
-                        type=int,
-                        default=49)
-    parser.add_argument('--tenant-name',
-                        help='Tenant name (overrides JSON file value)',
-                        type=str,
-                        default=None)
-    parser.add_argument('--description',
-                        help='Tenant description (overrides JSON file value)',
-                        type=str,
-                        default="Tenant Created by REST API Script")
-    parser.add_argument('--bandwidth',
-                        help='SASE bandwidth value (overrides JSON file value)',
-                        type=int,
-                        default=1000)
-    parser.add_argument('--max-tunnels',
-                        help='Maximum tunnels (overrides JSON file value)',
-                        type=str,
-                        default="5")
-    parser.add_argument('--license-year',
-                        help='License year (overrides JSON file value)',
-                        type=str,
-                        default="2019")
-    parser.add_argument('--sdwan-enabled',
-                        help='Enable SDWAN functionality (default: True)',
-                        action='store_true',
-                        default=True)
-    parser.add_argument('--no-sdwan-enabled',
-                        help='Disable SDWAN functionality',
-                        action='store_true',
-                        default=False)
-    parser.add_argument('--sase-enabled',
-                        help='Enable SASE functionality (default: True)',
-                        action='store_true', 
-                        default=True)
-    parser.add_argument('--no-sase-enabled',
-                        help='Disable SASE functionality',
-                        action='store_true',
-                        default=False)
-    parser.add_argument('--use-static-json',
-                        help='Use static JSON file instead of template processing',
-                        action='store_true')
-    args = parser.parse_args()
-    
-    # Set default tenant name dynamically based on global-id if not provided
-    if args.tenant_name is None:
-        args.tenant_name = f"Script-Tenant-{args.global_id}"
-    
-    # Set default description dynamically based on tenant name if not provided
-    if args.description is None:
-        args.description = f"{args.tenant_name} description"
-    
-    # Handle boolean logic for enable/disable flags
-    sdwan_enabled = args.sdwan_enabled and not args.no_sdwan_enabled
-    sase_enabled = args.sase_enabled and not args.no_sase_enabled
-    
-    ip = args.ip
-    user = args.user
-    password = args.password
-    payload_file = args.payload
-    action = args.action
-    
-    restHdl = RestApi(ip, user, password)
-
-    if action == 'fetch_uuid':
-        # Existing functionality - fetch tenant UUID
-        tenant_uuid = restHdl.fetch_tenant_uuid('CNN1001')
-        restHdl.logger.console_log(f"Tenant UUID: {tenant_uuid}")
-    
-    elif action == 'create_tenant':
-        # New functionality - create tenant from JSON payload
+    def create_tenant_with_id(self, global_id, template_vars_base, payload_file, use_static_json=False):
+        """
+        Create a single tenant with the specified global ID
+        This method is thread-safe for parallel execution
+        """
         try:
-            if args.use_static_json:
+            # Create a copy of template vars and update with current global_id
+            template_vars = template_vars_base.copy()
+            template_vars['GLOBAL_ID'] = global_id
+            template_vars['TENANT_NAME'] = f"Script-Tenant-{global_id}"
+            template_vars['DESCRIPTION'] = f"Script-Tenant-{global_id} description"
+            
+            if use_static_json:
                 # Read static JSON payload file directly (legacy mode)
                 with open(payload_file, 'r') as f:
                     tenant_payload = json.load(f)
-                restHdl.logger.console_log(f'Using static JSON file: {payload_file}')
-                restHdl.logger.info_log(f'Using static JSON file: {payload_file}')
-                restHdl.logger.payload_log('STATIC JSON PAYLOAD', json.dumps(tenant_payload, indent=4))
+                    # Override global ID even in static mode
+                    tenant_payload['globalId'] = global_id
+                    if 'name' not in tenant_payload or not tenant_payload['name']:
+                        tenant_payload['name'] = f"Script-Tenant-{global_id}"
+                self.logger.console_log(f'[ID:{global_id}] Using static JSON file: {payload_file}')
+                self.logger.info_log(f'[ID:{global_id}] Using static JSON file: {payload_file}')
             else:
                 # Default: Process template file with variable substitution
                 with open(payload_file, 'r') as f:
                     template_content = f.read()
-                
-                # Define template variables with defaults (using command args or defaults)
-                template_vars = {
-                    'TENANT_NAME': args.tenant_name,
-                    'DESCRIPTION': args.description,
-                    'BANDWIDTH_VALUE': args.bandwidth,
-                    'GLOBAL_ID': args.global_id,
-                    'LICENSE_YEAR': args.license_year,
-                    'MAX_TUNNELS': args.max_tunnels,
-                    'SDWAN_ENABLED': str(sdwan_enabled).lower(),
-                    'SASE_ENABLED': str(sase_enabled).lower()
-                }
                 
                 # Replace template variables
                 for var_name, var_value in template_vars.items():
                     placeholder = f'{{{{{var_name}}}}}'
                     template_content = template_content.replace(placeholder, str(var_value))
                 
-                # Console log (short info)
-                restHdl.logger.console_log(f'Template processing - Variables: {list(template_vars.keys())}')
-                
-                # File log (detailed info)
-                restHdl.logger.info_log(f'Template processing mode - Variables applied: {template_vars}')
-                
                 # Parse the processed template as JSON
                 tenant_payload = json.loads(template_content)
                 
-                # Log the final payload to file only (not console)
-                restHdl.logger.payload_log('FINAL TENANT PAYLOAD', json.dumps(tenant_payload, indent=4))
+                # File log (detailed info)
+                self.logger.info_log(f'[ID:{global_id}] Template processing mode - Variables applied: {template_vars}')
             
-            # Template mode handles all parameters via variable substitution
-            # No additional overrides needed since template variables are already applied
+            # Console log (short info)
+            self.logger.console_log(f'[ID:{global_id}] Creating tenant: {tenant_payload.get("name", "Unknown")} (Global ID: {global_id})')
             
-            restHdl.logger.console_log(f'Creating tenant: {tenant_payload.get("name", "Unknown")} (Global ID: {tenant_payload.get("globalId", "Not set")})')
-            restHdl.logger.info_log(f'Creating tenant from template: {payload_file}')
-            restHdl.logger.info_log(f'Tenant name: {tenant_payload.get("name", "Unknown")}')
-            restHdl.logger.info_log(f'Global ID: {tenant_payload.get("globalId", "Not set")}')
+            # File log (detailed info) 
+            self.logger.info_log(f'[ID:{global_id}] Creating tenant from template: {payload_file}')
+            self.logger.info_log(f'[ID:{global_id}] Tenant name: {tenant_payload.get("name", "Unknown")}')
+            self.logger.info_log(f'[ID:{global_id}] Global ID: {global_id}')
+            
+            # Log the final payload to file only (not console)
+            self.logger.payload_log(f'[ID:{global_id}] FINAL TENANT PAYLOAD', json.dumps(tenant_payload, indent=4))
             
             # Convert dict to JSON string for the API call
             payload_json = json.dumps(tenant_payload, indent=2)
             
             # Create the tenant
-            result = restHdl.create_tenant(payload_json)
+            result = self.create_tenant(payload_json)
             
             if result:
-                restHdl.logger.console_log(f"✓ Successfully created tenant: {tenant_payload.get('name', 'Unknown')}")
+                self.logger.console_log(f"[ID:{global_id}] ✓ Successfully created tenant: {tenant_payload.get('name', 'Unknown')}")
+                return {'global_id': global_id, 'success': True, 'tenant_name': tenant_payload.get('name', 'Unknown')}
             else:
-                restHdl.logger.console_log("✗ Failed to create tenant", "ERROR")
+                self.logger.console_log(f"[ID:{global_id}] ✗ Failed to create tenant", "ERROR")
+                return {'global_id': global_id, 'success': False, 'error': 'Creation failed'}
                 
+        except Exception as e:
+            error_msg = str(e)
+            self.logger.console_log(f"[ID:{global_id}] ✗ Error creating tenant: {error_msg}", "ERROR")
+            self.logger.error_log(f'[ID:{global_id}] Error creating tenant: {error_msg}')
+            return {'global_id': global_id, 'success': False, 'error': error_msg}
+
+
+def parse_global_id_input(global_id_input):
+    """
+    Parse global ID input which can be:
+    - Single number: "50"
+    - Range: "50-55" or "50:55" 
+    - List: "50,52,54,56"
+    - Mixed: "50,52-55,60"
+    """
+    global_ids = []
+    
+    # Split by comma for multiple entries
+    parts = global_id_input.split(',')
+    
+    for part in parts:
+        part = part.strip()
+        
+        # Check for range (with - or :)
+        if '-' in part:
+            start, end = part.split('-', 1)
+            global_ids.extend(range(int(start), int(end) + 1))
+        elif ':' in part:
+            start, end = part.split(':', 1)
+            global_ids.extend(range(int(start), int(end) + 1))
+        else:
+            # Single number
+            global_ids.append(int(part))
+    
+    return sorted(list(set(global_ids)))  # Remove duplicates and sort
+
+
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument('-ip', help='ecp_ip', default='10.73.70.70')
+    parser.add_argument('-user', help='user', default='Script1')
+    parser.add_argument('-password', help='password', default='scr1@Versa123')
+    parser.add_argument('-payload', help='JSON payload file for tenant creation', default='TenantTemplate-Oct2025.json')
+    parser.add_argument('--action', help='Action to perform: fetch_uuid, create_tenant, delete_tenants, or clean_and_delete_tenants', choices=['fetch_uuid', 'create_tenant', 'delete_tenants', 'clean_and_delete_tenants'], default='create_tenant')
+    parser.add_argument('--global-id', help='Global ID for tenant creation (overrides JSON file value)', type=int, default=49)
+    parser.add_argument('--global-ids', help='Multiple Global IDs for parallel tenant creation. Format: single (50), range (50-55), list (50,52,54), or mixed (50,52-55,60)', type=str, default=None)
+    parser.add_argument('--max-workers', help='Maximum number of parallel workers for tenant creation (default: 5)', type=int, default=5)
+    parser.add_argument('--tenant-name', help='Tenant name (overrides JSON file value)', type=str, default=None)
+    parser.add_argument('--tenant-names', help='Comma-separated list of tenant names to delete (for delete_tenants action)', type=str, default=None)
+    parser.add_argument('--description', help='Tenant description (overrides JSON file value)', type=str, default="Tenant Created by REST API Script")
+    parser.add_argument('--bandwidth', help='SASE bandwidth value (overrides JSON file value)', type=int, default=1000)
+    parser.add_argument('--max-tunnels', help='Maximum tunnels (overrides JSON file value)', type=str, default="5")
+    parser.add_argument('--license-year', help='License year (overrides JSON file value)', type=str, default="2019")
+    parser.add_argument('--sdwan-enabled', help='Enable SDWAN functionality (default: True)', action='store_true', default=True)
+    parser.add_argument('--no-sdwan-enabled', help='Disable SDWAN functionality', action='store_true', default=False)
+    parser.add_argument('--sase-enabled', help='Enable SASE functionality (default: True)', action='store_true', default=True)
+    parser.add_argument('--no-sase-enabled', help='Disable SASE functionality', action='store_true', default=False)
+    parser.add_argument('--use-static-json', help='Use static JSON file instead of template processing', action='store_true')
+    args = parser.parse_args()
+
+    # ...existing initialization code...
+
+    # Place the clean_and_delete_tenants action after initialization
+    if args.action == 'clean_and_delete_tenants':
+        # New functionality: clean and delete tenants by names
+        if not args.tenant_names:
+            restHdl = RestApi(args.ip, args.user, args.password)
+            restHdl.logger.console_log("Error: --tenant-names argument is required for clean_and_delete_tenants action", "ERROR")
+            sys.exit(1)
+        tenant_names = [name.strip() for name in args.tenant_names.split(',') if name.strip()]
+        if not tenant_names:
+            restHdl = RestApi(args.ip, args.user, args.password)
+            restHdl.logger.console_log("Error: No tenant names provided for clean-and-delete", "ERROR")
+            sys.exit(1)
+        restHdl = RestApi(args.ip, args.user, args.password)
+        restHdl.logger.console_log(f"Clean-and-deleting tenants: {tenant_names}")
+        results = restHdl.clean_and_delete_tenants_by_names(tenant_names)
+        success_count = sum(1 for r in results if r.get('success'))
+        fail_count = len(results) - success_count
+        restHdl.logger.console_log(f"\n=== CLEAN-DELETE SUMMARY ===")
+        restHdl.logger.console_log(f"Total tenants processed: {len(results)}")
+        restHdl.logger.console_log(f"Successful clean-deletions: {success_count}")
+        restHdl.logger.console_log(f"Failed clean-deletions: {fail_count}")
+        for r in results:
+            if r.get('success'):
+                restHdl.logger.console_log(f"✓ Clean-deleted: {r['tenant']} (UUID: {r.get('uuid', 'N/A')})")
+            else:
+                restHdl.logger.console_log(f"✗ Failed: {r['tenant']} - {r.get('error', 'Unknown error')}", "ERROR")
+        if fail_count > 0:
+            sys.exit(1)
+        else:
+            restHdl.logger.console_log(f"\n🎉 All {success_count} tenants clean-deleted successfully!")
+        sys.exit(0)
+    
+    # Determine if we're doing parallel processing
+    if args.global_ids:
+        global_ids = parse_global_id_input(args.global_ids)
+        parallel_mode = True
+    else:
+        global_ids = [args.global_id]
+        parallel_mode = False
+
+    # Set default tenant name dynamically based on global-id if not provided (for single mode)
+    if args.tenant_name is None and not parallel_mode:
+        args.tenant_name = f"Script-Tenant-{args.global_id}"
+
+    # Set default description dynamically based on tenant name if not provided (for single mode)
+    if args.description is None and not parallel_mode:
+        args.description = f"{args.tenant_name} description"
+
+    # Handle boolean logic for enable/disable flags
+    sdwan_enabled = args.sdwan_enabled and not args.no_sdwan_enabled
+    sase_enabled = args.sase_enabled and not args.no_sase_enabled
+
+    ip = args.ip
+    user = args.user
+    password = args.password
+    payload_file = args.payload
+    action = args.action
+
+    restHdl = RestApi(ip, user, password)
+
+    if action == 'fetch_uuid':
+        # Existing functionality - fetch tenant UUID
+        tenant_uuid = restHdl.fetch_tenant_uuid('CNN1001')
+        restHdl.logger.console_log(f"Tenant UUID: {tenant_uuid}")
+
+    elif action == 'create_tenant':
+        try:
+            # Verify payload file exists
+            with open(payload_file, 'r') as f:
+                test_content = f.read()
+
+            if parallel_mode:
+                restHdl.logger.console_log(f'=== PARALLEL TENANT CREATION MODE ===')
+                restHdl.logger.console_log(f'Global IDs to create: {global_ids}')
+                restHdl.logger.console_log(f'Total tenants: {len(global_ids)}')
+                restHdl.logger.console_log(f'Max workers: {args.max_workers}')
+                restHdl.logger.info_log(f'Parallel mode - Creating {len(global_ids)} tenants with IDs: {global_ids}')
+
+                # Define base template variables (will be customized per tenant)
+                template_vars_base = {
+                    'BANDWIDTH_VALUE': args.bandwidth,
+                    'LICENSE_YEAR': args.license_year,
+                    'MAX_TUNNELS': args.max_tunnels,
+                    'SDWAN_ENABLED': str(sdwan_enabled).lower(),
+                    'SASE_ENABLED': str(sase_enabled).lower()
+                }
+
+                # Create multiple RestApi instances for parallel processing
+                # Each thread needs its own session to avoid conflicts
+                def create_rest_instance():
+                    return RestApi(ip, user, password)
+
+                results = []
+                successful_tenants = []
+                failed_tenants = []
+
+                # Use ThreadPoolExecutor for parallel execution
+                with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+                    # Submit all tenant creation tasks
+                    future_to_id = {}
+                    for global_id in global_ids:
+                        # Each thread gets its own RestApi instance
+                        rest_instance = create_rest_instance()
+                        future = executor.submit(
+                            rest_instance.create_tenant_with_id,
+                            global_id,
+                            template_vars_base,
+                            payload_file,
+                            args.use_static_json
+                        )
+                        future_to_id[future] = global_id
+
+                    # Collect results as they complete
+                    for future in as_completed(future_to_id):
+                        global_id = future_to_id[future]
+                        try:
+                            result = future.result()
+                            results.append(result)
+
+                            if result['success']:
+                                successful_tenants.append(result)
+                            else:
+                                failed_tenants.append(result)
+
+                        except Exception as e:
+                            error_result = {'global_id': global_id, 'success': False, 'error': str(e)}
+                            results.append(error_result)
+                            failed_tenants.append(error_result)
+                            restHdl.logger.console_log(f"[ID:{global_id}] ✗ Exception in thread: {e}", "ERROR")
+
+                # Print summary
+                restHdl.logger.console_log(f'\n=== PARALLEL CREATION SUMMARY ===')
+                restHdl.logger.console_log(f'Total tenants processed: {len(results)}')
+                restHdl.logger.console_log(f'Successful: {len(successful_tenants)}')
+                restHdl.logger.console_log(f'Failed: {len(failed_tenants)}')
+
+                if successful_tenants:
+                    restHdl.logger.console_log(f'\n✓ Successfully created tenants:')
+                    for tenant in successful_tenants:
+                        restHdl.logger.console_log(f'  - ID {tenant["global_id"]}: {tenant["tenant_name"]}')
+
+                if failed_tenants:
+                    restHdl.logger.console_log(f'\n✗ Failed tenants:', "ERROR")
+                    for tenant in failed_tenants:
+                        restHdl.logger.console_log(f'  - ID {tenant["global_id"]}: {tenant.get("error", "Unknown error")}', "ERROR")
+
+                # Exit with error code if any failures
+                if failed_tenants:
+                    sys.exit(1)
+                else:
+                    restHdl.logger.console_log(f'\n🎉 All {len(successful_tenants)} tenants created successfully!')
+
+            else:
+                # Single tenant mode (existing functionality with minor modifications)
+                restHdl.logger.console_log(f'=== SINGLE TENANT CREATION MODE ===')
+
+                if args.use_static_json:
+                    # Read static JSON payload file directly (legacy mode)
+                    with open(payload_file, 'r') as f:
+                        tenant_payload = json.load(f)
+                    restHdl.logger.console_log(f'Using static JSON file: {payload_file}')
+                    restHdl.logger.info_log(f'Using static JSON file: {payload_file}')
+                    restHdl.logger.payload_log('STATIC JSON PAYLOAD', json.dumps(tenant_payload, indent=4))
+                else:
+                    # Default: Process template file with variable substitution
+                    with open(payload_file, 'r') as f:
+                        template_content = f.read()
+
+                    # Define template variables with defaults (using command args or defaults)
+                    template_vars = {
+                        'TENANT_NAME': args.tenant_name,
+                        'DESCRIPTION': args.description,
+                        'BANDWIDTH_VALUE': args.bandwidth,
+                        'GLOBAL_ID': args.global_id,
+                        'LICENSE_YEAR': args.license_year,
+                        'MAX_TUNNELS': args.max_tunnels,
+                        'SDWAN_ENABLED': str(sdwan_enabled).lower(),
+                        'SASE_ENABLED': str(sase_enabled).lower()
+                    }
+
+                    # Replace template variables
+                    for var_name, var_value in template_vars.items():
+                        placeholder = f'{{{{{var_name}}}}}'
+                        template_content = template_content.replace(placeholder, str(var_value))
+
+                    # Console log (short info)
+                    restHdl.logger.console_log(f'Template processing - Variables: {list(template_vars.keys())}')
+
+                    # File log (detailed info)
+                    restHdl.logger.info_log(f'Template processing mode - Variables applied: {template_vars}')
+
+                    # Parse the processed template as JSON
+                    tenant_payload = json.loads(template_content)
+
+                    # Log the final payload to file only (not console)
+                    restHdl.logger.payload_log('FINAL TENANT PAYLOAD', json.dumps(tenant_payload, indent=4))
+
+                # Template mode handles all parameters via variable substitution
+                # No additional overrides needed since template variables are already applied
+
+                restHdl.logger.console_log(f'Creating tenant: {tenant_payload.get("name", "Unknown")} (Global ID: {tenant_payload.get("globalId", "Not set")})')
+                restHdl.logger.info_log(f'Creating tenant from template: {payload_file}')
+                restHdl.logger.info_log(f'Tenant name: {tenant_payload.get("name", "Unknown")})')
+                restHdl.logger.info_log(f'Global ID: {tenant_payload.get("globalId", "Not set")})')
+
+                # Convert dict to JSON string for the API call
+                payload_json = json.dumps(tenant_payload, indent=2)
+
+                # Create the tenant
+                result = restHdl.create_tenant(payload_json)
+
+                if result:
+                    restHdl.logger.console_log(f"✓ Successfully created tenant: {tenant_payload.get('name', 'Unknown')}")
+                else:
+                    restHdl.logger.console_log("✗ Failed to create tenant", "ERROR")
+                    sys.exit(1)
+
         except FileNotFoundError:
             restHdl.logger.console_log(f"Error: Payload file '{payload_file}' not found", "ERROR")
             sys.exit(1)
@@ -741,5 +1021,32 @@ if __name__ == '__main__':
             restHdl.logger.console_log(f"Error: Invalid JSON in payload file '{payload_file}': {e}", "ERROR")
             sys.exit(1)
         except Exception as e:
-            restHdl.logger.console_log(f"Error creating tenant: {e}", "ERROR")
+            restHdl.logger.console_log(f"Error creating tenant(s): {e}", "ERROR")
             sys.exit(1)
+
+    elif action == 'delete_tenants':
+        # New functionality: delete tenants by names
+        if not args.tenant_names:
+            restHdl.logger.console_log("Error: --tenant-names argument is required for delete_tenants action", "ERROR")
+            sys.exit(1)
+        tenant_names = [name.strip() for name in args.tenant_names.split(',') if name.strip()]
+        if not tenant_names:
+            restHdl.logger.console_log("Error: No tenant names provided for deletion", "ERROR")
+            sys.exit(1)
+        restHdl.logger.console_log(f"Deleting tenants: {tenant_names}")
+        results = restHdl.delete_tenants_by_names(tenant_names)
+        success_count = sum(1 for r in results if r.get('success'))
+        fail_count = len(results) - success_count
+        restHdl.logger.console_log(f"\n=== DELETE SUMMARY ===")
+        restHdl.logger.console_log(f"Total tenants processed: {len(results)}")
+        restHdl.logger.console_log(f"Successful deletions: {success_count}")
+        restHdl.logger.console_log(f"Failed deletions: {fail_count}")
+        for r in results:
+            if r.get('success'):
+                restHdl.logger.console_log(f"✓ Deleted: {r['tenant']} (UUID: {r.get('uuid', 'N/A')})")
+            else:
+                restHdl.logger.console_log(f"✗ Failed: {r['tenant']} - {r.get('error', 'Unknown error')}", "ERROR")
+        if fail_count > 0:
+            sys.exit(1)
+        else:
+            restHdl.logger.console_log(f"\n🎉 All {success_count} tenants deleted successfully!")
